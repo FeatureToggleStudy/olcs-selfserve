@@ -95,7 +95,9 @@ class FinancialHistoryController extends AbstractFinancialHistoryController
     /**
      * Alter the form for director change only
      *
-     * @param $form
+     * @param /Zend/Form $form form
+     *
+     * @return void
      */
     protected function alterFormForDirectorChange($form)
     {
