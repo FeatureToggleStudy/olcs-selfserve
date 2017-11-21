@@ -75,10 +75,7 @@ class FinancialHistoryController extends AbstractFinancialHistoryController
         $data['variationType'] = $this->getVariationType();
         $data['organisationType'] = $this->fetchDataForLva()['licence']['organisation']['type']['id'];
 
-        $form =  parent::getFinancialHistoryForm($data);
-
-        $this->alterFormForDirectorChange($form);
-        return $form;
+        return parent::getFinancialHistoryForm($data);
     }
 
     /**
@@ -90,18 +87,5 @@ class FinancialHistoryController extends AbstractFinancialHistoryController
     {
         $licenceId = $this->getLicenceId($this->getApplicationId());
         return ['name'=>'lva-licence/people', 'params'=>['licence' =>$licenceId]];
-    }
-
-    /**
-     * Alter the form for director change only
-     *
-     * @param /Zend/Form $form form
-     *
-     * @return void
-     */
-    protected function alterFormForDirectorChange($form)
-    {
-        $dataFieldset = $form->get('data');
-        $dataFieldset->remove('financialHistoryConfirmation');
     }
 }
