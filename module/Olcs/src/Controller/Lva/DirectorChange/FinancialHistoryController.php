@@ -74,7 +74,11 @@ class FinancialHistoryController extends AbstractFinancialHistoryController
     {
         $data['variationType'] = $this->getVariationType();
         $data['organisationType'] = $this->fetchDataForLva()['licence']['organisation']['type']['id'];
-        return parent::getFinancialHistoryForm($data);
+
+        $form =  parent::getFinancialHistoryForm($data);
+
+        $this->alterFormForDirectorChange($form);
+        return $form;
     }
 
     /**
@@ -86,5 +90,16 @@ class FinancialHistoryController extends AbstractFinancialHistoryController
     {
         $licenceId = $this->getLicenceId($this->getApplicationId());
         return ['name'=>'lva-licence/people', 'params'=>['licence' =>$licenceId]];
+    }
+
+    /**
+     * Alter the form for director change only
+     *
+     * @param $form
+     */
+    protected function alterFormForDirectorChange($form)
+    {
+        $dataFieldset = $form->get('data');
+        $dataFieldset->remove('financialHistoryConfirmation');
     }
 }
