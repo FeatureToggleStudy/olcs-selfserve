@@ -51,7 +51,7 @@
         "olcs/OlcsCommon": "dev-feature/OLCS-19129-php7",
         "olcs/olcs-transfer": "dev-feature/OLCS-19129-php7",
         "olcs/olcs-utils": "dev-develop",
-        "olcs/olcs-auth": "dev-develop",
+        "olcs/olcs-auth": "dev-feature/OLCS-19129-php7",
         "olcs/olcs-logging": "dev-develop"
     },
     "require-dev": {
