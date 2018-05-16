@@ -37,6 +37,7 @@ class PermitsController extends AbstractActionController
   {
     $form = new ApplicationForm();
     $inputFilter = null;
+    $data['maxApplications'] = 12;
 
     $request = $this->getRequest();
     if($request->isPost()) {
@@ -53,7 +54,7 @@ class PermitsController extends AbstractActionController
         //valid so save data
       }
     }
-    return array('form' => $form);
+    return array('form' => $form, 'data' => $data);
   }
 
   public function step3Action()
