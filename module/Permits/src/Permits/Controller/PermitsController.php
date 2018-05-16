@@ -33,6 +33,16 @@ class PermitsController extends AbstractActionController
     return array('form' => $form);
   }
 
+  public function eligibleAction()
+  {
+    return new ViewModel();
+  }
+
+  public function nonEligibleAction()
+  {
+    return new ViewModel();
+  }
+
   public function applicationAction()
   {
     $form = new ApplicationForm();
@@ -57,6 +67,22 @@ class PermitsController extends AbstractActionController
     return array('form' => $form, 'data' => $data);
   }
 
+  public function overviewAction()
+  {
+      return new ViewModel();
+  }
+
+  public function declarationAction()
+  {
+      return new ViewModel();
+  }
+
+  public function paymentAction()
+  {
+    return new ViewModel();
+  }
+
+
   public function step3Action()
   {
     $inputFilter = null;
@@ -79,5 +105,13 @@ class PermitsController extends AbstractActionController
     }
     return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
   }
+
+    /**
+     * @return mixed
+     */
+    public function submittedAction()
+    {
+        return new ViewModel();
+    }
 
 }
