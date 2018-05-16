@@ -5,7 +5,7 @@ use Zend\Form\Form;
 use Zend\InputFilter\InputFilter;
 use Zend\InputFilter\Input;
 
-class Step2Form extends Form {
+class ApplicationForm extends Form {
   
   private $inputFilter;
   
@@ -42,7 +42,7 @@ class Step2Form extends Form {
       'type' => 'Text',
       'name' => 'sector',
       'options' => array(
-        'label' => 'Sector',
+        'label' => 'What type of goods will you be carrying?',
       ),
     ));
 
@@ -60,6 +60,7 @@ class Step2Form extends Form {
       'attributes' => array(
         'value' => 'Save and continue',
         'id' => 'submitbutton',
+        'class' => 'action--primary large',
       ),
     ));
   }

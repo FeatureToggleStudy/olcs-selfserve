@@ -5,7 +5,7 @@ use Zend\Form\Form;
 use Zend\InputFilter\InputFilter;
 use Zend\InputFilter\Input;
 
-class Step1Form extends Form {
+class EligibilityForm extends Form {
   
   private $inputFilter;
   private $numOfCountries;
@@ -51,7 +51,7 @@ class Step1Form extends Form {
       'name' => 'country',
       'type' => 'Collection',
       'options' => array(
-        'label' => '',
+        'label' => 'Country',
         'count' => $numOfCountries,
         'should_create_template' => true,
         'target_element' => array(
@@ -69,6 +69,7 @@ class Step1Form extends Form {
       'attributes' => array(
         'value' => 'Save and continue',
         'id' => 'submitbutton',
+          'class' => 'action--primary large',
       ),
     ));
   }
@@ -109,7 +110,7 @@ class Step1Form extends Form {
         'required' => true,
         'filters'  => [],
         'options'  => array(
-          'label'          => 'Product features',
+          'label'          => 'Country',
           'count'          => $this->numOfCountries,
                                    // 'should_create_template' => true,
                                     //'allow_add'      => true,

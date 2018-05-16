@@ -1,0 +1,38 @@
+<?php
+$title = $this->translate('permits.application.ecmt.title');
+$this->headTitle($title);
+?>
+<p><?php echo $this->linkBack($this->backUrl); ?></p>
+<p><?php echo sprintf($this->translate('application.steps'), 2, 3); ?></p>
+
+<h1 class="js-title"><?php echo $this->escapeHtml($title); ?></h1>
+
+<?php
+$form->setAttribute('action', $this->url('permits', array('action' => 'step3')));
+$form->prepare();
+
+echo $this->form()->openTag($form);
+echo $this->formHidden($form->get('id'));
+
+?>
+<div class="form-group panel panel-border-wide">
+    <p class="guidance"><?php echo sprintf($this->translate('permits.application.ecmt.permits'), $this->data['maxApplications']); ?> </p>
+</div>
+
+
+<legend><?php echo $this->escapeHtml($this->translate('permits.application.ecmt.countries')); ?></legend>
+<p><?php echo $this->escapeHtml($this->translate('permits.application.ecmt.select')); ?></p>
+<?php
+echo $this->formRow($form->get('deliveryCountries'));
+
+echo $this->formRow($form->get('numberOfTrips'));
+
+echo $this->formRow($form->get('sector'));
+?>
+<div class="actions-container new-application--wrapper">
+    <p><?php echo $this->formSubmit($form->get('submit'));  ?></p>
+</div>
+<?php echo $this->form()->closeTag(); ?>
+
+<a href="/permits"> <?php echo $this->escapeHtml($this->translate('Cancel')); ?> </a>
+

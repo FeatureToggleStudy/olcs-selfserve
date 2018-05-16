@@ -5,8 +5,8 @@ namespace Permits\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Permits\Model\PermitTable;
-use Permits\Form\Step1Form;
-use Permits\Form\Step2Form;
+use Permits\Form\EligibilityForm;
+use Permits\Form\ApplicationForm;
 
 class PermitsController extends AbstractActionController 
 {
@@ -19,43 +19,42 @@ class PermitsController extends AbstractActionController
 
   public function indexAction()
   {
-    return new ViewModel([
-      'permits' => $this->table->fetchAll(),
-    ]);
+    return new ViewModel();
   }
 
-  public function step1Action()
+  public function eligibilityAction()
   {
-    $form = new Step1Form();
+    $form = new EligibilityForm();
 
     $request = $this->getRequest();
     if($request->isPost()){
       //If handling returned form (submit clicked)
     }
-    return array('form' => $form, 'step' => '1');
+    return array('form' => $form);
   }
 
-  public function step2Action()
+  public function applicationAction()
   {
-    $form = new Step2Form();
+    $form = new ApplicationForm();
     $inputFilter = null;
+    $data['maxApplications'] = 12;
 
     $request = $this->getRequest();
     if($request->isPost()) {
       //If handling returned form (submit clicked)
       $data = $this->params()->fromPost(); //get data from POST
       $jsonObject = json_encode($data); //convert data to JSON
-      
+
       //START VALIDATION
-      $step1Form = new Step1Form();
+      $step1Form = new EligibilityForm();
       $inputFilter = $step1Form->getInputFilter(); //Get validation rules
       $inputFilter->setData($data);
-      
+
       if($inputFilter->isValid()){
         //valid so save data
       }
     }
-    return array('form' => $form, 'step' => '2', 'inputFilter' => $inputFilter);
+    return array('form' => $form, 'data' => $data);
   }
 
   public function step3Action()
@@ -70,7 +69,7 @@ class PermitsController extends AbstractActionController
       $jsonObject = json_encode($data); //convert data to JSON
       
       //START VALIDATION
-      $step2Form = new Step2Form();
+      $step2Form = new ApplicationForm();
       $inputFilter = $step2Form->getInputFilter(); //Get validation rules
       $inputFilter->setData($data);
 
