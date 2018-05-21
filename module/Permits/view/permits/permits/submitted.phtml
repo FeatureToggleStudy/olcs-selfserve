@@ -1,7 +1,7 @@
 <?php
 $title = $this->translate('permits.application.submitted.title');
 $this->headTitle($title);
-$refNumber = 84051;
+$refNumber = 84051; //TODO get this from the business logic
 ?>
 <head>
     <style>
@@ -19,7 +19,7 @@ $refNumber = 84051;
     <div class="two-thirds">
         <?php echo sprintf($this->translate('markup-ecmt-application-submitted'),$this->escapeHtml($title),$refNumber); ?>
         <div class="actions-container new-application--wrapper">
-            <p><a href="/dashboard" class="action--primary large"> Finish </a></p>
+            <p><a href="/dashboard" class="action--primary large"> <?php echo $this->translate('Finish'); ?> </a></p>
         </div>
     </div>
 </div>
