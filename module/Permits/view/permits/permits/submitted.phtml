@@ -3,11 +3,21 @@ $title = $this->translate('permits.application.submitted.title');
 $this->headTitle($title);
 $refNumber = 84051; //TODO get this from the business logic
 ?>
+<head>
+    <style>
+        .govuk-box-highlight {
+            margin: 1em 0;
+            padding: 2em 0 1em;
+            color: #fff;
+            background: #28a197;
+            text-align: center;
+        }
+    </style>
+</head>
+
 <div class="row">
     <div class="two-thirds">
-
         <?php echo sprintf($this->translate('markup-ecmt-application-submitted'),$this->escapeHtml($title),$refNumber); ?>
-
         <div class="actions-container new-application--wrapper">
             <p><a href="/dashboard" class="action--primary large"> <?php echo $this->translate('Finish'); ?> </a></p>
         </div>
