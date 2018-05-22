@@ -36,7 +36,7 @@ echo $this->formHidden($form->get('id'));
 
         <?php echo sprintf($this->translate('markup-permits-eligibility'),$this->escapeHtml($this->translate('permits.application.eligibility.meetsEuro6.link'))); ?>
 
-        <?php echo $this->formRow($form->get('willCabotage')); ?>
+        <?php echo $this->formRow($form->get('meetsEuro6')); ?>
     </fieldset>
 
     <fieldset id="country" data-group="country">
@@ -47,6 +47,8 @@ echo $this->formHidden($form->get('id'));
                 echo $this->formRow($element);
             endforeach;
             ?>
+            </div>
+        <div class="article">
             <a href="#" class="add_country_button"><?php echo $this->escapeHtml($this->translate('permits.application.eligibility.country.add')); ?></a>
         </div>
     </fieldset>
