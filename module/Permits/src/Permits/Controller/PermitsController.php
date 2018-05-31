@@ -9,6 +9,7 @@ use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
+use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 
 class PermitsController extends AbstractActionController 
 {
@@ -41,6 +42,12 @@ class PermitsController extends AbstractActionController
 
   public function sectorsAction()
   {
+
+      $response = $this->handleQuery(Sectors::create(array()));
+      $formData = $response->getResult();
+
+echo '<pre>';var_dump(($formData['results']));die();
+
     $form = new SectorsForm();
     $request = $this->getRequest();
 
