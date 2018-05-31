@@ -8,7 +8,7 @@ use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
-use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
+use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 
 class PermitsController extends AbstractActionController 
 {
@@ -16,7 +16,6 @@ class PermitsController extends AbstractActionController
 
   public function __construct()
   {
-        $this->sectors = SectorsList::class;
   }
 
   public function indexAction()
@@ -41,12 +40,6 @@ class PermitsController extends AbstractActionController
 
   public function sectorsAction()
   {
-
-      $response = $this->handleQuery($this->sectors::create(array()));
-      $formData = $response->getResult();
-
-echo '<pre>';var_dump(($formData['results']));die();
-
     $form = new SectorsForm();
     $request = $this->getRequest();
 
@@ -56,6 +49,19 @@ echo '<pre>';var_dump(($formData['results']));die();
         $inputFilter = $form->getInputFilter();
         $inputFilter->setData($data);
     }
+
+    /*
+     * Get Sectors List from Database
+     */
+    $response = $this->handleQuery(Sectors::create(array()));
+    $sectorList = $response->getResult();
+
+    /*
+     * Make the Sectors List the value_options of the form
+     */
+    $options = $form->getDefaultSectorsFieldOptions();
+    $options['value_options'] = $this->transformListIntoValueOptions($sectorList);
+    $form->get('sectors')->setOptions($options);
 
     return array('form' => $form, 'data' => $data);
   }
@@ -150,6 +156,18 @@ echo '<pre>';var_dump(($formData['results']));die();
     public function submittedAction()
     {
         return new ViewModel();
+    }
+
+    private function transformListIntoValueOptions($list = array())
+    {
+        $value_options = array();
+
+        foreach($list['results'] as $item)
+        {
+            $value_options[$item['id']] = $item['name'];
+        }
+
+        return $value_options;
     }
 
 }
