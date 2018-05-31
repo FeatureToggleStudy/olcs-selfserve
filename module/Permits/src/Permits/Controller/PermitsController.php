@@ -13,150 +13,151 @@ use Permits\Form\RestrictedCountriesForm;
 
 class PermitsController extends AbstractActionController 
 {
-  private $table;
+    private $table;
 
-  public function __construct()
-  {
+    public function __construct()
+    {
         //$this->table = $table;
-  }
+    }
 
-  public function indexAction()
-  {
-    return new ViewModel();
-  }
-
-  public function tripsAction()
-  {
-    $form = new TripsForm();
-    $request = $this->getRequest();
-
-    if($request->isPost())
+    public function indexAction()
     {
-      $data = $this->params()->fromPost();
-      $inputFilter = $form->getInputFilter();
-      $inputFilter->setData($data);
+        return new ViewModel();
     }
 
-    return array('form' => $form, 'data' => $data);
-  }
-
-  public function sectorsAction()
-  {
-    $form = new SectorsForm();
-    $request = $this->getRequest();
-
-    if($request->isPost())
+    public function tripsAction()
     {
-        $data = $this->params()->fromPost();
-        $inputFilter = $form->getInputFilter();
-        $inputFilter->setData($data);
+        $form = new TripsForm();
+        $request = $this->getRequest();
+
+        if($request->isPost())
+        {
+            $data = $this->params()->fromPost();
+            $inputFilter = $form->getInputFilter();
+            $inputFilter->setData($data);
+        }
+
+        return array('form' => $form, 'data' => $data);
     }
 
-    return array('form' => $form, 'data' => $data);
-  }
-
-  public function restrictedCountriesAction()
-  {
-    $form = new RestrictedCountriesForm();
-    $request = $this->getRequest();
-
-    if($request->isPost())
+    public function sectorsAction()
     {
-        $data = $this->params()->fromPost();
-        $inputFilter = $form->getInputFilter();
-        $inputFilter->setData($data);
+        $form = new SectorsForm();
+        $request = $this->getRequest();
+
+        if($request->isPost())
+        {
+            $data = $this->params()->fromPost();
+            $inputFilter = $form->getInputFilter();
+            $inputFilter->setData($data);
+        }
+
+        return array('form' => $form, 'data' => $data);
     }
 
-    return array('form' => $form, 'data' => $data);
-  }
+    public function restrictedCountriesAction()
+    {
+        $form = new RestrictedCountriesForm();
+        $request = $this->getRequest();
 
-  public function summaryAction()
-  {
-    return new ViewModel();
-  }
+        if($request->isPost())
+        {
+            $data = $this->params()->fromPost();
+            $inputFilter = $form->getInputFilter();
+            $inputFilter->setData($data);
+        }
 
-  public function declarationAction()
-  {
-    return new ViewModel();
-  }
-
-  public function paymentAction()
-  {
-    return new ViewModel();
-  }
-
-  public function eligibilityAction()
-  {
-    $form = new EligibilityForm();
-
-    $request = $this->getRequest();
-    if($request->isPost()){
-      //If handling returned form (submit clicked)
+        return array('form' => $form, 'data' => $data);
     }
-    return array('form' => $form);
-  }
 
-  public function eligibleAction()
-  {
-    return new ViewModel();
-  }
-
-  public function nonEligibleAction()
-  {
-    return new ViewModel();
-  }
-
-  public function applicationAction()
-  {
-    $form = new ApplicationForm();
-    $inputFilter = null;
-    $data['maxApplications'] = 12;
-
-    $request = $this->getRequest();
-    if($request->isPost()) {
-      //If handling returned form (submit clicked)
-      $data = $this->params()->fromPost(); //get data from POST
-      $jsonObject = json_encode($data); //convert data to JSON
-
-      //START VALIDATION
-      $step1Form = new EligibilityForm();
-      $inputFilter = $step1Form->getInputFilter(); //Get validation rules
-      $inputFilter->setData($data);
-
-      if($inputFilter->isValid()){
-        //valid so save data
-      }
+    public function summaryAction()
+    {
+        return new ViewModel();
     }
-    return array('form' => $form, 'data' => $data);
-  }
 
-  public function overviewAction()
-  {
-      return new ViewModel();
-  }
-
-  public function step3Action()
-  {
-    $inputFilter = null;
-    $jsonObject = null;
-
-    $request = $this->getRequest();
-    if($request->isPost()){
-      //If handling returned form (submit clicked)
-      $data = $this->params()->fromPost(); //get data from POST
-      $jsonObject = json_encode($data); //convert data to JSON
-      
-      //START VALIDATION
-      $step2Form = new ApplicationForm();
-      $inputFilter = $step2Form->getInputFilter(); //Get validation rules
-      $inputFilter->setData($data);
-
-      if($inputFilter->isValid()){
-        //valid so save data
-      }
+    public function declarationAction()
+    {
+        return new ViewModel();
     }
-    return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
-  }
+
+    public function paymentAction()
+    {
+        return new ViewModel();
+    }
+
+    public function eligibilityAction()
+    {
+        $form = new EligibilityForm();
+        $request = $this->getRequest();
+
+        if($request->isPost()){
+            //If handling returned form (submit clicked)
+        }
+
+        return array('form' => $form);
+    }
+
+    public function eligibleAction()
+    {
+        return new ViewModel();
+    }
+
+    public function nonEligibleAction()
+    {
+        return new ViewModel();
+    }
+
+    public function applicationAction()
+    {
+        $form = new ApplicationForm();
+        $inputFilter = null;
+        $data['maxApplications'] = 12;
+        $request = $this->getRequest();
+
+        if ($request->isPost())
+        {
+            $data = $this->params()->fromPost();
+            $jsonObject = json_encode($data);
+
+            $step1Form = new EligibilityForm();
+            $inputFilter = $step1Form->getInputFilter();
+            $inputFilter->setData($data);
+
+            if ($inputFilter->isValid())
+            {
+                //valid so save data
+            }
+        }
+        return array('form' => $form, 'data' => $data);
+    }
+
+    public function overviewAction()
+    {
+        return new ViewModel();
+    }
+
+    public function step3Action()
+    {
+        $inputFilter = null;
+        $jsonObject = null;
+
+        $request = $this->getRequest();
+        if ($request->isPost())
+        {
+            $data = $this->params()->fromPost();
+            $jsonObject = json_encode($data);
+
+            $step2Form = new ApplicationForm();
+            $inputFilter = $step2Form->getInputFilter();
+            $inputFilter->setData($data);
+
+            if ($inputFilter->isValid())
+            {
+                //valid so save data
+            }
+        }
+        return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
+    }
 
     /**
      * @return mixed
@@ -165,5 +166,5 @@ class PermitsController extends AbstractActionController
     {
         return new ViewModel();
     }
-
+    
 }
