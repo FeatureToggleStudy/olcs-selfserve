@@ -1,0 +1,32 @@
+<?php
+    $title = 'Permits Home - ';
+    $this->headTitle($title);
+?>
+
+<div class="page-header__wrapper">
+    <h1 class="js-title"><?php echo $this->translate('permits.application.overwiew.title'); ?></h1>
+</div>
+
+<?php
+
+/* @var \Zend\View\Helper\Navigation\Menu $menu */
+$menu = $this->navigation($this->navigation('navigation')->getContainer()->findBy('id', 'dashboard-licences-applications'))->menu();
+
+echo $menu->setMinDepth(0)->setMaxDepth(0)
+  ->setPartial('partials/tabs-nav');
+
+?>
+
+<div class="row">
+    <div class="dashboard two-thirds">
+        <h3><?php echo $this->translate('permits.application.overwiew.subtitle'); ?></h3>
+        <p class="guidance"><?php echo $this->translate('permits.application.overwiew.no-permits'); ?></p>
+        <div class="actions-container new-application--wrapper">
+            <a href="/permits/trips" class="action--primary large">
+                <?php echo $this->translate('permits.application.overwiew.button'); ?>
+            </a>
+        </div>
+    </div>
+
+    <?php echo $this->partial('partials/dashboard-right-column'); ?>
+</div>

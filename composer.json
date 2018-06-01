@@ -10,19 +10,19 @@
             "type": "composer"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-logging.git",
+            "url": "git@repo.shd.ci.nonprod.dvsa.aws:Permits/olcs-logging.git",
             "type": "vcs"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-common.git",
+            "url": "git@repo.shd.ci.nonprod.dvsa.aws:Permits/olcs-common.git",
             "type": "vcs"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-transfer.git",
+            "url": "git@repo.shd.ci.nonprod.dvsa.aws:Permits/olcs-transfer.git",
             "type": "vcs"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-utils.git",
+            "url": "git@repo.shd.ci.nonprod.dvsa.aws:Permits/olcs-utils.git",
             "type": "vcs"
         },
         {
@@ -35,12 +35,17 @@
         },
         {
             "type": "vcs",
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-testhelpers.git"
+            "url": "git@repo.shd.ci.nonprod.dvsa.aws:Permits/olcs-testhelpers.git"
         },
         {
             "type": "vcs",
             "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-devtools.git"
+        },
+        {
+            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-coding-standards.git",
+            "type": "vcs"
         }
+
     ],
     "require": {
         "php": ">=5.4",
@@ -48,11 +53,11 @@
         "doctrine/annotations": "^1.2.3",
         "symfony/Filesystem": "~2.6.0",
         "zf-commons/zfc-rbac": "~2.4.0",
-        "olcs/OlcsCommon": "dev-release/4.178",
-        "olcs/olcs-transfer": "dev-release/4.178",
-        "olcs/olcs-utils": "dev-release/4.178",
-        "olcs/olcs-auth": "dev-release/4.178",
-        "olcs/olcs-logging": "dev-release/4.178"
+        "olcs/OlcsCommon": "dev-develop",
+        "olcs/olcs-transfer": "dev-develop",
+        "olcs/olcs-utils": "dev-develop",
+        "olcs/olcs-auth": "dev-develop",
+        "olcs/olcs-logging": "dev-develop"
     },
     "require-dev": {
         "olcs/olcs-devtools": "dev-master",
