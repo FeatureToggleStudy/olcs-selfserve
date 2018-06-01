@@ -8,6 +8,7 @@ use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
+use Permits\Form\RestrictedCountriesForm;
 
 class PermitsController extends AbstractActionController 
 {
@@ -37,6 +38,21 @@ class PermitsController extends AbstractActionController
   {
 
     $form = new SectorsForm();
+    $request = $this->getRequest();
+
+    if($request->isPost())
+    {
+        $data = $this->params()->fromPost();
+        $inputFilter = $form->getInputFilter();
+        $inputFilter->setData($data);
+    }
+
+    return array('form' => $form, 'data' => $data);
+  }
+
+  public function restrictedCountriesAction()
+  {
+    $form = new RestrictedCountriesForm();
     $request = $this->getRequest();
 
     if($request->isPost())
