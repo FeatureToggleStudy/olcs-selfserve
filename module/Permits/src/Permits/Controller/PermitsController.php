@@ -8,11 +8,16 @@ use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
+
 use Permits\Form\RestrictedCountriesForm;
+use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 
 class PermitsController extends AbstractActionController 
 {
 
+  public function __construct()
+  {
+  }
 
   public function indexAction()
   {
@@ -36,7 +41,6 @@ class PermitsController extends AbstractActionController
 
   public function sectorsAction()
   {
-
     $form = new SectorsForm();
     $request = $this->getRequest();
 
@@ -47,14 +51,27 @@ class PermitsController extends AbstractActionController
         $inputFilter->setData($data);
     }
 
+    /*
+    * Get Sectors List from Database
+    */
+    $response = $this->handleQuery(Sectors::create(array()));
+    $sectorList = $response->getResult();
+
+    /*
+    * Make the Sectors List the value_options of the form
+    */
+    $options = $form->getDefaultSectorsFieldOptions();
+    $options['value_options'] = $this->transformListIntoValueOptions($sectorList);
+    $form->get('sectors')->setOptions($options);
+
     return array('form' => $form, 'data' => $data);
   }
 
   public function restrictedCountriesAction()
   {
     $form = new RestrictedCountriesForm();
-    $request = $this->getRequest();
 
+    $request = $this->getRequest();
     if($request->isPost())
     {
         $data = $this->params()->fromPost();
@@ -160,6 +177,18 @@ class PermitsController extends AbstractActionController
     public function submittedAction()
     {
         return new ViewModel();
+    }
+
+    private function transformListIntoValueOptions($list = array())
+    {
+        $value_options = array();
+
+        foreach($list['results'] as $item)
+        {
+            $value_options[$item['id']] = $item['name'];
+        }
+
+        return $value_options;
     }
 
 }
