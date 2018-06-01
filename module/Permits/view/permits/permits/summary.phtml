@@ -1,0 +1,25 @@
+<?php
+    $title = $this->translate('permits.page.title.summary');
+    $this->headTitle($title);
+?>
+
+<div class="row">
+    <div class="three-quarters">
+        <div class="page-header">
+            <p><a href="/permits/restricted-countries" class="back-link"> <?php echo $this->translate('permits.back-link'); ?> </a></p>
+            <div class="page-header__wrapper">
+                <h1 class="js-title">
+                    <?php echo $this->escapeHtml($title); ?>
+                </h1>
+            </div>
+        </div>
+
+        <div class="field">
+
+            <div class="actions-container new-application--wrapper">
+                <h3><?php echo $this->translate('permits.page.message.summary'); ?></h3>
+                <p><a href="/permits/declaration" class="action--primary large"><?php echo $this->translate('permits.button.accept-and-continue'); ?></a></p>
+            </div>
+        </div>
+    </div>
+</div>
