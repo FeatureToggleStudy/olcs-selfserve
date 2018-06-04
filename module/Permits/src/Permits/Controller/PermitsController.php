@@ -4,20 +4,19 @@ namespace Permits\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
-use Permits\Model\PermitTable;
 use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
-use Permits\Form\RestrictedCountriesForm;
 
-class PermitsController extends AbstractActionController 
+use Permits\Form\RestrictedCountriesForm;
+use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
+
+class PermitsController extends AbstractActionController
 {
-    private $table;
 
     public function __construct()
     {
-        //$this->table = $table;
     }
 
     public function indexAction()
@@ -52,14 +51,27 @@ class PermitsController extends AbstractActionController
             $inputFilter->setData($data);
         }
 
+        /*
+        * Get Sectors List from Database
+        */
+        $response = $this->handleQuery(Sectors::create(array()));
+        $sectorList = $response->getResult();
+
+        /*
+        * Make the Sectors List the value_options of the form
+        */
+        $options = $form->getDefaultSectorsFieldOptions();
+        $options['value_options'] = $this->transformListIntoValueOptions($sectorList);
+        $form->get('sectors')->setOptions($options);
+
         return array('form' => $form, 'data' => $data);
     }
 
     public function restrictedCountriesAction()
     {
         $form = new RestrictedCountriesForm();
-        $request = $this->getRequest();
 
+        $request = $this->getRequest();
         if($request->isPost())
         {
             $data = $this->params()->fromPost();
@@ -88,12 +100,11 @@ class PermitsController extends AbstractActionController
     public function eligibilityAction()
     {
         $form = new EligibilityForm();
-        $request = $this->getRequest();
 
+        $request = $this->getRequest();
         if($request->isPost()){
             //If handling returned form (submit clicked)
         }
-
         return array('form' => $form);
     }
 
@@ -111,20 +122,20 @@ class PermitsController extends AbstractActionController
     {
         $form = new ApplicationForm();
         $inputFilter = null;
-        $request = $this->getRequest();
         $data['maxApplications'] = 12;
 
-        if ($request->isPost())
-        {
-            $data = $this->params()->fromPost();
-            $jsonObject = json_encode($data);
+        $request = $this->getRequest();
+        if($request->isPost()) {
+            //If handling returned form (submit clicked)
+            $data = $this->params()->fromPost(); //get data from POST
+            $jsonObject = json_encode($data); //convert data to JSON
 
+            //START VALIDATION
             $step1Form = new EligibilityForm();
-            $inputFilter = $step1Form->getInputFilter();
+            $inputFilter = $step1Form->getInputFilter(); //Get validation rules
             $inputFilter->setData($data);
 
-            if ($inputFilter->isValid())
-            {
+            if($inputFilter->isValid()){
                 //valid so save data
             }
         }
@@ -136,35 +147,21 @@ class PermitsController extends AbstractActionController
         return new ViewModel();
     }
 
-    public function step3Action()
-    {
-        $inputFilter = null;
-        $jsonObject = null;
-        $request = $this->getRequest();
-
-        if ($request->isPost())
-        {
-            $data = $this->params()->fromPost();
-            $jsonObject = json_encode($data);
-
-            $step2Form = new ApplicationForm();
-            $inputFilter = $step2Form->getInputFilter();
-            $inputFilter->setData($data);
-
-            if ($inputFilter->isValid())
-            {
-                //valid so save data
-            }
-        }
-        return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
-    }
-
-    /**
-     * @return mixed
-     */
     public function submittedAction()
     {
         return new ViewModel();
+    }
+
+    private function transformListIntoValueOptions($list = array())
+    {
+        $value_options = array();
+
+        foreach($list['results'] as $item)
+        {
+            $value_options[$item['id']] = $item['name'];
+        }
+
+        return $value_options;
     }
 
 }
