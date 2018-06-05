@@ -1,23 +1,20 @@
 <?php
-
 namespace Permits\Controller;
-
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
-
 use Permits\Form\RestrictedCountriesForm;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
-
 use Zend\Session\Container; // We need this when using sessions
 
 class PermitsController extends AbstractActionController
 {
     const SESSION_NAMESPACE = 'permit_application';
+    const DEFAULT_SEPARATOR = '|';
 
     public function __construct()
     {
@@ -31,35 +28,33 @@ class PermitsController extends AbstractActionController
     public function tripsAction()
     {
         $form = new TripsForm();
-
         return array('form' => $form);
     }
 
     public function sectorsAction()
     {
         $form = new SectorsForm();
+        $session = new Container(self::SESSION_NAMESPACE);
         $data = $this->params()->fromPost();
 
         if(array_key_exists('submit', $data))
         {
             //Save data to session
-            $session = new Container(self::SESSION_NAMESPACE);
             $session->tripsData = $data['numberOfTrips'];
         }
-
         /*
         * Get Sectors List from Database
         */
         $response = $this->handleQuery(Sectors::create(array()));
         $sectorList = $response->getResult();
-
+        //Save count to session for use in summary page (determining if all options were selected).
+        $session['totalSectorsCount'] = $sectorList['count'];
         /*
         * Make the Sectors List the value_options of the form
         */
         $options = $form->getDefaultSectorsFieldOptions();
         $options['value_options'] = $this->transformListIntoValueOptions($sectorList);
         $form->get('sectors')->setOptions($options);
-
         return array('form' => $form);
     }
 
@@ -67,7 +62,6 @@ class PermitsController extends AbstractActionController
     {
         $form = new RestrictedCountriesForm();
         $restrictedCountriesString = '';
-
         $data = $this->params()->fromPost();
 
         if(array_key_exists('submit', $data))
@@ -106,7 +100,6 @@ class PermitsController extends AbstractActionController
             {
                 $restrictedCountriesString = $restrictedCountriesString . $countryName . ', ';
             }
-
             $count++;
         }
 
@@ -115,17 +108,43 @@ class PermitsController extends AbstractActionController
 
     public function summaryAction()
     {
-        //$form = new RestrictedCountriesForm();
+        $session = new Container(self::SESSION_NAMESPACE);
         $data = $this->params()->fromPost();
 
         if(array_key_exists('submit', $data))
         {
             //Save data to session
-            $session = new Container(self::SESSION_NAMESPACE);
             $session->restrictedCountriesData = $data['restrictedCountries'];
         }
 
-        return array();
+        /*
+         * Collate session data for use in view
+         */
+        $sessionData = array();
+        $sessionData['tripsQuestion'] = 'How many trips will be
+                                        made by your company abroad
+                                        over the next 12 months?';
+        $sessionData['trips'] = $session->tripsData;
+        $sessionData['sectorsQuestion'] = 'What type of goods
+                                        will you carry over
+                                        the next 12 months?';
+        $sessionData['sectors'] = array();
+
+        if(count($session->sectorsData) >= $session->totalSectorsCount)
+        {
+            array_push($sessionData['sectors'], 'All');
+        }
+        else
+        {
+            foreach ($session->sectorsData as $sector) {
+                //add everything right of '|' to the list of sectors to get rid of the sector ID
+                array_push($sessionData['sectors'], substr($sector, strpos($sector, $this::DEFAULT_SEPARATOR) + 1));
+            }
+        }
+        $sessionData['restrictedCountriesQuestion'] = 'Restricted countries';
+        $sessionData['restrictedCountries'] = $session->restrictedCountriesData == 1 ? 'Yes' : 'No';
+
+        return array('sessionData' => $sessionData);
     }
 
     public function eligibilityAction()
@@ -157,17 +176,18 @@ class PermitsController extends AbstractActionController
         $data['maxApplications'] = 12;
         $request = $this->getRequest();
 
-        if($request->isPost()) {
+        if($request->isPost())
+        {
             //If handling returned form (submit clicked)
             $data = $this->params()->fromPost(); //get data from POST
             $jsonObject = json_encode($data); //convert data to JSON
-
             //START VALIDATION
             $step1Form = new EligibilityForm();
             $inputFilter = $step1Form->getInputFilter(); //Get validation rules
             $inputFilter->setData($data);
 
-            if($inputFilter->isValid()){
+            if($inputFilter->isValid())
+            {
                 //valid so save data
             }
         }
@@ -190,14 +210,14 @@ class PermitsController extends AbstractActionController
         return new ViewModel();
     }
 
-
     public function step3Action()
     {
         $inputFilter = null;
         $jsonObject = null;
         $request = $this->getRequest();
 
-        if($request->isPost()){
+        if($request->isPost())
+        {
             //If handling returned form (submit clicked)
             $data = $this->params()->fromPost(); //get data from POST
             $jsonObject = json_encode($data); //convert data to JSON
@@ -207,11 +227,11 @@ class PermitsController extends AbstractActionController
             $inputFilter = $step2Form->getInputFilter(); //Get validation rules
             $inputFilter->setData($data);
 
-            if($inputFilter->isValid()){
+            if($inputFilter->isValid())
+            {
                 //valid so save data
             }
         }
-
         return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
     }
 
@@ -219,22 +239,19 @@ class PermitsController extends AbstractActionController
     {
         return new ViewModel();
     }
-
+    
     private function transformListIntoValueOptions($list = array(), $displayFieldName = 'name')
     {
         if(!is_string($displayFieldName) || !is_array($list)){
             //throw exception?
             return array();
         }
-
         $value_options = array();
-
         foreach($list['results'] as $item)
         {
-            $value_options[$item['id']] = $item[$displayFieldName];
+            //add display name to the key so that it can be used after submission
+            $value_options[$item['id'] . $this::DEFAULT_SEPARATOR . $item[$displayFieldName]] = $item[$displayFieldName];
         }
-
         return $value_options;
     }
-
 }
