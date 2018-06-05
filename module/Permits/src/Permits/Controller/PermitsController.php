@@ -15,204 +15,206 @@ use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
 
 use Zend\Session\Container; // We need this when using sessions
 
-class PermitsController extends AbstractActionController 
+class PermitsController extends AbstractActionController
 {
+    const SESSION_NAMESPACE = 'permit_application';
 
-  const SESSION_NAMESPACE = 'permit_application';
-
-  public function __construct()
-  {
-  }
-
-  public function indexAction()
-  {
-    return new ViewModel();
-  }
-
-  public function tripsAction()
-  {
-    $form = new TripsForm();
-
-    return array('form' => $form);
-  }
-
-  public function sectorsAction()
-  {
-    $form = new SectorsForm();
-
-    $data = $this->params()->fromPost();
-    if(array_key_exists('submit', $data))
+    public function __construct()
     {
-      //Save data to session
-      $session = new Container(self::SESSION_NAMESPACE);
-      $session->tripsData = $data['numberOfTrips'];
     }
 
-    /*
-    * Get Sectors List from Database
-    */
-    $response = $this->handleQuery(Sectors::create(array()));
-    $sectorList = $response->getResult();
-
-    /*
-    * Make the Sectors List the value_options of the form
-    */
-    $options = $form->getDefaultSectorsFieldOptions();
-    $options['value_options'] = $this->transformListIntoValueOptions($sectorList);
-    $form->get('sectors')->setOptions($options);
-
-    return array('form' => $form);
-  }
-
-  public function restrictedCountriesAction()
-  {
-    $form = new RestrictedCountriesForm();
-    $restrictedCountriesString = '';
-
-    $data = $this->params()->fromPost();
-    if(array_key_exists('submit', $data))
+    public function indexAction()
     {
-      //Save data to session
-      $session = new Container(self::SESSION_NAMESPACE);
-      $session->sectorsData = $data['sectors'];
+        return new ViewModel();
     }
 
-    /*
-    * Get Sectors List from Database
-    */
-    $response = $this->handleQuery(Countries::create(array()));
-    $restrictedCountryList = $response->getResult();
-
-    /*
-    * Make the restricted countries list the value_options of the form
-    */
-    $options = $form->getDefaultRestrictedCountriesListFieldOptions();
-    $restrictedCountryList = $this->transformListIntoValueOptions($restrictedCountryList, 'description');
-    $options['value_options'] = $restrictedCountryList;
-    $form->get('restrictedCountriesList')->setOptions($options);
-
-    /*
-    * Construct dynamic list of countries
-    * for use in titles
-    */
-    $count = 1;
-    foreach($restrictedCountryList as $id => $countryName)
+    public function tripsAction()
     {
-        if($count == count($restrictedCountryList)) //if this country is last
+        $form = new TripsForm();
+
+        return array('form' => $form);
+    }
+
+    public function sectorsAction()
+    {
+        $form = new SectorsForm();
+        $data = $this->params()->fromPost();
+
+        if(array_key_exists('submit', $data))
         {
-            $restrictedCountriesString = $restrictedCountriesString . '%s ' . $countryName; //%s as placeholder for or/and
-        }else{
-            $restrictedCountriesString = $restrictedCountriesString . $countryName . ', ';
+            //Save data to session
+            $session = new Container(self::SESSION_NAMESPACE);
+            $session->tripsData = $data['numberOfTrips'];
         }
 
-        $count++;
+        /*
+        * Get Sectors List from Database
+        */
+        $response = $this->handleQuery(Sectors::create(array()));
+        $sectorList = $response->getResult();
+
+        /*
+        * Make the Sectors List the value_options of the form
+        */
+        $options = $form->getDefaultSectorsFieldOptions();
+        $options['value_options'] = $this->transformListIntoValueOptions($sectorList);
+        $form->get('sectors')->setOptions($options);
+
+        return array('form' => $form);
     }
 
-    return array('form' => $form, 'restrictedCountriesString' => $restrictedCountriesString);
-  }
-
-  public function summaryAction()
-  {
-    //$form = new RestrictedCountriesForm();
-
-    $data = $this->params()->fromPost();
-    if(array_key_exists('submit', $data))
+    public function restrictedCountriesAction()
     {
-      //Save data to session
-      $session = new Container(self::SESSION_NAMESPACE);
-      $session->restrictedCountriesData = $data['restrictedCountries'];
+        $form = new RestrictedCountriesForm();
+        $restrictedCountriesString = '';
+
+        $data = $this->params()->fromPost();
+
+        if(array_key_exists('submit', $data))
+        {
+            //Save data to session
+            $session = new Container(self::SESSION_NAMESPACE);
+            $session->sectorsData = $data['sectors'];
+        }
+
+        /*
+        * Get Sectors List from Database
+        */
+        $response = $this->handleQuery(Countries::create(array()));
+        $restrictedCountryList = $response->getResult();
+
+        /*
+        * Make the restricted countries list the value_options of the form
+        */
+        $options = $form->getDefaultRestrictedCountriesListFieldOptions();
+        $restrictedCountryList = $this->transformListIntoValueOptions($restrictedCountryList, 'description');
+        $options['value_options'] = $restrictedCountryList;
+        $form->get('restrictedCountriesList')->setOptions($options);
+
+        /*
+        * Construct dynamic list of countries
+        * for use in titles
+        */
+        $count = 1;
+        foreach($restrictedCountryList as $id => $countryName)
+        {
+            if($count == count($restrictedCountryList)) //if this country is last
+            {
+                $restrictedCountriesString = $restrictedCountriesString . '%s ' . $countryName; //%s as placeholder for or/and
+            }
+            else
+            {
+                $restrictedCountriesString = $restrictedCountriesString . $countryName . ', ';
+            }
+
+            $count++;
+        }
+
+        return array('form' => $form, 'restrictedCountriesString' => $restrictedCountriesString);
     }
 
-    return array();
-  }
+    public function summaryAction()
+    {
+        //$form = new RestrictedCountriesForm();
+        $data = $this->params()->fromPost();
 
-  public function eligibilityAction()
-  {
-    $form = new EligibilityForm();
+        if(array_key_exists('submit', $data))
+        {
+            //Save data to session
+            $session = new Container(self::SESSION_NAMESPACE);
+            $session->restrictedCountriesData = $data['restrictedCountries'];
+        }
 
-    $request = $this->getRequest();
-    if($request->isPost()){
-      //If handling returned form (submit clicked)
+        return array();
     }
-    return array('form' => $form);
-  }
 
-  public function eligibleAction()
-  {
-    return new ViewModel();
-  }
+    public function eligibilityAction()
+    {
+        $form = new EligibilityForm();
+        $request = $this->getRequest();
 
-  public function nonEligibleAction()
-  {
-    return new ViewModel();
-  }
+        if($request->isPost()){
+            //If handling returned form (submit clicked)
+        }
 
-  public function applicationAction()
-  {
-    $form = new ApplicationForm();
-    $inputFilter = null;
-    $data['maxApplications'] = 12;
-
-    $request = $this->getRequest();
-    if($request->isPost()) {
-      //If handling returned form (submit clicked)
-      $data = $this->params()->fromPost(); //get data from POST
-      $jsonObject = json_encode($data); //convert data to JSON
-
-      //START VALIDATION
-      $step1Form = new EligibilityForm();
-      $inputFilter = $step1Form->getInputFilter(); //Get validation rules
-      $inputFilter->setData($data);
-
-      if($inputFilter->isValid()){
-        //valid so save data
-      }
+        return array('form' => $form);
     }
-    return array('form' => $form, 'data' => $data);
-  }
 
-  public function overviewAction()
-  {
-      return new ViewModel();
-  }
-
-  public function declarationAction()
-  {
-      return new ViewModel();
-  }
-
-  public function paymentAction()
-  {
-    return new ViewModel();
-  }
-
-
-  public function step3Action()
-  {
-    $inputFilter = null;
-    $jsonObject = null;
-
-    $request = $this->getRequest();
-    if($request->isPost()){
-      //If handling returned form (submit clicked)
-      $data = $this->params()->fromPost(); //get data from POST
-      $jsonObject = json_encode($data); //convert data to JSON
-      
-      //START VALIDATION
-      $step2Form = new ApplicationForm();
-      $inputFilter = $step2Form->getInputFilter(); //Get validation rules
-      $inputFilter->setData($data);
-
-      if($inputFilter->isValid()){
-        //valid so save data
-      }
+    public function eligibleAction()
+    {
+        return new ViewModel();
     }
-    return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
-  }
 
-    /**
-     * @return mixed
-     */
+    public function nonEligibleAction()
+    {
+        return new ViewModel();
+    }
+
+    public function applicationAction()
+    {
+        $form = new ApplicationForm();
+        $inputFilter = null;
+        $data['maxApplications'] = 12;
+        $request = $this->getRequest();
+
+        if($request->isPost()) {
+            //If handling returned form (submit clicked)
+            $data = $this->params()->fromPost(); //get data from POST
+            $jsonObject = json_encode($data); //convert data to JSON
+
+            //START VALIDATION
+            $step1Form = new EligibilityForm();
+            $inputFilter = $step1Form->getInputFilter(); //Get validation rules
+            $inputFilter->setData($data);
+
+            if($inputFilter->isValid()){
+                //valid so save data
+            }
+        }
+
+        return array('form' => $form, 'data' => $data);
+    }
+
+    public function overviewAction()
+    {
+        return new ViewModel();
+    }
+
+    public function declarationAction()
+    {
+        return new ViewModel();
+    }
+
+    public function paymentAction()
+    {
+        return new ViewModel();
+    }
+
+
+    public function step3Action()
+    {
+        $inputFilter = null;
+        $jsonObject = null;
+        $request = $this->getRequest();
+
+        if($request->isPost()){
+            //If handling returned form (submit clicked)
+            $data = $this->params()->fromPost(); //get data from POST
+            $jsonObject = json_encode($data); //convert data to JSON
+
+            //START VALIDATION
+            $step2Form = new ApplicationForm();
+            $inputFilter = $step2Form->getInputFilter(); //Get validation rules
+            $inputFilter->setData($data);
+
+            if($inputFilter->isValid()){
+                //valid so save data
+            }
+        }
+
+        return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
+    }
+
     public function submittedAction()
     {
         return new ViewModel();
