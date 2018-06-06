@@ -10,6 +10,7 @@ use Permits\Form\SectorsForm;
 use Permits\Form\RestrictedCountriesForm;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
+use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 
 use Zend\View\View; // We need this when using sessions
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
@@ -232,20 +233,35 @@ class PermitsController extends AbstractActionController
 
         $form = new PermitApplicationForm();
         $form->setData(array(
-            'numberOfTrips'             => $session->tripsData,
+            'intensity'                 => $session->tripsData,
             'sectors'                   => $this->extractIDFromSessionData($session->sectorsData),
             'restrictedCountries'       => $session->restrictedCountriesData,
             'restrictedCountriesList'   => $this->extractIDFromSessionData($session->restrictedCountriesListData)
 
         ));
 
-        //echo '<pre>'; echo var_dump($form); die;
-
         return array('form' => $form);
     }
 
     public function paymentAction()
     {
+        $request = $this->getRequest();
+        $data = $request->getPost()->toArray();
+
+
+        //$session = new Container(self::SESSION_NAMESPACE);
+
+        $data['ecmtPermitsApplication'] = 1;
+        $data['applicationStatus'] = 1;
+        $data['paymentStatus'] = 1;
+
+
+        $command = CreateEcmtPermits::create($data);
+        $response = $this->handleCommand($command);
+        $insert = $response->getResult();
+        echo '<pre>'; var_dump($insert); die();
+
+
         return new ViewModel();
     }
 
