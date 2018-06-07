@@ -1,6 +1,20 @@
 <?php
     $title = $this->translate('permits.page.title.declaration');
     $this->headTitle($title);
+
+    /*
+     * HIDDEN FORM TO SAVE TO DATABASE
+     */
+
+    $form->setAttribute('action', $this->url('permits', array('action' => 'payment')));
+
+    $form->prepare();
+    echo $this->form()->openTag($form);
+    echo $this->formHidden($form->get('id'));
+    echo $this->formHidden($form->get('intensity'));
+    echo $this->formRow($form->get('sectors'));
+    echo $this->formRow($form->get('restrictedCountries'));
+    echo $this->formRow($form->get('restrictedCountriesList'));
 ?>
 
 <div class="row">
@@ -19,9 +33,11 @@
                 <?php echo $this->translate('markup-ecmt-declaration'); ?>
             </div>
             <div class="actions-container new-application--wrapper">
-                <p><a href="/permits/payment" class="action--primary large"><?php echo $this->translate('submit-and-pay.button'); ?></a></p>
+                <p><?php echo $this->formSubmit($form->get('submit'));  ?></p>
+                <!--<p><a href="/permits/payment" class="action--primary large"><?php //echo $this->translate('submit-and-pay.button'); ?></a></p>!-->
                 <p><a href="/permits"> <?php echo $this->translate('cancel'); ?> </a></p>
             </div>
         </div>
+        <?php echo $this->form()->closeTag(); ?>
     </div>
 </div>

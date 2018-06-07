@@ -1,5 +1,6 @@
 <?php
 namespace Permits\Controller;
+use Permits\Form\PermitApplicationForm;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Permits\Form\EligibilityForm;
@@ -9,6 +10,10 @@ use Permits\Form\SectorsForm;
 use Permits\Form\RestrictedCountriesForm;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
+use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
+
+use Zend\View\View; // We need this when using sessions
+use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Zend\Session\Container; // We need this when using sessions
 
 class PermitsController extends AbstractActionController
@@ -16,13 +21,26 @@ class PermitsController extends AbstractActionController
     const SESSION_NAMESPACE = 'permit_application';
     const DEFAULT_SEPARATOR = '|';
 
+    protected $tableName = 'dashboard-permits';
+
     public function __construct()
     {
     }
 
     public function indexAction()
     {
-        return new ViewModel();
+
+        $query = EcmtPermits::create(array());
+        $response = $this->handleQuery($query);
+        $dashboardData = $response->getResult();
+
+        $theTable = $this->getServiceLocator()->get('Table')->prepareTable('dashboard-permits', $dashboardData['results']);
+
+        $view = new ViewModel();
+        $view->setVariable('permitsNo', $dashboardData['count']);
+        $view->setVariable('table', $theTable);
+
+        return $view;
     }
 
     public function tripsAction()
@@ -41,14 +59,18 @@ class PermitsController extends AbstractActionController
         {
             //Save data to session
             $session->tripsData = $data['numberOfTrips'];
+        }else{
+
         }
         /*
         * Get Sectors List from Database
         */
         $response = $this->handleQuery(Sectors::create(array()));
         $sectorList = $response->getResult();
+
         //Save count to session for use in summary page (determining if all options were selected).
         $session['totalSectorsCount'] = $sectorList['count'];
+
         /*
         * Make the Sectors List the value_options of the form
         */
@@ -115,6 +137,7 @@ class PermitsController extends AbstractActionController
         {
             //Save data to session
             $session->restrictedCountriesData = $data['restrictedCountries'];
+            $session->restrictedCountriesListData = $data['restrictedCountriesList'];
         }
 
         /*
@@ -202,12 +225,50 @@ class PermitsController extends AbstractActionController
 
     public function declarationAction()
     {
-        return new ViewModel();
+        $session = new Container(self::SESSION_NAMESPACE);
+
+        $form = new PermitApplicationForm();
+        $form->setData(array(
+            'intensity'                 => $session->tripsData,
+            'sectors'                   => $this->extractIDFromSessionData($session->sectorsData),
+            'restrictedCountries'       => $session->restrictedCountriesData,
+            'restrictedCountriesList'   => $this->extractIDFromSessionData($session->restrictedCountriesListData)
+
+        ));
+
+        return array('form' => $form);
     }
 
     public function paymentAction()
     {
-        return new ViewModel();
+        $request = $this->getRequest();
+        $data = (array)$request->getPost();
+        $session = new Container(self::SESSION_NAMESPACE);
+
+
+        if(!empty($data)) {
+
+            $data['ecmtPermitsApplication'] = 1;
+            $data['applicationStatus'] = 1;
+            $data['paymentStatus'] = 1;
+            if($session->restrictedCountriesData == 1)
+            {
+                $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesListData);
+            }
+            $command = CreateEcmtPermits::create($data);
+
+            $response = $this->handleCommand($command);
+            $insert = $response->getResult();
+
+            $session->permitsNo = $insert['id']['ecmtPermit'];
+
+            $this->redirect()->toRoute('permits',['action'=>'payment']);
+        }
+
+        $view = new ViewModel();
+        $view->setVariable('permitsNo', $session->permitsNo);
+
+        return $view;
     }
 
     public function step3Action()
@@ -237,7 +298,22 @@ class PermitsController extends AbstractActionController
 
     public function submittedAction()
     {
-        return new ViewModel();
+        $session = new Container(self::SESSION_NAMESPACE);
+        $view = new ViewModel();
+        $view->setVariable('refNumber', $session->permitsNo);
+
+        return $view;
+    }
+
+    private function extractIDFromSessionData($sessionData){
+        $IDList = array();
+
+        foreach ($sessionData as $entry){
+            //Add everything before the separator to the list (ID is before separator)
+            array_push($IDList, substr($entry, 0, strpos($entry, self::DEFAULT_SEPARATOR)));
+        }
+
+        return $IDList;
     }
     
     private function transformListIntoValueOptions($list = array(), $displayFieldName = 'name')
