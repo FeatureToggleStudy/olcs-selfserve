@@ -7,12 +7,10 @@ use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
-use Permits\Form\RestrictedCountriesForm;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 
-use Zend\View\View; // We need this when using sessions
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Zend\Session\Container; // We need this when using sessions
 
@@ -82,7 +80,11 @@ class PermitsController extends AbstractActionController
 
     public function restrictedCountriesAction()
     {
-        $form = new RestrictedCountriesForm();
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('Permits\Form\RestrictedCountriesForm');
+
         $restrictedCountriesString = '';
         $data = $this->params()->fromPost();
 
@@ -102,8 +104,8 @@ class PermitsController extends AbstractActionController
         /*
         * Make the restricted countries list the value_options of the form
         */
-        $options = $form->getDefaultRestrictedCountriesListFieldOptions();
         $restrictedCountryList = $this->transformListIntoValueOptions($restrictedCountryList, 'description');
+        $options = array();
         $options['value_options'] = $restrictedCountryList;
         $form->get('restrictedCountriesList')->setOptions($options);
 
