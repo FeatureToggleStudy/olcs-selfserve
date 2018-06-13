@@ -16,6 +16,7 @@
             $form->prepare();
             echo $this->form()->openTag($form);
 echo $this->formErrors($form);
+echo $this->formRow($form->get('test'));
             $element = $form->get('restrictedCountries');
             $options = $element->getOptions();
             $valueOptions = $options['value_options'];
