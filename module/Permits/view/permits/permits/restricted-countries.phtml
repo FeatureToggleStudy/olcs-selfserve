@@ -12,10 +12,10 @@
         </div>
 
         <?php
-            $form->setAttribute('action', $this->url('permits', array('action' => 'summary')));
+            $form->setAttribute('action', $this->url('permits', array('action' => 'restrictedCountries')));
             $form->prepare();
             echo $this->form()->openTag($form);
-
+echo $this->formErrors($form);
             $element = $form->get('restrictedCountries');
             $options = $element->getOptions();
             $valueOptions = $options['value_options'];
