@@ -46,7 +46,7 @@ class PermitsController extends AbstractActionController
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
-            ->createForm('Permits\Form\RestrictedCountriesForm');
+            ->createForm('Permits\Form\Model\Form\RestrictedCountriesForm');
 
         $restrictedCountriesString = '';
         $data = $this->params()->fromPost();
