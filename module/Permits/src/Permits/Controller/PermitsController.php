@@ -225,8 +225,6 @@ class PermitsController extends AbstractActionController
         $sessionData['cabotageQuestion'] = 'Will you be carrying out cabotage?';
         $sessionData['cabotage'] = $session->willCabotage == 1 ? 'Yes' : 'No';
 
-        echo var_dump($sessionData);
-
         return array('sessionData' => $sessionData);
     }
 
