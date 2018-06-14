@@ -9,12 +9,10 @@ use Permits\Form\EligibilityForm;
 use Permits\Form\ApplicationForm;
 use Permits\Form\TripsForm;
 use Permits\Form\SectorsForm;
-use Permits\Form\RestrictedCountriesForm;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 
-use Zend\View\View; // We need this when using sessions
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Zend\Session\Container; // We need this when using sessions
 
@@ -47,15 +45,30 @@ class PermitsController extends AbstractActionController
 
     public function restrictedCountriesAction()
     {
-        $form = new RestrictedCountriesForm();
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('Permits\Form\Model\Form\RestrictedCountriesForm', false, false);
+
         $restrictedCountriesString = '';
         $data = $this->params()->fromPost();
 
         if(array_key_exists('submit', $data))
         {
-            //Save data to session
-            $session = new Container(self::SESSION_NAMESPACE);
-            $session->sectorsData = $data['sectors'];
+            //Validate
+            $form->setData($data);
+            if($form->isValid()){
+
+                //Save data to session
+                $session = new Container(self::SESSION_NAMESPACE);
+                $session->restrictedCountries = $data['restrictedCountries'];
+
+                if($session->restrictedCountries == 1) //if true
+                {
+                    $session->restrictedCountriesList = $data['restrictedCountriesList'];
+                }
+            }
+
         }
 
         /*
@@ -67,8 +80,8 @@ class PermitsController extends AbstractActionController
         /*
         * Make the restricted countries list the value_options of the form
         */
-        $options = $form->getDefaultRestrictedCountriesListFieldOptions();
         $restrictedCountryList = $this->transformListIntoValueOptions($restrictedCountryList, 'description');
+        $options = array();
         $options['value_options'] = $restrictedCountryList;
         $form->get('restrictedCountriesList')->setOptions($options);
 
@@ -95,13 +108,22 @@ class PermitsController extends AbstractActionController
 
     public function euro6EmissionsAction()
     {
-        $form = new Euro6EmissionsForm();
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('Permits\Form\Model\Form\Euro6EmissionsForm', false, false);
+
+
         return array('form' => $form);
     }
 
     public function cabotageAction()
     {
-        $form = new CabotageForm();
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('Permits\Form\Model\Form\CabotageForm', false, false);
+
         return array('form' => $form);
     }
 

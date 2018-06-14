@@ -12,10 +12,11 @@
         </div>
 
         <?php
-            $form->setAttribute('action', $this->url('permits', array('action' => 'euro6-emissions')));
+            $form->setAttribute('action', $this->url('permits', array('action' => 'euro6Emissions')));
+
             $form->prepare();
+
             echo $this->form()->openTag($form);
-            echo $this->formHidden($form->get('id'));
 
             $element = $form->get('restrictedCountries');
             $options = $element->getOptions();
