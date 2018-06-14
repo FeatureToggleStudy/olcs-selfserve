@@ -6,13 +6,14 @@
 <div class="row ecmt">
     <div class="three-quarters">
         <div class="page-header">
-            <p><a href="/permits" class="back-link"> <?php echo $this->translate('permits.back-link'); ?> </a></p>
-            <div class="page-header__wrapper">
-            </div>
+            <p>
+                <a href="/permits" class="back-link"> <?php echo $this->translate('permits.back-link'); ?> </a>
+            </p>
         </div>
 
         <?php
             $form->setAttribute('action', $this->url('permits', array('action' => 'restrictedCountries')));
+
             $form->prepare();
 
             echo $this->formErrors($form); //Print validation errors
@@ -27,22 +28,26 @@
         <div class="field">
             <fieldset id="restricted-countries" class="inline" data-group="restricted-countries">
                 <legend>
-                    <?php
-                        //Print out Question Title using dynamic list of countries
-                        $template = $this->escapeHtml($this->translate('permits.page.field.restricted-countries'));
-                        echo sprintf($template, str_replace('%s', 'or', $restrictedCountriesString));
-                    ?>
+                    <div class="page-header__wrapper">
+                        <h1 class="heading-medium">
+                            <?php
+                                //Print out Question Title using dynamic list of countries
+                                $template = $this->escapeHtml($this->translate('permits.page.field.restricted-countries'));
+                                echo sprintf($template, str_replace('%s', 'or', $restrictedCountriesString));
+                            ?>
+                        </h1>
+                    </div>
                 </legend>
 
                 <?php echo $this->translate('markup-ecmt-restricted-countries'); ?>
 
-                <label for="yes" class="block-label <?php echo $options['label_attributes']['class'];?> ">
-                    <input id="yes" type="radio" name="<?php echo $element->getName();?>" value="1">
+                <label for="restricted-countries-yes" class="block-label <?php echo $options['label_attributes']['class'];?> ">
+                    <input id="restricted-countries-yes" type="radio" name="<?php echo $element->getName();?>" value="1">
                     <?php echo $valueOptions['1'] ?>
                 </label>
 
-                <label for="no" class="block-label <?php echo $options['label_attributes']['class'];?> ">
-                    <input id="no" type="radio" name="<?php echo $element->getName();?>" value="0">
+                <label for="restricted-countries-no" class="block-label <?php echo $options['label_attributes']['class'];?> ">
+                    <input id="restricted-countries-no" type="radio" name="<?php echo $element->getName();?>" value="0">
                     <?php echo $valueOptions['0'] ?>
                 </label>
 

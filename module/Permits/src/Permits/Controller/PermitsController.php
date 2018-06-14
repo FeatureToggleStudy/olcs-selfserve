@@ -1,5 +1,7 @@
 <?php
 namespace Permits\Controller;
+use Permits\Form\Euro6EmissionsForm;
+use Permits\Form\CabotageForm;
 use Permits\Form\PermitApplicationForm;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
@@ -46,20 +48,27 @@ class PermitsController extends AbstractActionController
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
-            ->createForm('Permits\Form\Model\Form\RestrictedCountriesForm');
+            ->createForm('Permits\Form\Model\Form\RestrictedCountriesForm', false, false);
 
         $restrictedCountriesString = '';
         $data = $this->params()->fromPost();
 
         if(array_key_exists('submit', $data))
         {
-            //Save data to session
-            //$session = new Container(self::SESSION_NAMESPACE);
-           // $session->sectorsData = $data['sectors'];
+            //Validate
             $form->setData($data);
             if($form->isValid()){
 
+                //Save data to session
+                $session = new Container(self::SESSION_NAMESPACE);
+                $session->restrictedCountries = $data['restrictedCountries'];
+
+                if($session->restrictedCountries == 1) //if true
+                {
+                    $session->restrictedCountriesList = $data['restrictedCountriesList'];
+                }
             }
+
         }
 
         /*
@@ -95,6 +104,18 @@ class PermitsController extends AbstractActionController
         }
 
         return array('form' => $form, 'restrictedCountriesString' => $restrictedCountriesString);
+    }
+
+    public function euro6EmissionsAction()
+    {
+        $form = new Euro6EmissionsForm();
+        return array('form' => $form);
+    }
+
+    public function cabotageAction()
+    {
+        $form = new CabotageForm();
+        return array('form' => $form);
     }
 
     public function tripsAction()
