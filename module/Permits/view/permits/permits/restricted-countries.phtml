@@ -14,9 +14,11 @@
         <?php
             $form->setAttribute('action', $this->url('permits', array('action' => 'restrictedCountries')));
             $form->prepare();
+
+            echo $this->formErrors($form); //Print validation errors
+
             echo $this->form()->openTag($form);
-echo $this->formErrors($form);
-echo $this->formRow($form->get('test'));
+
             $element = $form->get('restrictedCountries');
             $options = $element->getOptions();
             $valueOptions = $options['value_options'];
