@@ -113,6 +113,21 @@ class PermitsController extends AbstractActionController
             ->get('Helper\Form')
             ->createForm('Permits\Form\Model\Form\Euro6EmissionsForm', false, false);
 
+        $data = $this->params()->fromPost();
+
+        if(array_key_exists('submit', $data))
+        {
+
+            //Save data to session
+            $session = new Container(self::SESSION_NAMESPACE);
+            $session->restrictedCountries = $data['restrictedCountries'];
+
+            if($session->restrictedCountries == 1) //if true
+            {
+                $session->restrictedCountriesList = $data['restrictedCountriesList'];
+            }
+
+        }
 
         return array('form' => $form);
     }
@@ -123,6 +138,16 @@ class PermitsController extends AbstractActionController
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('Permits\Form\Model\Form\CabotageForm', false, false);
+
+        $data = $this->params()->fromPost();
+
+        if(array_key_exists('submit', $data))
+        {
+            //Save data to session
+            $session = new Container(self::SESSION_NAMESPACE);
+            $session->meetsEuro6 = $data['meetsEuro6'];
+        }
+
 
         return array('form' => $form);
     }
@@ -172,36 +197,33 @@ class PermitsController extends AbstractActionController
         if(array_key_exists('submit', $data))
         {
             //Save data to session
-            $session->restrictedCountriesData = $data['restrictedCountries'];
-            $session->restrictedCountriesListData = $data['restrictedCountriesList'];
+            $session->willCabotage = $data['willCabotage'];
         }
 
         /*
          * Collate session data for use in view
          */
         $sessionData = array();
-        $sessionData['tripsQuestion'] = 'How many trips will be
-                                        made by your company abroad
-                                        over the next 12 months?';
-        $sessionData['trips'] = $session->tripsData;
-        $sessionData['sectorsQuestion'] = 'What type of goods
-                                        will you carry over
-                                        the next 12 months?';
-        $sessionData['sectors'] = array();
+        $sessionData['countriesQuestion'] = 'Are you transporting goods to a 
+                                        restricted country such as Austria, 
+                                        Greece, Hungary, Italy or Russia?';
 
-        if(count($session->sectorsData) >= $session->totalSectorsCount)
+        $sessionData['countries'] = array();
+        if($session->restrictedCountries == 1)
         {
-            array_push($sessionData['sectors'], 'All');
-        }
-        else
-        {
-            foreach ($session->sectorsData as $sector) {
-                //add everything right of '|' to the list of sectors to get rid of the sector ID
-                array_push($sessionData['sectors'], substr($sector, strpos($sector, $this::DEFAULT_SEPARATOR) + 1));
+            foreach ($session->restrictedCountriesList as $country) {
+                //add everything right of '|' to the list of countries to get rid of the sector ID
+                array_push($sessionData['countries'], substr($country, strpos($country, $this::DEFAULT_SEPARATOR) + 1));
             }
+        }else{
+            array_push($sessionData['countries'], 'No');
         }
-        $sessionData['restrictedCountriesQuestion'] = 'Restricted countries';
-        $sessionData['restrictedCountries'] = $session->restrictedCountriesData == 1 ? 'Yes' : 'No';
+
+        $sessionData['meetsEuro6Question'] = 'Do your vehicles meet Euro 6 emissions standards?';
+        $sessionData['meetsEuro6'] = $session->meetsEuro6 == 1 ? 'Yes' : 'No';
+
+        $sessionData['cabotageQuestion'] = 'Will you be carrying out cabotage?';
+        $sessionData['cabotage'] = $session->willCabotage == 1 ? 'Yes' : 'No';
 
         return array('sessionData' => $sessionData);
     }
