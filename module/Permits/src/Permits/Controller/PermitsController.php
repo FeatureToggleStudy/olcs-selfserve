@@ -76,15 +76,9 @@ class PermitsController extends AbstractActionController
         /*
         * Make the restricted countries list the value_options of the form
         */
-        try {
-            $formHelper = $this->getServiceLocator()->get('Helper\Form');
-            //echo var_dump($formHelper); die;
-            $form = $this->getServiceLocator()
-                ->get('Helper\Form')
-                ->setFormValueOptionsFromList($form, 'restrictedCountriesList', $restrictedCountryList, 'description');
-        }catch(Exception $e){
-            echo "ERRORED IN METHOD"; die;
-        }
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->setFormValueOptionsFromList($form, 'restrictedCountriesList', $restrictedCountryList, 'description');
 
         return array('form' => $form);
     }
@@ -292,9 +286,9 @@ class PermitsController extends AbstractActionController
             $data['ecmtPermitsApplication'] = 1;
             $data['applicationStatus'] = 1;
             $data['paymentStatus'] = 1;
-            if($session->restrictedCountriesData == 1)
+            if($session->restrictedCountries == 1)
             {
-                $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesListData);
+                $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesList);
             }
             $command = CreateEcmtPermits::create($data);
 
