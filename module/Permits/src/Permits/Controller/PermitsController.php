@@ -11,6 +11,7 @@ use Permits\Form\SectorsForm;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
+use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Zend\Session\Container; // We need this when using sessions
@@ -44,6 +45,7 @@ class PermitsController extends AbstractActionController
 
     public function restrictedCountriesAction()
     {
+
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
@@ -51,12 +53,16 @@ class PermitsController extends AbstractActionController
 
         $data = $this->params()->fromPost();
 
+
+
         if(array_key_exists('submit', $data))
         {
+
             //Validate
             $form->setData($data);
             if($form->isValid()){
                 //Save data to session
+
                 $session = new Container(self::SESSION_NAMESPACE);
                 $session->restrictedCountries = $data['restrictedCountries'];
 
@@ -103,6 +109,17 @@ class PermitsController extends AbstractActionController
                 $session->restrictedCountriesList = $data['restrictedCountriesList'];
             }else{
                 $session->restrictedCountriesList = null;
+            }
+
+            //create application in db
+            if(empty($session->applicationId))
+            {
+                $applicationData['status'] = 'permit_awaiting';
+                $applicationData['paymentStatus'] = 'lfs_ot';
+                $command = CreateEcmtPermitApplication::create($applicationData);
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+                $session->applicationId = $insert['id']['ecmtPermitApplication'];
             }
 
         }
@@ -267,7 +284,7 @@ class PermitsController extends AbstractActionController
             'intensity'                 => $session->tripsData,
             'sectors'                   => $this->extractIDFromSessionData($session->sectorsData),
             'restrictedCountries'       => $session->restrictedCountriesData,
-            'restrictedCountriesList'   => $this->extractIDFromSessionData($session->restrictedCountriesListData)
+            'restrictedCountriesList'   => $this->extractIDFromSessionData($session->restrictedCountriesList)
 
         ));
 
@@ -292,12 +309,12 @@ class PermitsController extends AbstractActionController
 
         if(!empty($data)) {
 
-            $data['ecmtPermitsApplication'] = 1;
-            $data['status'] = 'lsts_consideration';
+            $data['ecmtPermitsApplication'] = $session->applicationId;
+            $data['status'] = 'permit_awaiting';
             $data['paymentStatus'] = 'lfs_ot';
             if($session->restrictedCountriesData == 1)
             {
-                $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesListData);
+                $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesList);
             }
             $command = CreateEcmtPermits::create($data);
 
