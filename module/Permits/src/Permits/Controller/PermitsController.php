@@ -4,12 +4,7 @@ namespace Permits\Controller;
 use Permits\Form\PermitApplicationForm;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
-use Permits\Form\EligibilityForm;
-use Permits\Form\ApplicationForm;
-use Permits\Form\TripsForm;
-use Permits\Form\SectorsForm;
-use Dvsa\Olcs\Transfer\Query\Permits\SectorsList as Sectors;
-use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries as Countries;
+use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 
@@ -18,14 +13,12 @@ use Zend\Session\Container; // We need this when using sessions
 
 class PermitsController extends AbstractActionController
 {
+    //TODO: Add event for all checks for whether or not $data(from form) is an array
     const SESSION_NAMESPACE = 'permit_application';
     const DEFAULT_SEPARATOR = '|';
 
     protected $tableName = 'dashboard-permits';
 
-    public function __construct()
-    {
-    }
 
     public function indexAction()
     {
@@ -34,7 +27,7 @@ class PermitsController extends AbstractActionController
         $response = $this->handleQuery($query);
         $dashboardData = $response->getResult();
 
-        $theTable = $this->getServiceLocator()->get('Table')->prepareTable('dashboard-permits', $dashboardData['results']);
+        $theTable = $this->getServiceLocator()->get('Table')->prepareTable($this->tableName, $dashboardData['results']);
 
         $view = new ViewModel();
         $view->setVariable('permitsNo', $dashboardData['count']);
@@ -49,34 +42,30 @@ class PermitsController extends AbstractActionController
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
-            ->createForm('Permits\Form\Model\Form\RestrictedCountriesForm', false, false);
+            ->createForm('RestrictedCountriesForm', false, false);
 
         $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //Save data to session
 
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->restrictedCountries = $data['restrictedCountries'];
 
-
-        if(array_key_exists('submit', $data))
-        {
-
-            //Validate
-            $form->setData($data);
-            if($form->isValid()){
-                //Save data to session
-
-                $session = new Container(self::SESSION_NAMESPACE);
-                $session->restrictedCountries = $data['restrictedCountries'];
-
-                if($session->restrictedCountries == 1) //if true
-                {
-                    $session->restrictedCountriesList = $data['restrictedCountriesList'];
+                    if ($session->restrictedCountries == 1) //if true
+                    {
+                        $session->restrictedCountriesList = $data['restrictedCountriesList'];
+                    }
                 }
             }
         }
-
         /*
         * Get Countries List from Database
         */
-        $response = $this->handleQuery(Countries::create(array()));
+        $response = $this->handleQuery(ConstrainedCountries::create(array()));
         $restrictedCountryList = $response->getResult();
 
         /*
@@ -94,34 +83,43 @@ class PermitsController extends AbstractActionController
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
-            ->createForm('Permits\Form\Model\Form\Euro6EmissionsForm', false, false);
+            ->createForm('Euro6EmissionsForm', false, false);
 
         $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('submit', $data) && array_key_exists('restrictedCountries', $data)) {
+                //TODO once validation is implemented for restrictedCountries form, Do this saving in the previous action
+                //Save data to session
+                $session = new Container(self::SESSION_NAMESPACE);
+                $session->restrictedCountries = $data['restrictedCountries'];
 
-        if(array_key_exists('submit', $data))
-        {
-            //Save data to session
-            $session = new Container(self::SESSION_NAMESPACE);
-            $session->restrictedCountries = $data['restrictedCountries'];
+                if ($session->restrictedCountries == 1) //if true
+                {
+                    $session->restrictedCountriesList = $data['restrictedCountriesList'];
+                } else {
+                    $session->restrictedCountriesList = null;
+                }
 
-            if($session->restrictedCountries == 1) //if true
-            {
-                $session->restrictedCountriesList = $data['restrictedCountriesList'];
-            }else{
-                $session->restrictedCountriesList = null;
+                //create application in db
+                if (empty($session->applicationId)) {
+                    $applicationData['status'] = 'permit_awaiting';
+                    $applicationData['paymentStatus'] = 'lfs_ot';
+                    $command = CreateEcmtPermitApplication::create($applicationData);
+                    $response = $this->handleCommand($command);
+                    $insert = $response->getResult();
+                    $session->applicationId = $insert['id']['ecmtPermitApplication'];
+                }
+            } else if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //TODO save data here instead of in next action
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->meetsEuro = $data['Fields']['MeetsEuro6'];
+
+                    $this->redirect()->toRoute('permits', ['action' => 'cabotage']);
+                }
             }
-
-            //create application in db
-            if(empty($session->applicationId))
-            {
-                $applicationData['status'] = 'permit_awaiting';
-                $applicationData['paymentStatus'] = 'lfs_ot';
-                $command = CreateEcmtPermitApplication::create($applicationData);
-                $response = $this->handleCommand($command);
-                $insert = $response->getResult();
-                $session->applicationId = $insert['id']['ecmtPermitApplication'];
-            }
-
         }
 
         return array('form' => $form);
@@ -132,68 +130,36 @@ class PermitsController extends AbstractActionController
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
-            ->createForm('Permits\Form\Model\Form\CabotageForm', false, false);
+            ->createForm('CabotageForm', false, false);
 
         $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //Save to session
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->willCabotage = $data['Fields']['WillCabotage'];
 
-        if(array_key_exists('submit', $data))
-        {
-            //Save data to session
-            $session = new Container(self::SESSION_NAMESPACE);
-            $session->meetsEuro6 = $data['meetsEuro6'];
+                    $this->redirect()->toRoute('permits', ['action' => 'summary']);
+                }
+            }
         }
-
         return array('form' => $form);
     }
 
-    public function tripsAction()
-    {
-        $form = new TripsForm();
-        return array('form' => $form);
-    }
-
-    public function sectorsAction()
-    {
-        $form = new SectorsForm();
-        $session = new Container(self::SESSION_NAMESPACE);
-        $data = $this->params()->fromPost();
-
-        if(array_key_exists('submit', $data))
-        {
-            //Save data to session
-            $session->tripsData = $data['numberOfTrips'];
-        }else{
-
-        }
-        /*
-        * Get Sectors List from Database
-        */
-        $response = $this->handleQuery(Sectors::create(array()));
-        $sectorList = $response->getResult();
-
-        //Save count to session for use in summary page (determining if all options were selected).
-        $session['totalSectorsCount'] = $sectorList['count'];
-
-        /*
-        * Make the Sectors List the value_options of the form
-        */
-        $options = $form->getDefaultSectorsFieldOptions();
-        $options['value_options'] = $this->transformListIntoValueOptions($sectorList);
-        $form->get('sectors')->setOptions($options);
-        return array('form' => $form);
-    }
 
     public function summaryAction()
     {
         $session = new Container(self::SESSION_NAMESPACE);
         $data = $this->params()->fromPost();
-
-        if(array_key_exists('submit', $data))
-        {
-            //Save data to session
-            $session->willCabotage = $data['willCabotage'];
+        if(is_array($data)) {
+            if (array_key_exists('submit', $data)) {
+                //Save data to session
+                $session->willCabotage = $data['willCabotage'];
+            }
         }
-
         /*
          * Collate session data for use in view
          */
@@ -222,59 +188,6 @@ class PermitsController extends AbstractActionController
         return array('sessionData' => $sessionData);
     }
 
-    public function eligibilityAction()
-    {
-        $form = new EligibilityForm();
-        $request = $this->getRequest();
-
-        if($request->isPost()){
-            //If handling returned form (submit clicked)
-        }
-
-        return array('form' => $form);
-    }
-
-    public function eligibleAction()
-    {
-        return new ViewModel();
-    }
-
-    public function nonEligibleAction()
-    {
-        return new ViewModel();
-    }
-
-    public function applicationAction()
-    {
-        $form = new ApplicationForm();
-        $inputFilter = null;
-        $data['maxApplications'] = 12;
-        $request = $this->getRequest();
-
-        if($request->isPost())
-        {
-            //If handling returned form (submit clicked)
-            $data = $this->params()->fromPost(); //get data from POST
-            $jsonObject = json_encode($data); //convert data to JSON
-            //START VALIDATION
-            $step1Form = new EligibilityForm();
-            $inputFilter = $step1Form->getInputFilter(); //Get validation rules
-            $inputFilter->setData($data);
-
-            if($inputFilter->isValid())
-            {
-                //valid so save data
-            }
-        }
-
-        return array('form' => $form, 'data' => $data);
-    }
-
-    public function overviewAction()
-    {
-        return new ViewModel();
-    }
-
     public function declarationAction()
     {
         $session = new Container(self::SESSION_NAMESPACE);
@@ -291,40 +204,31 @@ class PermitsController extends AbstractActionController
         return array('form' => $form);
     }
 
-    public function paymentAction()
-    {
-        $request = $this->getRequest();
-        $data = (array)$request->getPost();
-        $session = new Container(self::SESSION_NAMESPACE);
-
-        $view = new ViewModel();
-        return $view;
-    }
-
     public function feeAction()
     {
         $request = $this->getRequest();
         $data = (array)$request->getPost();
         $session = new Container(self::SESSION_NAMESPACE);
-        if(!empty($data)) {
+        if(is_array($data)) {
+            if (!empty($data)) {
 
-            $data['ecmtPermitsApplication'] = $session->applicationId;
-            $data['status'] = 'permit_awaiting';
-            $data['paymentStatus'] = 'lfs_ot';
-            $data['intensity'] = '1';
+                $data['ecmtPermitsApplication'] = $session->applicationId;
+                $data['status'] = 'permit_awaiting';
+                $data['paymentStatus'] = 'lfs_ot';
+                $data['intensity'] = '1';
 
-            if($session->restrictedCountries == 1)
-            {
-                $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesList);
+                if ($session->restrictedCountries == 1) {
+                    $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesList);
+                }
+                $command = CreateEcmtPermits::create($data);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+                //TODO undefined index id
+                $session->permitsNo = $insert['id']['ecmtPermit'];
+
+                $this->redirect()->toRoute('permits', ['action' => 'fee']);
             }
-            $command = CreateEcmtPermits::create($data);
-
-            $response = $this->handleCommand($command);
-            $insert = $response->getResult();
-            //TODO undefined index id
-            $session->permitsNo = $insert['id']['ecmtPermit'];
-
-            $this->redirect()->toRoute('permits',['action'=>'fee']);
         }
         //TODO missing page title
         $view = new ViewModel();
@@ -333,39 +237,16 @@ class PermitsController extends AbstractActionController
         return $view;
     }
 
-    public function step3Action()
-    {
-        $inputFilter = null;
-        $jsonObject = null;
-        $request = $this->getRequest();
-
-        if($request->isPost())
-        {
-            //If handling returned form (submit clicked)
-            $data = $this->params()->fromPost(); //get data from POST
-            $jsonObject = json_encode($data); //convert data to JSON
-
-            //START VALIDATION
-            $step2Form = new ApplicationForm();
-            $inputFilter = $step2Form->getInputFilter(); //Get validation rules
-            $inputFilter->setData($data);
-
-            if($inputFilter->isValid())
-            {
-                //valid so save data
-            }
-        }
-        return array('jsonObj' => $jsonObject, 'inputFilter' => $inputFilter, 'step' => '3');
-    }
 
     public function submittedAction()
     {
         $session = new Container(self::SESSION_NAMESPACE);
         $view = new ViewModel();
         $view->setVariable('refNumber', $session->permitsNo);
-
+        $session->getManager()->getStorage()->clear(self::SESSION_NAMESPACE);
         return $view;
     }
+
 
     private function extractIDFromSessionData($sessionData){
         $IDList = array();
