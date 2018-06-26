@@ -1,15 +1,15 @@
 <?php
-namespace Permits\Form\Model\Form;
+namespace Permits\Form\Model\Fieldset;
 
 use Zend\Form\Annotation as Form;
 
 /**
- * @Form\Name("restrictedCountries")
- * @Form\Attributes({"method":"post"})
- * @Form\Type("Permits\Form\Form")
+ * @codeCoverageIgnore Auto-generated file with no methods
+ * @Form\Name("RestrictedCountries")
  */
-class RestrictedCountriesForm
+class RestrictedCountries
 {
+
     /**
      * @Form\Name("restrictedCountries")
      * @Form\Required(true)
@@ -30,9 +30,10 @@ class RestrictedCountriesForm
      */
     public $restrictedCountries = null;
 
+
     /**
      * @Form\Name("restrictedCountriesList")
-     * @Form\Required(false)
+     * @Form\Required(true)
      * @Form\Options({
      *     "label": "",
      *     "label_attributes":{
@@ -43,15 +44,6 @@ class RestrictedCountriesForm
      */
     public $restrictedCountriesList = null;
 
-    /**
-     * @Form\Name("submit")
-     * @Form\Attributes({
-     *     "class":"action--primary large",
-     *     "id":"submitbutton",
-     *     "value":"Save and continue",
-     * })
-     * @Form\Type("Zend\Form\Element\Submit")
-     */
-    public $submitButton = null;
-
 }
+
+?>
