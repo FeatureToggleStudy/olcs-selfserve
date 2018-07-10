@@ -50,16 +50,12 @@ class PermitsController extends AbstractActionController
                 $form->setData($data);
                 if ($form->isValid()) {
                     $session = new Container(self::SESSION_NAMESPACE);
-                    $session->ecmtLicence = $data['Fields']['EcmtLicence'];
+                    $session->meetsEuro6 = $data['Fields']['MeetsEuro6'];
 
-                    $this->redirect()->toRoute('permits', ['action' => 'permitsOverview']);
+                    $this->redirect()->toRoute('permits', ['action' => 'cabotage']);
                 }
             }
         }
-
-        $form->get('Fields')->get('Guidance')->setValue(
-            "ECMT permits can only be used by vehicles that meet Euro 6 standards"
-        );
 
         return array('form' => $form);
     }
