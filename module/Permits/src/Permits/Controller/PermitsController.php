@@ -36,6 +36,28 @@ class PermitsController extends AbstractActionController
         return $view;
     }
 
+    public function applicationOverviewAction()
+    {
+        $request = $this->getRequest();
+        $data = (array)$request->getPost();
+        $session = new Container(self::SESSION_NAMESPACE);
+        if(is_array($data)) {
+            if (!empty($data)) {
+
+            }
+        }
+
+        //TEMPORARY
+        $applicationFee = "£10.00";
+        $issuingFee = "£123.00";
+
+        $view = new ViewModel();
+        $view->setVariable('applicationFee', $applicationFee);
+        $view->setVariable('issuingFee', $issuingFee);
+
+        return $view;
+    }
+
     public function restrictedCountriesAction()
     {
 
