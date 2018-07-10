@@ -52,7 +52,7 @@ class PermitsController extends AbstractActionController
                     $session = new Container(self::SESSION_NAMESPACE);
                     $session->meetsEuro6 = $data['Fields']['MeetsEuro6'];
 
-                    $this->redirect()->toRoute('permits', ['action' => 'cabotage']);
+                    $this->redirect()->toRoute('permits', ['action' => 'overview']);
                 }
             }
         }
