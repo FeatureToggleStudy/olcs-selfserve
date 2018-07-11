@@ -71,6 +71,18 @@ class PermitsController extends AbstractActionController
             }
         }
 
+        $sections = [array(
+            'type' => 'application',
+            'variables' => array(
+                'enabled' => true,
+                'status' => 'COMPLETE',
+                'statusColour' => 'green',
+                'sectionNumber' => 1,
+                'identifier' => 9,
+                'name' => 'test',
+            )
+        )];
+
         //TEMPORARY
         $applicationFee = "£10.00";
         $issuingFee = "£123.00";
@@ -78,6 +90,7 @@ class PermitsController extends AbstractActionController
         $view = new ViewModel();
         $view->setVariable('applicationFee', $applicationFee);
         $view->setVariable('issuingFee', $issuingFee);
+        $view->setVariable('sections', $sections);
 
         return $view;
     }
