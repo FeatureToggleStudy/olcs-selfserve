@@ -200,6 +200,31 @@ class PermitsController extends AbstractActionController
         return array('form' => $form);
     }
 
+    public function tripsAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('TripsForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //Save to session
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->willCabotage = $data['Fields']['TripsAbroad'];
+
+                    $this->redirect()->toRoute('permits', ['action' => 'international-journey']);
+                }
+            }
+        }
+
+        return array('form' => $form);
+    }
+
     public function summaryAction()
     {
         $session = new Container(self::SESSION_NAMESPACE);
