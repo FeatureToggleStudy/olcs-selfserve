@@ -44,7 +44,7 @@ class PermitsController extends AbstractActionController
             ->createForm('EcmtLicenceForm', false, false);
 
         $data = $this->params()->fromPost();
-        if(is_array($data)) {
+        if (is_array($data)) {
             if (array_key_exists('Submit', $data)) {
                 //Validate
                 $form->setData($data);
@@ -52,12 +52,34 @@ class PermitsController extends AbstractActionController
                     $session = new Container(self::SESSION_NAMESPACE);
                     $session->meetsEuro6 = $data['Fields']['MeetsEuro6'];
 
-                    $this->redirect()->toRoute('permits', ['action' => 'euro6Emissions']);
+                    $this->redirect()->toRoute('permits', ['action' => 'application-overview']);
                 }
             }
         }
 
         return array('form' => $form);
+    }
+
+    public function applicationOverviewAction()
+    {
+        $request = $this->getRequest();
+        $data = (array)$request->getPost();
+        $session = new Container(self::SESSION_NAMESPACE);
+        if(is_array($data)) {
+            if (!empty($data)) {
+
+            }
+        }
+
+        //TEMPORARY
+        $applicationFee = "£10.00";
+        $issuingFee = "£123.00";
+
+        $view = new ViewModel();
+        $view->setVariable('applicationFee', $applicationFee);
+        $view->setVariable('issuingFee', $issuingFee);
+
+        return $view;
     }
 
     public function restrictedCountriesAction()
