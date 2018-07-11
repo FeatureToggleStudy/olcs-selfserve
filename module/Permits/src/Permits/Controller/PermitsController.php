@@ -48,6 +48,19 @@ class PermitsController extends AbstractActionController
             ->get('Helper\Form')
             ->createForm('EcmtLicenceForm', false, false);
 
+        /*
+         * Get licence to display in question
+         */
+        $licenceList = $this->getRelevantLicences();
+        $value_options = $this->transformListIntoValueOptions($licenceList, array('licNo', 'trafficArea'));
+
+        /*
+         * Set 'licences to display' as the value_options of the field
+         */
+        $options = array();
+        $options['value_options'] = $value_options;
+        $form->get('Fields')->get('EcmtLicence')->setOptions($options);
+
         $data = $this->params()->fromPost();
         if (is_array($data)) {
             if (array_key_exists('Submit', $data)) {
@@ -55,19 +68,12 @@ class PermitsController extends AbstractActionController
                 $form->setData($data);
                 if ($form->isValid()) {
                     $session = new Container(self::SESSION_NAMESPACE);
-                    $session->meetsEuro6 = $data['Fields']['MeetsEuro6'];
+                    $session->meetsEuro6 = $data['Fields']['EcmtLicence'];
 
                     $this->redirect()->toRoute('permits', ['action' => 'application-overview']);
                 }
             }
         }
-
-        $licenceList = $this->getRelevantLicences();
-        $value_options = $this->transformListIntoValueOptions($licenceList, array('licNo', 'trafficArea'));
-
-        $options = array();
-        $options['value_options'] = $value_options;
-        $form->get('Fields')->get('EcmtLicence')->setOptions($options);
 
         return array('form' => $form);
     }
