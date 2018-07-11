@@ -82,73 +82,6 @@ class PermitsController extends AbstractActionController
         return $view;
     }
 
-    public function restrictedCountriesAction()
-    {
-
-        //Create form from annotations
-        $form = $this->getServiceLocator()
-            ->get('Helper\Form')
-            ->createForm('RestrictedCountriesForm', false, false);
-
-        $data = $this->params()->fromPost();
-        if(is_array($data)) {
-            if (array_key_exists('Submit', $data)) {
-                //Validate
-                $form->setData($data);
-                if ($form->isValid()) {
-                    //EXTRA VALIDATION
-                    if(($data['Fields']['restrictedCountries'] == 1
-                            && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
-                        || ($data['Fields']['restrictedCountries'] == 0)) {
-
-                        //Save data to session
-                        $session = new Container(self::SESSION_NAMESPACE);
-                        $session->restrictedCountries = $data['Fields']['restrictedCountries'];
-
-                        if ($session->restrictedCountries == 1) //if true
-                        {
-                            $session->restrictedCountriesList = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
-                        } else {
-                            $session->restrictedCountriesList = null;
-                        }
-
-                        //create application in db
-                        if (empty($session->applicationId)) {
-                            $applicationData['status'] = 'permit_awaiting';
-                            $applicationData['paymentStatus'] = 'lfs_ot';
-                            $command = CreateEcmtPermitApplication::create($applicationData);
-                            $response = $this->handleCommand($command);
-                            $insert = $response->getResult();
-                            $session->applicationId = $insert['id']['ecmtPermitApplication'];
-                        }
-
-                        $this->redirect()->toRoute('permits', ['action' => 'euro6Emissions']);
-                    }else{
-                        //conditional validation failed, restricted countries list should not be empty
-                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['Value is required']);
-                    }
-                }
-            }
-        }
-        /*
-        * Get Countries List from Database
-        */
-        $response = $this->handleQuery(ConstrainedCountries::create(array()));
-        $restrictedCountryList = $response->getResult();
-
-        /*
-        * Make the restricted countries list the value_options of the form
-        */
-        $restrictedCountryList = $this->getServiceLocator()
-            ->get('Helper\Form')->transformListIntoValueOptions($restrictedCountryList, 'description');
-
-        $options = array();
-        $options['value_options'] = $restrictedCountryList;
-        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setOptions($options);
-
-        return array('form' => $form);
-    }
-
     public function euro6EmissionsAction()
     {
         //Create form from annotations
@@ -198,6 +131,74 @@ class PermitsController extends AbstractActionController
         return array('form' => $form);
     }
 
+    public function restrictedCountriesAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('RestrictedCountriesForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //EXTRA VALIDATION
+                    if (($data['Fields']['restrictedCountries'] == 1
+                            && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
+                        || ($data['Fields']['restrictedCountries'] == 0))
+                    {
+
+                        //Save data to session
+                        $session = new Container(self::SESSION_NAMESPACE);
+                        $session->restrictedCountries = $data['Fields']['restrictedCountries'];
+
+                        if ($session->restrictedCountries == 1) //if true
+                        {
+                            $session->restrictedCountriesList = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
+                        }
+                        else {
+                            $session->restrictedCountriesList = null;
+                        }
+
+                        //create application in db
+                        if (empty($session->applicationId)) {
+                            $applicationData['status'] = 'permit_awaiting';
+                            $applicationData['paymentStatus'] = 'lfs_ot';
+                            $command = CreateEcmtPermitApplication::create($applicationData);
+                            $response = $this->handleCommand($command);
+                            $insert = $response->getResult();
+                            $session->applicationId = $insert['id']['ecmtPermitApplication'];
+                        }
+
+                        $this->redirect()->toRoute('permits', ['action' => 'trips']);
+                    }
+                    else{
+                        //conditional validation failed, restricted countries list should not be empty
+                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['Value is required']);
+                    }
+                }
+            }
+        }
+        /*
+        * Get Countries List from Database
+        */
+        $response = $this->handleQuery(ConstrainedCountries::create(array()));
+        $restrictedCountryList = $response->getResult();
+
+        /*
+        * Make the restricted countries list the value_options of the form
+        */
+        $restrictedCountryList = $this->getServiceLocator()
+            ->get('Helper\Form')->transformListIntoValueOptions($restrictedCountryList, 'description');
+
+        $options = array();
+        $options['value_options'] = $restrictedCountryList;
+        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setOptions($options);
+
+        return array('form' => $form);
+    }
 
     public function summaryAction()
     {
