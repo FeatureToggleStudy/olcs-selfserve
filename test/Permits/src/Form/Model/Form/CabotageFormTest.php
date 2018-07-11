@@ -3,6 +3,7 @@
 namespace PermitsTest\Form\Model\Form;
 
 use Olcs\TestHelpers\FormTester\AbstractFormValidationTestCase;
+use Zend\Validator;
 
 /**
  * Class UserTest
@@ -16,13 +17,17 @@ class CabotageFormTest extends AbstractFormValidationTestCase
      */
     protected $formName = \Permits\Form\Model\Form\CabotageForm::class;
 
-    public function testWillCabotage()
+    /*public function testWillCabotage()
     {
         $element = ['Fields', 'WillCabotage'];
 
         $this->assertFormElementRequired($element, true);
         $this->assertFormElementAllowEmpty($element, false);
-        $this->assertFormElementCheckbox($element);
+        $this->assertFormElementType($element, "\Common\Form\Elements\InputFilters\SingleCheckbox");
+
+        $this->assertFormElementValid($element, 'Y');
+        $this->assertFormElementNotValid($element, 'N', [Validator\Identical::NOT_SAME]);
+        $this->assertFormElementNotValid($element, 'X', [Validator\Identical::NOT_SAME]); //[Validator\InArray::NOT_IN_ARRAY]
     }
 
     public function testGuidance()
@@ -32,7 +37,7 @@ class CabotageFormTest extends AbstractFormValidationTestCase
         $this->assertFormElementRequired($element, false);
         $this->assertFormElementAllowEmpty($element, true);
         $this->assertFormElementType($element, "\Common\Form\Elements\Types\GuidanceTranslated");
-        $this->assertAttributeEquals("guidance", "data-container-class", $element);
+        //$this->assertAttributeEquals("guidance", "data-container-class", $element);
     }
 
     public function testSubmit()
@@ -40,6 +45,6 @@ class CabotageFormTest extends AbstractFormValidationTestCase
         $element = ['Submit', 'SubmitButton'];
         $this->assertFormElementActionButton($element);
         $this->assertFormElementType($element, "Zend\Form\Element\Submit");
-    }
+    }*/
 
 }

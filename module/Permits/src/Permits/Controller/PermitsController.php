@@ -36,6 +36,30 @@ class PermitsController extends AbstractActionController
         return $view;
     }
 
+    public function ecmtLicenceAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('EcmtLicenceForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if (is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->meetsEuro6 = $data['Fields']['MeetsEuro6'];
+
+                    $this->redirect()->toRoute('permits', ['action' => 'application-overview']);
+                }
+            }
+        }
+
+        return array('form' => $form);
+    }
+
     public function applicationOverviewAction()
     {
         $request = $this->getRequest();
@@ -145,10 +169,6 @@ class PermitsController extends AbstractActionController
                 }
             }
         }
-
-        $form->get('Fields')->get('Guidance')->setValue(
-            "ECMT permits can only be used by vehicles that meet Euro 6 standards"
-        );
 
         return array('form' => $form);
     }

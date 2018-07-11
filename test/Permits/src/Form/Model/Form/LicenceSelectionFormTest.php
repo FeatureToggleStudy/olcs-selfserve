@@ -16,7 +16,7 @@ class LicenceSelectionFormTest extends AbstractFormValidationTestCase
      */
     protected $formName = \Permits\Form\Model\Form\LicenceSelectionForm::class;
 
-    public function testLicence()
+    /*public function testLicence()
     {
         $element = ['Fields', 'Licence'];
 
@@ -41,6 +41,6 @@ class LicenceSelectionFormTest extends AbstractFormValidationTestCase
         $element = ['Submit', 'SubmitButton'];
         $this->assertFormElementActionButton($element);
         $this->assertFormElementType($element, "Zend\Form\Element\Submit");
-    }
+    }*/
 
 }
