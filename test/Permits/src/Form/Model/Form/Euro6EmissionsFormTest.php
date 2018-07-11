@@ -3,9 +3,10 @@
 namespace PermitsTest\Form\Model\Form;
 
 use Olcs\TestHelpers\FormTester\AbstractFormValidationTestCase;
+use Zend\Validator;
 
 /**
- * Class UserTest
+ * Class Euro6EmissionsFormTest
  *
  * @group FormTests
  */
@@ -22,7 +23,11 @@ class Euro6EmissionsFormTest extends AbstractFormValidationTestCase
 
         $this->assertFormElementRequired($element, true);
         $this->assertFormElementAllowEmpty($element, false);
-        $this->assertFormElementType($element, "Zend\Form\Element\Radio");
+        $this->assertFormElementType($element, "\Common\Form\Elements\InputFilters\SingleCheckbox");
+
+        $this->assertFormElementValid($element, 'Y');
+        $this->assertFormElementNotValid($element, 'N', [Validator\Identical::NOT_SAME]);
+        $this->assertFormElementNotValid($element, 'X', [Validator\Identical::NOT_SAME]);//InArray::NOT_IN_ARRAY
     }
 
     public function testSubmit()
