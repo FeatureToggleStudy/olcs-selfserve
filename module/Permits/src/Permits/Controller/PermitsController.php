@@ -306,7 +306,7 @@ class PermitsController extends AbstractActionController
                             $session->applicationId = $insert['id']['ecmtPermitApplication'];
                         }
 
-                        $this->redirect()->toRoute('permits', ['action' => 'required-permits']);
+                        $this->redirect()->toRoute('permits', ['action' => 'permits-required']);
                     }
                     else{
                         //conditional validation failed, sector list should not be empty
@@ -319,7 +319,7 @@ class PermitsController extends AbstractActionController
         * Get Sector List from Database
         */
         $response = $this->handleQuery(ConstrainedCountries::create(array()));
-        $SectorList = $response->getResult();
+        $sectorList = $response->getResult();
 
         /*
         * Make the sectors list the value_options of the form
@@ -330,6 +330,31 @@ class PermitsController extends AbstractActionController
         $options = array();
         $options['value_options'] = $sectorList;
         $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
+
+        return array('form' => $form);
+    }
+
+    public function permitsRequiredAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('PermitsRequiredForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //Save to session
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->PermitsRequired = $data['Fields']['PermitsRequired'];
+
+                    $this->redirect()->toRoute('permits', ['action' => 'check-answers']);
+                }
+            }
+        }
 
         return array('form' => $form);
     }
