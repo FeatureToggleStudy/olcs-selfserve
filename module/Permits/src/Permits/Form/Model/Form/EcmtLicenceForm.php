@@ -10,16 +10,16 @@ use Zend\Form\Annotation as Form;
  */
 class EcmtLicenceForm
 {
-        /**
-         * @Form\Name("Fields")
-         * @Form\ComposedObject("Permits\Form\Model\Fieldset\EcmtLicence")
-         */
-        public $fields = null;
+    /**
+     * @Form\Name("Fields")
+     * @Form\ComposedObject("Permits\Form\Model\Fieldset\EcmtLicence")
+     */
+    public $fields = null;
 
-        /**
-         * @Form\Name("Submit")
-         * @Form\ComposedObject("Permits\Form\Model\Fieldset\Submit")
-         */
-        public $submitButton = null;
+    /**
+     * @Form\Name("Submit")
+     * @Form\ComposedObject("Permits\Form\Model\Fieldset\Submit")
+     */
+    public $submitButton = null;
 
 }
