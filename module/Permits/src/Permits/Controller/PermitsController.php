@@ -329,7 +329,7 @@ class PermitsController extends AbstractActionController
 
         $options = array();
         $options['value_options'] = $sectorList;
-        $form->get('Fields')->get('sectorList')->get('sectorList')->setOptions($options);
+        $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
 
         return array('form' => $form);
     }
