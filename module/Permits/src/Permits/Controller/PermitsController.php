@@ -82,7 +82,7 @@ class PermitsController extends AbstractActionController
                 'name' => 'test',
             )
         )];
-
+$sections = null;
         //TEMPORARY
         $applicationFee = "£10.00";
         $issuingFee = "£123.00";
