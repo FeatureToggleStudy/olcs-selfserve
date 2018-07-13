@@ -190,7 +190,7 @@ class PermitsController extends AbstractActionController
                     }
                     else{
                         //conditional validation failed, restricted countries list should not be empty
-                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['Value is required']);
+                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages('error.messages.restricted.countries');
                     }
                 }
             }
@@ -256,6 +256,100 @@ class PermitsController extends AbstractActionController
                     $session->meetsEuro6 = $data['Fields']['InternationalJourney'];
 
                     $this->redirect()->toRoute('permits', ['action' => 'sector']);
+                }
+            }
+        }
+
+        return array('form' => $form);
+    }
+
+    public function sectorAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('SpecialistHaulageForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //EXTRA VALIDATION
+                    if (($data['Fields']['SpecialistHaulage'] == 1
+                            && isset($data['Fields']['SectorList']['SectorList']))
+                        || ($data['Fields']['SectorList'] == 0))
+                    {
+
+                        //Save data to session
+                        $session = new Container(self::SESSION_NAMESPACE);
+                        $session->SpecialistHaulage = $data['Fields']['SpecialistHaulage'];
+
+                        if ($session->SpecialistHaulage == 1) //if true
+                        {
+                            $session->SectorList = $data['Fields']['SectorList']['SectorList'];
+                        }
+                        else {
+                            $session->SectorList = null;
+                        }
+
+                        //create application in db
+                        if (empty($session->applicationId)) {
+                            $applicationData['status'] = 'permit_awaiting';
+                            $applicationData['paymentStatus'] = 'lfs_ot';
+                            $command = CreateEcmtPermitApplication::create($applicationData);
+                            $response = $this->handleCommand($command);
+                            $insert = $response->getResult();
+                            $session->applicationId = $insert['id']['ecmtPermitApplication'];
+                        }
+
+                        $this->redirect()->toRoute('permits', ['action' => 'permits-required']);
+                    }
+                    else{
+                        //conditional validation failed, sector list should not be empty
+                        $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages('error.messages.sector');
+                    }
+                }
+            }
+        }
+        /*
+        * Get Sector List from Database
+        */
+        $response = $this->handleQuery(ConstrainedCountries::create(array()));
+        $sectorList = $response->getResult();
+
+        /*
+        * Make the sectors list the value_options of the form
+        */
+        $sectorList = $this->getServiceLocator()
+            ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
+
+        $options = array();
+        $options['value_options'] = $sectorList;
+        $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
+
+        return array('form' => $form);
+    }
+
+    public function permitsRequiredAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('PermitsRequiredForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //Save to session
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->PermitsRequired = $data['Fields']['PermitsRequired'];
+
+                    $this->redirect()->toRoute('permits', ['action' => 'check-answers']);
                 }
             }
         }

@@ -33,5 +33,3 @@ class EcmtLicence
     public $ecmtLicence = null;
 
 }
-
-?>
