@@ -192,7 +192,7 @@ class PermitsController extends AbstractActionController
                     }
                     else{
                         //conditional validation failed, restricted countries list should not be empty
-                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['Value is required']);
+                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages('error.messages.sector');
                     }
                 }
             }
@@ -310,7 +310,7 @@ class PermitsController extends AbstractActionController
                     }
                     else{
                         //conditional validation failed, sector list should not be empty
-                        $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages(['Value is required']);
+                        $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages('error.messages.sector');
                     }
                 }
             }
