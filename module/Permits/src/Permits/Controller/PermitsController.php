@@ -34,7 +34,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function indexAction()
     {
-
         $query = EcmtPermits::create(array());
         $response = $this->handleQuery($query);
         $dashboardData = $response->getResult();
@@ -199,7 +198,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     }
                     else{
                         //conditional validation failed, restricted countries list should not be empty
-                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['Value is required']);
+                        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages('error.messages.restricted.countries');
                     }
                 }
             }
@@ -227,8 +226,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     {
         //Create form from annotations
         $form = $this->getServiceLocator()
-            ->get('Helper\Form')
-            ->createForm('TripsForm', false, false);
+        ->get('Helper\Form')
+        ->createForm('TripsForm', false, false);
 
         $data = $this->params()->fromPost();
         if(is_array($data)) {
@@ -246,6 +245,140 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         }
 
         return array('form' => $form);
+    }
+
+    public function internationalJourneyAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('InternationalJourneyForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if (is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->meetsEuro6 = $data['Fields']['InternationalJourney'];
+
+                    $this->redirect()->toRoute('permits', ['action' => 'sector']);
+                }
+            }
+        }
+
+        return array('form' => $form);
+    }
+
+    public function sectorAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('SpecialistHaulageForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //EXTRA VALIDATION
+                    if (($data['Fields']['SpecialistHaulage'] == 1
+                            && isset($data['Fields']['SectorList']['SectorList']))
+                        || ($data['Fields']['SectorList'] == 0))
+                    {
+
+                        //Save data to session
+                        $session = new Container(self::SESSION_NAMESPACE);
+                        $session->SpecialistHaulage = $data['Fields']['SpecialistHaulage'];
+
+                        if ($session->SpecialistHaulage == 1) //if true
+                        {
+                            $session->SectorList = $data['Fields']['SectorList']['SectorList'];
+                        }
+                        else {
+                            $session->SectorList = null;
+                        }
+
+                        //create application in db
+                        if (empty($session->applicationId)) {
+                            $applicationData['status'] = 'permit_awaiting';
+                            $applicationData['paymentStatus'] = 'lfs_ot';
+                            $command = CreateEcmtPermitApplication::create($applicationData);
+                            $response = $this->handleCommand($command);
+                            $insert = $response->getResult();
+                            $session->applicationId = $insert['id']['ecmtPermitApplication'];
+                        }
+
+                        $this->redirect()->toRoute('permits', ['action' => 'permits-required']);
+                    }
+                    else{
+                        //conditional validation failed, sector list should not be empty
+                        $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages('error.messages.sector');
+                    }
+                }
+            }
+        }
+        /*
+        * Get Sector List from Database
+        */
+        $response = $this->handleQuery(ConstrainedCountries::create(array()));
+        $sectorList = $response->getResult();
+
+        /*
+        * Make the sectors list the value_options of the form
+        */
+        $sectorList = $this->getServiceLocator()
+            ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
+
+        $options = array();
+        $options['value_options'] = $sectorList;
+        $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
+
+        return array('form' => $form);
+    }
+
+    public function permitsRequiredAction()
+    {
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('PermitsRequiredForm', false, false);
+
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //Save to session
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->PermitsRequired = $data['Fields']['PermitsRequired'];
+
+                    $this->redirect()->toRoute('permits', ['action' => 'check-answers']);
+                }
+            }
+        }
+
+        return array('form' => $form);
+    }
+
+    public function checkAnswersAction()
+    {
+        $session = new Container(self::SESSION_NAMESPACE);
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('submit', $data)) {
+                //Save data to session
+                $session->willCabotage = $data['willCabotage'];
+            }
+        }
+
+        $sessionData = $this->collateSessionData();
+
+        return array('sessionData' => $sessionData);
     }
 
     public function summaryAction()
@@ -446,6 +579,66 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         }
 
         return $IDList;
+    }
+
+    /**
+     * Returns a new array with all the user's answers (taken from the session)
+     * and associated question titles (as per the check-answers/summary page).
+     *
+     *
+     * @return array
+     */
+    private function collateSessionData()
+    {
+        $session = new Container(self::SESSION_NAMESPACE);
+        $sessionData = array();
+
+        //SELECTED LICENCE
+        $sessionData['licenceQuestion']
+            = 'Licence selected';
+        $sessionData['licenceAnswer'] = $session['licence'];
+
+        //EURO 6 EMISSIONS CONFIRMATION
+        $sessionData['meetsEuro6Question']
+            = 'I confirm that my ECMT permit(s) will only be 
+                used by vehicle(s) that are environmentally compliant 
+                to Euro 6 emissions standards.';
+        $sessionData['meetsEuro6Answer'] = $session['meetsEuro6'];
+
+        //CABOTAGE CONFIRMATION
+        $sessionData['cabotageQuestion']
+            = 'I confirm that I will not undertake a 
+                cabotage journey(s) with an ECMT permit.';
+        $sessionData['cabotageAnswer'] = $session['cabotage'];
+
+        //RESTRICTED COUNTRIES
+        $sessionData['restrictedCountriesQuestion']
+            = 'Do you intend to transport goods to
+                Austria, Greece, Hungary, Italy or Russia?';
+        $sessionData['restrictedCountriesAnswer'] = $session['restrictedCountries'];
+
+        //NUMBER OF TRIPS PER YEAR
+        $sessionData['tripsQuestion']
+            = 'How many international trips were carried out over the past 12 months?';
+        $sessionData['tripsAnswer'] = $session['trips'];
+
+        //'PERCENTAGE' QUESTION
+        $sessionData['percentageQuestion']
+            = 'What percentage of your business 
+                is related to international journeys over the past 12 months?';
+        $sessionData['percentageAnswer'] = $session['percentage'];
+
+        //SECTORS QUESTION
+        $sessionData['specialistHaulageQuestion']
+            = 'Do you specialise in carrying goods for one specific sector?';
+        $sessionData['specialistHaulageAnswer'] = $session['specialistHaulage'];
+
+        //NUMBER OF PERMITS REQUIRED
+        $sessionData['permitsQuestion']
+            = 'How many permits does your business require?';
+        $sessionData['permitsAnswer'] = $session['permits'];
+
+        return $sessionData;
     }
 
 }

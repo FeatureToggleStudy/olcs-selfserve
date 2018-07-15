@@ -1,5 +1,5 @@
 <?php
-    $title = $this->translate('permits.page.ecmt.licence.title');
+    $title = $this->translate('permits.page.international.journey.title');
     $this->headTitle($title);
 ?>
 
@@ -9,17 +9,16 @@
             <p><a href="/permits" class="back-link"> <?php echo $this->translate('permits.back-link'); ?> </a></p>
             <div class="page-header__wrapper">
                 <h1 class="js-title">
-                    <?php echo $this->translate('permits.page.ecmt.licence.question'); ?>
+                    <?php echo $this->translate('permits.page.international.journey.question'); ?>
                 </h1>
             </div>
         </div>
 
         <div class="field">
             <div class="govuk-hint">
-                <p class="exclamation"><?php echo $this->translate('permits.page.ecmt.licence.info'); ?></p>
             </div>
 
-            <fieldset id="ecmt-licence" class="inline" data-group="ecmt-licence">
+            <fieldset id="international-journey" class="inline" data-group="international-journey">
                 <?php
                     echo $this->formErrors($form);
                     echo $this->form($form);
@@ -33,6 +32,3 @@
 
     </div>
 </div>
-
-
-

@@ -4,15 +4,15 @@ namespace Permits\Form\Model\Form;
 use Zend\Form\Annotation as Form;
 
 /**
- * @Form\Name("EcmtLicence")
+ * @Form\Name("InternationalJourney")
  * @Form\Attributes({"method":"post"})
  * @Form\Type("Common\Form\Form")
  */
-class EcmtLicenceForm
+class InternationalJourneyForm
 {
     /**
      * @Form\Name("Fields")
-     * @Form\ComposedObject("Permits\Form\Model\Fieldset\EcmtLicence")
+     * @Form\ComposedObject("Permits\Form\Model\Fieldset\InternationalJourney")
      */
     public $fields = null;
 
