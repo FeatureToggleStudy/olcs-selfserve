@@ -1,8 +1,10 @@
 <?php
 namespace Permits\Controller;
 
+use Common\Controller\Interfaces\ToggleAwareInterface;
 use Permits\Form\PermitApplicationForm;
-use Zend\Mvc\Controller\AbstractActionController;
+use Common\Controller\AbstractOlcsController;
+use Common\FeatureToggle;
 use Zend\View\Model\ViewModel;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries;
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
@@ -14,7 +16,7 @@ use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 
-class PermitsController extends AbstractActionController
+class PermitsController extends AbstractOlcsController implements ToggleAwareInterface
 {
     use ExternalControllerTrait;
 
@@ -23,6 +25,12 @@ class PermitsController extends AbstractActionController
     const DEFAULT_SEPARATOR = '|';
 
     protected $tableName = 'dashboard-permits';
+
+    protected $toggleConfig = [
+        'default' => [
+            FeatureToggle::SELFSERVE_ECMT
+        ],
+    ];
 
     public function indexAction()
     {
