@@ -8,12 +8,9 @@ use Common\FeatureToggle;
 use Zend\View\Model\ViewModel;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
-
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
-
-
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Zend\Session\Container; // We need this when using sessions
@@ -71,8 +68,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $form->setData($data);
                 if ($form->isValid()) {
                     $session = new Container(self::SESSION_NAMESPACE);
-                    $session->meetsEuro6 = $data['Fields']['EcmtLicence'];
-
+                    $session->licence = $data['Fields']['EcmtLicence'];
                     $this->redirect()->toRoute('permits', ['action' => 'application-overview']);
                 }
             }
@@ -254,7 +250,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 if ($form->isValid()) {
                     //Save to session
                     $session = new Container(self::SESSION_NAMESPACE);
-                    $session->willCabotage = $data['Fields']['TripsAbroad'];
+                    $session->trips = $data['Fields']['TripsAbroad'];
 
                     $this->redirect()->toRoute('permits', ['action' => 'international-journey']);
                 }
@@ -278,7 +274,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $form->setData($data);
                 if ($form->isValid()) {
                     $session = new Container(self::SESSION_NAMESPACE);
-                    $session->meetsEuro6 = $data['Fields']['InternationalJourney'];
+                    $session->internationalJourneyPercentage = $data['Fields']['InternationalJourney'];
 
                     $this->redirect()->toRoute('permits', ['action' => 'sector']);
                 }
@@ -295,6 +291,22 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('SpecialistHaulageForm', false, false);
 
+        /*
+        * Get Sector List from Database
+        */
+        $response = $this->handleQuery(SectorsList::create(array()));
+        $sectorList = $response->getResult();
+
+        /*
+        * Make the sectors list the value_options of the form
+        */
+        $sectorList = $this->getServiceLocator()
+            ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
+
+        $options = array();
+        $options['value_options'] = $sectorList;
+        $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
+
         $data = $this->params()->fromPost();
         if(is_array($data)) {
             if (array_key_exists('Submit', $data)) {
@@ -302,21 +314,20 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $form->setData($data);
                 if ($form->isValid()) {
                     //EXTRA VALIDATION
-                    if (($data['Fields']['SpecialistHaulage'] == 1
-                            && isset($data['Fields']['SectorList']['SectorList']))
-                        || ($data['Fields']['SectorList'] == 0))
+                    if ($data['Fields']['SpecialistHaulage'] == 1
+                        && isset($data['Fields']['SectorList']['SectorList']))
                     {
 
                         //Save data to session
                         $session = new Container(self::SESSION_NAMESPACE);
-                        $session->SpecialistHaulage = $data['Fields']['SpecialistHaulage'];
+                        $session->specialistHaulage = $data['Fields']['SpecialistHaulage'];
 
-                        if ($session->SpecialistHaulage == 1) //if true
+                        if ($session->specialistHaulage == 1) //if true
                         {
-                            $session->SectorList = $data['Fields']['SectorList']['SectorList'];
+                            $session->sectorList = $data['Fields']['SectorList']['SectorList'];
                         }
                         else {
-                            $session->SectorList = null;
+                            $session->sectorList = null;
                         }
 
                         //create application in db
@@ -333,26 +344,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     }
                     else{
                         //conditional validation failed, sector list should not be empty
-                        $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages('error.messages.sector');
+                        $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages(['error.messages.sector']);
                     }
                 }
             }
         }
-        /*
-        * Get Sector List from Database
-        */
-        $response = $this->handleQuery(SectorsList::create(array()));
-        $sectorList = $response->getResult();
-
-        /*
-        * Make the sectors list the value_options of the form
-        */
-        $sectorList = $this->getServiceLocator()
-            ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
-
-        $options = array();
-        $options['value_options'] = $sectorList;
-        $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
 
         return array('form' => $form);
     }
@@ -372,7 +368,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 if ($form->isValid()) {
                     //Save to session
                     $session = new Container(self::SESSION_NAMESPACE);
-                    $session->PermitsRequired = $data['Fields']['PermitsRequired'];
+                    $session->permitsRequired = $data['Fields']['PermitsRequired'];
 
                     $this->redirect()->toRoute('permits', ['action' => 'check-answers']);
                 }
@@ -438,16 +434,25 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function declarationAction()
     {
-        $session = new Container(self::SESSION_NAMESPACE);
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('DeclarationForm', false, false);
 
-        $form = new PermitApplicationForm();
-        $form->setData(array(
-            'intensity'                 => $session->tripsData,
-            'sectors'                   => $this->extractIDFromSessionData($session->sectorsData),
-            'restrictedCountries'       => $session->restrictedCountriesData,
-            'restrictedCountriesList'   => $this->extractIDFromSessionData($session->restrictedCountriesList)
+        $data = $this->params()->fromPost();
+        if(is_array($data)) {
+            if (array_key_exists('Submit', $data)) {
+                //Validate
+                $form->setData($data);
+                if ($form->isValid()) {
+                    //Save to session
+                    $session = new Container(self::SESSION_NAMESPACE);
+                    $session->Declaration = $data['Fields']['Declaration'];
 
-        ));
+                    $this->redirect()->toRoute('permits', ['action' => 'fee']);
+                }
+            }
+        }
 
         return array('form' => $form);
     }
@@ -613,47 +618,57 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //SELECTED LICENCE
         $sessionData['licenceQuestion']
             = 'Licence selected';
-        $sessionData['licenceAnswer'] = $session['licence'];
+        $sessionData['licenceAnswer'] = $session->licence;
 
         //EURO 6 EMISSIONS CONFIRMATION
         $sessionData['meetsEuro6Question']
             = 'I confirm that my ECMT permit(s) will only be 
                 used by vehicle(s) that are environmentally compliant 
                 to Euro 6 emissions standards.';
-        $sessionData['meetsEuro6Answer'] = $session['meetsEuro6'];
+        $sessionData['meetsEuro6Answer'] = $session->meetsEuro6;
 
         //CABOTAGE CONFIRMATION
         $sessionData['cabotageQuestion']
             = 'I confirm that I will not undertake a 
                 cabotage journey(s) with an ECMT permit.';
-        $sessionData['cabotageAnswer'] = $session['cabotage'];
+        $sessionData['cabotageAnswer'] = $session->willCabotage;
 
         //RESTRICTED COUNTRIES
         $sessionData['restrictedCountriesQuestion']
             = 'Do you intend to transport goods to
                 Austria, Greece, Hungary, Italy or Russia?';
-        $sessionData['restrictedCountriesAnswer'] = $session['restrictedCountries'];
+        $sessionData['restrictedCountriesAnswer'] = $session->restrictedCountries  == 1 ? 'Yes' : 'No';;
 
         //NUMBER OF TRIPS PER YEAR
         $sessionData['tripsQuestion']
             = 'How many international trips were carried out over the past 12 months?';
-        $sessionData['tripsAnswer'] = $session['trips'];
+        $sessionData['tripsAnswer'] = $session->trips;
 
         //'PERCENTAGE' QUESTION
         $sessionData['percentageQuestion']
             = 'What percentage of your business 
                 is related to international journeys over the past 12 months?';
-        $sessionData['percentageAnswer'] = $session['percentage'];
+        switch ($session->internationalJourneyPercentage) {
+            case 0:
+                $sessionData['percentageAnswer'] = 'Less than 60%';
+                break;
+            case 1:
+                $sessionData['percentageAnswer'] = 'From 60% to 90%';
+                break;
+            case 2:
+                $sessionData['percentageAnswer'] = 'More than 90%';
+                break;
+        }
 
         //SECTORS QUESTION
         $sessionData['specialistHaulageQuestion']
             = 'Do you specialise in carrying goods for one specific sector?';
-        $sessionData['specialistHaulageAnswer'] = $session['specialistHaulage'];
+        $sessionData['specialistHaulageAnswer'] = $session->specialistHaulage  == 1 ? 'Yes' : 'No';;
 
         //NUMBER OF PERMITS REQUIRED
         $sessionData['permitsQuestion']
             = 'How many permits does your business require?';
-        $sessionData['permitsAnswer'] = $session['permits'];
+        $sessionData['permitsAnswer'] = $session->permitsRequired;
 
         return $sessionData;
     }
