@@ -66,7 +66,23 @@
                                 <h4><?php echo $sessionData['restrictedCountriesQuestion'] ?></h4>
                             </td>
                             <td>
-                                <?php echo $sessionData['restrictedCountriesAnswer'] ?>
+                                <?php
+                                    $count = 1;
+                                    $listSize = count($sessionData['restrictedCountriesAnswer']);
+                                    if($listSize > 1)
+                                    {
+                                        foreach ($sessionData['restrictedCountriesAnswer'] as $country) {
+                                            if ($count == $listSize) {
+                                                echo $country;
+                                            } else {
+                                                echo $country . ', ';
+                                            }
+                                            $count++;
+                                        }
+                                    }else{
+                                        echo "No";
+                                    }
+                                ?>
                             </td>
                             <td>
                                 <a href="/permits/restricted-countries">

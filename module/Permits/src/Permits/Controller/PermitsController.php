@@ -86,6 +86,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $session = new Container(self::SESSION_NAMESPACE);
         $sections = [];
 
+        //Get the application ID
+        $data = $this->params()->fromRoute();
+        $applicationID = $data['id'];
+
         //LICENCE NUMBER
         $sectionDetails = ['enabled' => true];
         $ref = 'licence_number';
@@ -115,7 +119,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 2,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'euroEmissionStandardsStatus' => 2
+                'euroEmissionStandardsStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -137,7 +141,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 3,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'cabotageStatus' => 2
+                'cabotageStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -159,7 +163,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 4,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'goodsToLimitedCountriesStatus' => 2
+                'goodsToLimitedCountriesStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -181,7 +185,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 5,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'annualTripsAbroadStatus' => 2
+                'annualTripsAbroadStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -203,7 +207,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 6,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'percentageOfInternationalJourneysStatus' => 2
+                'percentageOfInternationalJourneysStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -225,7 +229,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 7,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'goodsYouCarryAbroadStatus' => 2
+                'goodsYouCarryAbroadStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -247,7 +251,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 8,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'numberOfPermitsRequiredStatus' => 2
+                'numberOfPermitsRequiredStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -269,7 +273,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 9,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'checkYourAnswersStatus' => 2
+                'checkYourAnswersStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -291,7 +295,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id' => 10,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'declarationStatus' => 2
+                'declarationStatus' => 0
             ],
             'licence' => [
                 'organisation' => [
@@ -844,7 +848,17 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $sessionData['restrictedCountriesQuestion']
             = 'Do you intend to transport goods to
                 Austria, Greece, Hungary, Italy or Russia?';
-        $sessionData['restrictedCountriesAnswer'] = $session->restrictedCountries  == 1 ? 'Yes' : 'No';;
+        if($session->restrictedCountries  == 1)
+        {
+            $sessionData['restrictedCountriesAnswer'] = [];
+            foreach ($session->restrictedCountriesList as $country)
+            {
+                //add everything right of '|' to the list of countries to get rid of the sector ID
+                array_push($sessionData['restrictedCountriesAnswer'], substr($country, strpos($country, $this::DEFAULT_SEPARATOR) + 1));
+            }
+        }else{
+            $sessionData['restrictedCountriesAnswer'] = 'No';
+        }
 
         //NUMBER OF TRIPS PER YEAR
         $sessionData['tripsQuestion']
@@ -870,7 +884,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //SECTORS QUESTION
         $sessionData['specialistHaulageQuestion']
             = 'Do you specialise in carrying goods for one specific sector?';
-        $sessionData['specialistHaulageAnswer'] = $session->specialistHaulage  == 1 ? 'Yes' : 'No';;
+        if($session->specialistHaulage  == 1)
+        {
+           $sessionData['specialistHaulageAnswer'] = substr($session->sectorList, strpos($session->sectorList, $this::DEFAULT_SEPARATOR) + 1);
+        }else {
+            $sessionData['specialistHaulageAnswer'] = 'No';
+        }
 
         //NUMBER OF PERMITS REQUIRED
         $sessionData['permitsQuestion']
