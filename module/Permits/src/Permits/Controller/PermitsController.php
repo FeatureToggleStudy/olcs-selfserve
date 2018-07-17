@@ -520,8 +520,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $form->setData($data);
                 if ($form->isValid()) {
                     //EXTRA VALIDATION
-                    if ($data['Fields']['SpecialistHaulage'] == 1
+                    if (($data['Fields']['SpecialistHaulage'] == 1
                         && isset($data['Fields']['SectorList']['SectorList']))
+                    || $data['Fields']['SpecialistHaulage'] == 0)
                     {
 
                         //Save data to session
