@@ -16,6 +16,8 @@ use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 
+use Olcs\View\Model\Application\ApplicationOverviewSection as ApplicationOverviewSection;
+
 class PermitsController extends AbstractOlcsController implements ToggleAwareInterface
 {
     use ExternalControllerTrait;
@@ -79,18 +81,21 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
             }
         }
+        $sections = [];
+        $sectionDetails = ['enabled' => true];
+        $ref = 'licence_number';
+        $data = [
+            'id' => 1,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'licenceNumberStatus' => 2
+            ],
+        ];
 
-        $sections = [array(
-            'type' => 'application',
-            'variables' => array(
-                'enabled' => true,
-                'status' => 'COMPLETE',
-                'statusColour' => 'green',
-                'sectionNumber' => 1,
-                'identifier' => 9,
-                'name' => 'test',
-            )
-        )];
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
 
         //TEMPORARY
         $applicationFee = "£10.00";
