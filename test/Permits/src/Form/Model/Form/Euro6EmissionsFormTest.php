@@ -25,8 +25,8 @@ class Euro6EmissionsFormTest extends AbstractFormValidationTestCase
         $this->assertFormElementAllowEmpty($element, false);
         $this->assertFormElementType($element, "\Common\Form\Elements\InputFilters\SingleCheckbox");
 
-        $this->assertFormElementValid($element, 'Y');
-        $this->assertFormElementNotValid($element, 'N', [Validator\Identical::NOT_SAME]);
+        $this->assertFormElementValid($element, 'Yes');
+        $this->assertFormElementNotValid($element, 'No', [Validator\Identical::NOT_SAME]);
         $this->assertFormElementNotValid($element, 'X', [Validator\Identical::NOT_SAME]);//InArray::NOT_IN_ARRAY
     }
 
