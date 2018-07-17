@@ -76,26 +76,227 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $request = $this->getRequest();
         $data = (array)$request->getPost();
         $session = new Container(self::SESSION_NAMESPACE);
-        if(is_array($data)) {
-            if (!empty($data)) {
-
-            }
-        }
         $sections = [];
+
+        //LICENCE NUMBER
         $sectionDetails = ['enabled' => true];
         $ref = 'licence_number';
         $data = [
             'id' => 1,
             'idIndex' => 'application',
             'applicationCompletion' => [
-                'licenceNumberStatus' => 2
+                'licenceNumberStatus' => 0
             ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
         ];
 
         $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
 
         array_push($sections, $test);
 
+        //EURO 6
+        $sectionDetails = ['enabled' => true];
+        $ref = 'euro_emission_standards';
+        $data = [
+            'id' => 2,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'euroEmissionStandardsStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //Cabotage
+        $sectionDetails = ['enabled' => true];
+        $ref = 'cabotage';
+        $data = [
+            'id' => 3,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'cabotageStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //restricted coutnries
+        $sectionDetails = ['enabled' => true];
+        $ref = 'goods_to_limited_countries';
+        $data = [
+            'id' => 4,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'goodsToLimitedCountriesStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //num of trips
+        $sectionDetails = ['enabled' => true];
+        $ref = 'annual_trips_abroad';
+        $data = [
+            'id' => 5,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'annualTripsAbroadStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //percentage international journeys
+        $sectionDetails = ['enabled' => true];
+        $ref = 'percentage_of_international_journeys';
+        $data = [
+            'id' => 6,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'percentageOfInternationalJourneysStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //sectors
+        $sectionDetails = ['enabled' => true];
+        $ref = 'goods_you_carry_abroad';
+        $data = [
+            'id' => 7,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'goodsYouCarryAbroadStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //num permits required
+        $sectionDetails = ['enabled' => true];
+        $ref = 'number_of_permits_required';
+        $data = [
+            'id' => 8,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'numberOfPermitsRequiredStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //check your answers
+        $sectionDetails = ['enabled' => true];
+        $ref = 'check_your_answers';
+        $data = [
+            'id' => 9,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'checkYourAnswersStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
+
+        //declaration
+        $sectionDetails = ['enabled' => true];
+        $ref = 'declaration';
+        $data = [
+            'id' => 10,
+            'idIndex' => 'application',
+            'applicationCompletion' => [
+                'declarationStatus' => 2
+            ],
+            'licence' => [
+                'organisation' => [
+                    'type' => [
+                        'id' => 'org_t_llp'
+                    ]
+                ]
+            ]
+        ];
+
+        $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+
+        array_push($sections, $test);
 
         //TEMPORARY
         $applicationFee = "£10.00";
