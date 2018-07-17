@@ -7,10 +7,14 @@ use Common\Controller\AbstractOlcsController;
 use Common\FeatureToggle;
 use Zend\View\Model\ViewModel;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries;
+use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
+
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 
+
+use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Zend\Session\Container; // We need this when using sessions
 
@@ -24,7 +28,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     const SESSION_NAMESPACE = 'permit_application';
     const DEFAULT_SEPARATOR = '|';
 
-    protected $tableName = 'dashboard-permits';
+    protected $applicationsTableName = 'dashboard-permit-application';
+    protected $issuedTableName = 'dashboard-permits';
 
     protected $toggleConfig = [
         'default' => [
@@ -34,15 +39,22 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function indexAction()
     {
+        $query = EcmtPermitApplication::create(array());
+        $response = $this->handleQuery($query);
+        $applicationData = $response->getResult();
+
         $query = EcmtPermits::create(array());
         $response = $this->handleQuery($query);
-        $dashboardData = $response->getResult();
+        $issuedData = $response->getResult();
 
-        $theTable = $this->getServiceLocator()->get('Table')->prepareTable($this->tableName, $dashboardData['results']);
+        $applicationsTable = $this->getServiceLocator()->get('Table')->prepareTable($this->applicationsTableName, $applicationData['results']);
+        $issuedTable = $this->getServiceLocator()->get('Table')->prepareTable($this->issuedTableName, $issuedData['results']);
 
         $view = new ViewModel();
-        $view->setVariable('permitsNo', $dashboardData['count']);
-        $view->setVariable('table', $theTable);
+        $view->setVariable('issuedNo', $issuedData['count']);
+        $view->setVariable('applicationsNo', $applicationData['count']);
+        $view->setVariable('applicationsTable', $applicationsTable);
+        $view->setVariable('issuedTable', $issuedTable);
 
         return $view;
     }
@@ -163,9 +175,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $data = $this->params()->fromPost();
         if(is_array($data)) {
             if (array_key_exists('Submit', $data)) {
+
                 //Validate
                 $form->setData($data);
                 if ($form->isValid()) {
+
                     //EXTRA VALIDATION
                     if (($data['Fields']['restrictedCountries'] == 1
                             && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
@@ -186,11 +200,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
                         //create application in db
                         if (empty($session->applicationId)) {
+
                             $applicationData['status'] = 'permit_awaiting';
                             $applicationData['paymentStatus'] = 'lfs_ot';
+                            $applicationData['permitType'] = 'permit_ecmt';
                             $command = CreateEcmtPermitApplication::create($applicationData);
                             $response = $this->handleCommand($command);
                             $insert = $response->getResult();
+
                             $session->applicationId = $insert['id']['ecmtPermitApplication'];
                         }
 
@@ -324,7 +341,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         /*
         * Get Sector List from Database
         */
-        $response = $this->handleQuery(ConstrainedCountries::create(array()));
+        $response = $this->handleQuery(SectorsList::create(array()));
         $sectorList = $response->getResult();
 
         /*
