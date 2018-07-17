@@ -71,6 +71,9 @@
                                     $listSize = count($sessionData['restrictedCountriesAnswer']);
                                     if($listSize > 1)
                                     {
+                                        echo "Yes";
+                                        echo "<br>";
+
                                         foreach ($sessionData['restrictedCountriesAnswer'] as $country) {
                                             if ($count == $listSize) {
                                                 echo $country;
