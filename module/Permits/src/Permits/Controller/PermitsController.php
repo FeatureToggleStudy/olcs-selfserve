@@ -82,6 +82,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function applicationOverviewAction()
     {
         $request = $this->getRequest();
+        $session = new Container(self::SESSION_NAMESPACE);
         $sections = [];
 
         //Get the application ID
@@ -91,11 +92,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //LICENCE NUMBER
         $sectionDetails = ['enabled' => true];
         $ref = 'ecmt_licence';
+        if(isset($session->licence)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 1,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'ecmtLicenceStatus' => 3
+                'ecmtLicenceStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
@@ -113,11 +119,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //EURO 6
         $sectionDetails = ['enabled' => true];
         $ref = 'euro6_emissions';
+        if(isset($session->licence)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 2,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'euro6EmissionsStatus' => 3
+                'euro6EmissionsStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
@@ -135,11 +146,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //Cabotage
         $sectionDetails = ['enabled' => true];
         $ref = 'cabotage';
+        if(isset($session->willCabotage)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 3,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'cabotageStatus' => 3
+                'cabotageStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
@@ -157,11 +173,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //restricted coutnries
         $sectionDetails = ['enabled' => true];
         $ref = 'restricted_countries';
+        if(isset($session->restrictedCountries)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 4,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'restrictedCountriesStatus' => 3
+                'restrictedCountriesStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
@@ -179,11 +200,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //num of trips
         $sectionDetails = ['enabled' => true];
         $ref = 'trips';
+        if(isset($session->trips)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 5,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'tripsStatus' => 3
+                'tripsStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
@@ -201,11 +227,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //percentage international journeys
         $sectionDetails = ['enabled' => true];
         $ref = 'international_journey';
+        if(isset($session->internationalJourneyPercentage)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 6,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'internationalJourneyStatus' => 3
+                'internationalJourneyStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
@@ -223,11 +254,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //sectors
         $sectionDetails = ['enabled' => true];
         $ref = 'sector';
+        if(isset($session->specialistHaulage)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 7,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'sectorStatus' => 3
+                'sectorStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
@@ -245,11 +281,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //num permits required
         $sectionDetails = ['enabled' => true];
         $ref = 'permits_required';
+        if(isset($session->permitsRequired)){
+            $status = 4;
+        }else{
+            $status = 3;
+        }
         $data = [
             'id' => 8,
             'idIndex' => 'permits',
             'applicationCompletion' => [
-                'permitsRequiredStatus' => 3
+                'permitsRequiredStatus' => $status
             ],
             'licence' => [
                 'organisation' => [
