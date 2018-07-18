@@ -16,9 +16,11 @@ use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
+use Dvsa\Olcs\Transfer\Query\Permits\ById;
 use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
+use Olcs\View\Model\Application\ApplicationOverviewSection as ApplicationOverviewSection;
 
 class PermitsController extends AbstractOlcsController implements ToggleAwareInterface
 {
@@ -63,57 +65,86 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function ecmtLicenceAction()
     {
         $form = $this->getEcmtLicenceForm();
-
         $data = $this->params()->fromPost();
-        if (is_array($data)) {
-            if (array_key_exists('Submit', $data)) {
-                //Validate
-                $form->setData($data);
-                if ($form->isValid()) {
-                    $session = new Container(self::SESSION_NAMESPACE);
-                    $session->meetsEuro6 = $data['Fields']['EcmtLicence'];
+        if ($data && array_key_exists('Submit', $data)) {
+            //Validate
+            $form->setData($data);
+            if ($form->isValid()) {
 
-                    $this->redirect()->toRoute('permits', ['action' => 'application-overview']);
-                }
+                $applicationData['status'] = 'permit_awaiting';
+                $applicationData['paymentStatus'] = 'lfs_ot';
+                $applicationData['permitType'] = 'permit_ecmt';
+                $applicationData['licence'] = explode('|',$data['Fields']['EcmtLicence'])[0];
+
+                $command = CreateEcmtPermitApplication::create($applicationData);
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+                $this->redirect()->toRoute('permits', ['action' => 'application-overview', 'id' => $insert['id']['ecmtPermitApplication']]);
             }
         }
-
         return array('form' => $form);
     }
 
     public function applicationOverviewAction()
     {
-        $request = $this->getRequest();
-        $data = (array)$request->getPost();
-        $session = new Container(self::SESSION_NAMESPACE);
-        if(is_array($data)) {
-            if (!empty($data)) {
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+        $application['check_answers'] = null;
+        $application['declaration'] = null;
+        $application['ecmt_licence'] = 1;
 
-            }
+        $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
+
+        $sections = array();
+
+        $sectionsData = [
+            'ecmt_licence' => ['ecmt_licence','ecmtLicenceStatus'],
+            'emissions' => ['euro6_emissions','euro6EmissionsStatus'],
+            'cabotage' => ['cabotage','cabotageStatus'],
+            'countrys' => ['restricted_countries','restrictedCountriesStatus'],
+            'trips' => ['trips','tripsStatus'],
+            'internationalJourneys' => ['international_journey','internationalJourneyStatus'],
+            'sectors' => ['sector','sectorStatus'],
+            'noOfPermits' => ['permits_required','permitsRequiredStatus'],
+            'check_answers' => ['check_answers','checkAnswersStatus'],
+            'declaration' => ['declaration','declarationStatus']
+        ];
+
+        foreach ($sectionsData as $key => $value)
+        {
+            $sectionDetails = ['enabled' => true];
+            $status = ($application[$key] != null) ? 4 : 3;
+            $ref = $value[0];
+            $data = [
+              'id' => $id,
+              'idIndex' => 'application',
+              'applicationCompletion' => [
+                $value[1] => $status
+              ],
+              'licence' => [
+                'organisation' => [
+                  'type' => [
+                    'id' => 'org_t_llp'
+                  ]
+                ]
+              ]
+            ];
+
+            $test = new ApplicationOverviewSection($ref, $data, $sectionDetails);
+            array_push($sections, $test);
         }
 
-        $sections = [array(
-            'type' => 'application',
-            'variables' => array(
-                'enabled' => true,
-                'status' => 'COMPLETE',
-                'statusColour' => 'green',
-                'sectionNumber' => 1,
-                'identifier' => 9,
-                'name' => 'test',
-            )
-        )];
-
-        //TEMPORARY
         $applicationFee = "£10.00";
         $issuingFee = "£123.00";
 
         $view = new ViewModel();
+        $view->setVariable('ref', $applicationRef);
         $view->setVariable('applicationFee', $applicationFee);
         $view->setVariable('issuingFee', $issuingFee);
         $view->setVariable('sections', $sections);
 
         return $view;
+
     }
 
     public function euro6EmissionsAction()
@@ -241,6 +272,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function tripsAction()
     {
+        //$id = $this->params()->fromRoute('id', -1);
+        //$application = $this->getApplication($id);
+        //$applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
+
+
         //Create form from annotations
         $form = $this->getServiceLocator()
         ->get('Helper\Form')
@@ -656,6 +692,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $sessionData['permitsAnswer'] = $session['permits'];
 
         return $sessionData;
+    }
+
+
+    private function getApplication($id)
+    {
+        $query = ById::create(['id'=>$id]);
+        $response = $this->handleQuery($query);
+        return $response->getResult();
     }
 
 }
