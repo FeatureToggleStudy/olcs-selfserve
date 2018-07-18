@@ -119,7 +119,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //EURO 6
         $sectionDetails = ['enabled' => true];
         $ref = 'euro6_emissions';
-        if(isset($session->licence)){
+        if(isset($session->meetsEuro6)){
             $status = 4;
         }else{
             $status = 3;
