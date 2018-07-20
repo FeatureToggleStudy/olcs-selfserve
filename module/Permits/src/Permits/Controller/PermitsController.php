@@ -13,6 +13,7 @@ use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtPermitApplication;
 use Zend\Mvc\MvcEvent;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
@@ -162,6 +163,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             array_push($sections, $test);
         }
 
+        //TODO add new fee type and fetch the data from fees table
+
         $applicationFee = "£10.00";
         $issuingFee = "£123.00";
 
@@ -191,6 +194,13 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+                $update['emissions'] = ($data['Fields']['MeetsEuro6'] === 'Yes') ? 1 : 0;
+                $applicationData = $this->generateApplicationData($id, $update);
+                $command = UpdateEcmtPermitApplication::create($applicationData);
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+        //TODO debug update command and then apply to every form
+
                 $this->redirect()
                   ->toRoute('permits',
                     ['action' => 'cabotage', 'id' => $id]);
@@ -783,5 +793,28 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $query = ById::create(['id'=>$id]);
         $response = $this->handleQuery($query);
         return $response->getResult();
+    }
+
+    /**
+     * Returns an array for the update command
+     *
+     * @param $id application id
+     * @param $data array
+     * @return array
+     */
+    private function generateApplicationData($id, $data)
+    {
+        $application = $id;
+        $key = key($data);
+        $value = $data[$key];
+        $applicationData = [
+          'id' => $id,
+          $key => $value,
+          'status' => $application['status']['id'],
+          'paymentStatus' => $application['paymentStatus']['id'],
+          'permitType' => $application['permitType']['id'],
+          'licence' => $application['licence']['id']
+        ];
+        return $applicationData;
     }
 }
