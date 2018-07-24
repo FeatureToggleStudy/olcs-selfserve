@@ -243,7 +243,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
                     || ($data['Fields']['restrictedCountries'] == 0))
                 {
-                    $this->redirect()->toRoute('permits', ['action' => 'trips', 'id' => $id]);
+                    $this->redirect()->toRoute('permits', ['action' => 'permits-required', 'id' => $id]);
                 }
                 else{
                     //conditional validation failed, restricted countries list should not be empty
@@ -269,6 +269,38 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setOptions($options);
 
         return array('form' => $form, 'id' => $id);
+    }
+
+    //TODO remove all session elements and replace with queries
+
+    public function permitsRequiredAction()
+    {
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('PermitsRequiredForm', false, false);
+
+        $data = $this->params()->fromPost();
+
+        if (is_array($data) && array_key_exists('Submit', $data)) {
+            //Validate
+            $form->setData($data);
+            if ($form->isValid()) {
+                //Save to session
+                $session = new Container(self::SESSION_NAMESPACE);
+                $session->PermitsRequired = $data['Fields']['PermitsRequired'];
+
+                $this->redirect()->toRoute('permits', ['action' => 'trips', 'id' => $id]);
+            }
+        }
+
+        $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
+        $totalVehicles = $translationHelper->translateReplace('permits.page.permits.required.info', [$application['licence']['totAuthVehicles']]);
+
+        return array('form' => $form, 'totalVehicles' => $totalVehicles, 'id' => $id);
     }
 
     public function tripsAction()
@@ -357,7 +389,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['SectorList']['SectorList']))
                     || ($data['Fields']['SectorList'] == 0))
                 {
-                    $this->redirect()->toRoute('permits', ['action' => 'permits-required', 'id' => $id]);
+                    $this->redirect()->toRoute('permits', ['action' => 'check-answers', 'id' => $id]);
                 }
                 else{
                     //conditional validation failed, sector list should not be empty
@@ -368,40 +400,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         return array('form' => $form, 'id' => $id);
     }
-
-
-    //TODO remove all session elements and replace with queries
-
-    public function permitsRequiredAction()
-    {
-        $id = $this->params()->fromRoute('id', -1);
-        $application = $this->getApplication($id);
-
-        //Create form from annotations
-        $form = $this->getServiceLocator()
-            ->get('Helper\Form')
-            ->createForm('PermitsRequiredForm', false, false);
-
-        $data = $this->params()->fromPost();
-
-        if (is_array($data) && array_key_exists('Submit', $data)) {
-            //Validate
-            $form->setData($data);
-            if ($form->isValid()) {
-                //Save to session
-                $session = new Container(self::SESSION_NAMESPACE);
-                $session->PermitsRequired = $data['Fields']['PermitsRequired'];
-
-                $this->redirect()->toRoute('permits', ['action' => 'check-answers', 'id' => $id]);
-            }
-        }
-
-        $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
-        $totalVehicles = $translationHelper->translateReplace('permits.page.permits.required.info', [$application['licence']['totAuthVehicles']]);
-
-        return array('form' => $form, 'totalVehicles' => $totalVehicles, 'id' => $id);
-    }
-
 
     //TODO remove all session elements and replace with queries
     public function checkAnswersAction()
