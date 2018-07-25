@@ -184,12 +184,17 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function euro6EmissionsAction()
     {
 
-        $id = $this->params()->fromRoute('id', -1);
-
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('Euro6EmissionsForm', false, false);
+
+        // read data
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+        if (isset($application) && $application['emissions']) {
+            $form->get('Fields')->get('MeetsEuro6')->setValue('Yes');
+        }
 
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -201,7 +206,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
                 $response = $this->handleCommand($command);
                 $insert = $response->getResult();
-        //TODO debug update command and then apply to every form
 
                 $this->redirect()
                   ->toRoute('permits',
