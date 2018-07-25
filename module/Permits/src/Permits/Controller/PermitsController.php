@@ -419,7 +419,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     //TODO remove all session elements and replace with queries
     public function checkAnswersAction()
     {
-
         $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
         $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
@@ -433,6 +432,25 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         }
 
         $sessionData = $this->collateSessionData();
+
+        $sessionData['licenceAnswer'] = $application['licence']['licNo'];
+        $sessionData['meetsEuro6Answer'] = $application['emissions'] == 1 ? 'Yes' : 'No';
+        $sessionData['cabotageAnswer'] = $application['cabotage'] == 1 ? 'Yes' : 'No';
+        $sessionData['restrictedCountriesAnswer'] = $application['countrys'];
+        $sessionData['tripsAnswer'] = $application['trips'];
+        switch ($application['internationalJourneys']) {
+            case 0:
+                $sessionData['percentageAnswer'] = 'Less than 60%';
+                break;
+            case 1:
+                $sessionData['percentageAnswer'] = 'From 60% to 90%';
+                break;
+            case 2:
+                $sessionData['percentageAnswer'] = 'More than 90%';
+                break;
+        }
+        $sessionData['specialistHaulageAnswer'] = $application['sectors'];
+        $sessionData['permitsAnswer'] = $application['permitsRequired'];
 
         return array('sessionData' => $sessionData, 'applicationData' => $application, 'id' => $id);
     }
