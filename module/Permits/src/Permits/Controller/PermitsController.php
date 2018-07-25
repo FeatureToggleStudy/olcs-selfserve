@@ -171,6 +171,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             } else{
                 //Custom Error Message
                 $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
+            }else{
+                //Custom Error Message
+                $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
             }
         }
 
@@ -203,6 +206,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $response = $this->handleCommand($command);
                 $insert = $response->getResult();
                 $this->nextStep(EcmtSection::ROUTE_ECMT_COUNTRIES);
+            }else{
+                //Custom Error Message
+                $form->get('Fields')->get('WillCabotage')->setMessages(['error.messages.checkbox']);
             }
         }
 
@@ -241,7 +247,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
-
                 //EXTRA VALIDATION
                 if (($data['Fields']['restrictedCountries'] == 1
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
@@ -251,8 +256,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 }
                 else{
                     //conditional validation failed, restricted countries list should not be empty
-                    $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries']);
+                    $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries.list']);
                 }
+            }else{
+                //Custom Error Message
+                $form->get('Fields')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries']);
             }
             else {
                 //Custom Error Message
