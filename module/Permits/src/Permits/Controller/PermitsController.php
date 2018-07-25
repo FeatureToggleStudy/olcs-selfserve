@@ -194,9 +194,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->redirect()
                   ->toRoute('permits',
                     ['action' => 'cabotage', 'id' => $id]);
-            }else{
-                //Custom Error Message
-                $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
             }
         }
 
