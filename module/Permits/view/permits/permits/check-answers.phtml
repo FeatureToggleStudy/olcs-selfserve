@@ -125,7 +125,7 @@
                                 <h4><?php echo $sessionData['specialistHaulageQuestion'] ?></h4>
                             </td>
                             <td>
-                                <?php echo $sessionData['specialistHaulageAnswer'] ?>
+                                <?php echo str_replace(array("\r\n", "\n"), '<br />', $sessionData['specialistHaulageAnswer']) ?>
                             </td>
                             <td>
                                 <a href="/permits/sector/<?php echo $id; ?>">
