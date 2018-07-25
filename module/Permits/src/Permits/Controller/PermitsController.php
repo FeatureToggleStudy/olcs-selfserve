@@ -254,7 +254,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 {
                     $this->nextStep(EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
                 }
-                else{
+                else {
                     //conditional validation failed, restricted countries list should not be empty
                     $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries.list']);
                 }
@@ -822,7 +822,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //CABOTAGE CONFIRMATION
         $sessionData['cabotageQuestion']
-          = 'check-answers.page.question.cabotage';
+          = 'check-answers.page.question. 
+                cabotage ';
 
         //RESTRICTED COUNTRIES
         $sessionData['restrictedCountriesQuestion']
