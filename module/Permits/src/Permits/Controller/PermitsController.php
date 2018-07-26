@@ -172,6 +172,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 //Custom Error Message
                 $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
             }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
+            }
         }
 
         return array('form' => $form, 'id' => $id);
@@ -203,7 +207,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $response = $this->handleCommand($command);
                 $insert = $response->getResult();
                 $this->nextStep(EcmtSection::ROUTE_ECMT_COUNTRIES);
-            }else{
+            }
+            else {
                 //Custom Error Message
                 $form->get('Fields')->get('WillCabotage')->setMessages(['error.messages.checkbox']);
             }
