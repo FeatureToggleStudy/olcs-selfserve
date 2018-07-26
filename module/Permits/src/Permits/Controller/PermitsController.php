@@ -13,7 +13,6 @@ use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
-use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtPermitApplication;
 use Zend\Mvc\MvcEvent;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
@@ -26,7 +25,6 @@ use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 use Olcs\View\Model\Application\ApplicationOverviewSection as ApplicationOverviewSection;
-
 
 class PermitsController extends AbstractOlcsController implements ToggleAwareInterface
 {
@@ -801,26 +799,4 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $response->getResult();
     }
 
-    /**
-     * Returns an array for the update command
-     *
-     * @param $id application id
-     * @param $data array
-     * @return array
-     */
-    private function generateApplicationData($id, $data)
-    {
-        $application = $id;
-        $key = key($data);
-        $value = $data[$key];
-        $applicationData = [
-          'id' => $id,
-          $key => $value,
-          'status' => $application['status']['id'],
-          'paymentStatus' => $application['paymentStatus']['id'],
-          'permitType' => $application['permitType']['id'],
-          'licence' => $application['licence']['id']
-        ];
-        return $applicationData;
-    }
 }
