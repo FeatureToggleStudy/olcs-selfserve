@@ -22,6 +22,7 @@ class Trips
      *     "hint": "For licence OB2013691 (North East of England)",
      *     "short-label": "",
      *     "allow_empty" : true,
+     *     "allow_empty" : true,
      * })
      * @Form\Input("Common\InputFilter\ContinueIfEmptyInput")
      * @Form\Validator({

@@ -22,7 +22,7 @@ class PermitsRequired
      *     "hint": "",
      *     "short-label": "",
      *     "allow_empty" : true,
-     *      "allow_empty" : true,
+     *     "allow_empty" : true,
      * })
      * @Form\Input("Common\InputFilter\ContinueIfEmptyInput")
      * @Form\Validator({
