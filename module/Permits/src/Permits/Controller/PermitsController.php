@@ -120,6 +120,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     {
         $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
+        $applicationStatus = "Not Submitted";
         $application['check_answers'] = null;
         $application['declaration'] = null;
         $application['ecmt_licence'] = 1;
@@ -174,6 +175,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $view->setVariable('applicationFee', $applicationFee);
         $view->setVariable('issuingFee', $issuingFee);
         $view->setVariable('sections', $sections);
+        $view->setVariable('applicationStatus', $applicationStatus);
 
         return $view;
 
