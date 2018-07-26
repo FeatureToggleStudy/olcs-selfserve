@@ -260,7 +260,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     //conditional validation failed, restricted countries list should not be empty
                     $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries.list']);
                 }
-            }else{
+            }
+            else {
                 //Custom Error Message
                 $form->get('Fields')->get('restrictedCountries')->setMessages(['error.messages.restricted.countries']);
             }
