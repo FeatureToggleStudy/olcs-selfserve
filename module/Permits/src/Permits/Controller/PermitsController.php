@@ -261,7 +261,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 }
             }else{
                 //Custom Error Message
-                $form->get('Fields')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries']);
+                $form->get('Fields')->get('restrictedCountries')->setMessages(['error.messages.restricted.countries']);
             }
         }
 
