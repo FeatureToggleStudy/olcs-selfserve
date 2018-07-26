@@ -20,8 +20,7 @@ class PermitsRequired
      * @Form\Options({
      *     "label": "permits.form.permits.required.label",
      *     "hint": "",
-     *     "short-label": "",
-     *     "allow_empty" : true,
+     *     "short-label": "error.messages.permits.required",
      *     "allow_empty" : true,
      * })
      * @Form\Input("Common\InputFilter\ContinueIfEmptyInput")
