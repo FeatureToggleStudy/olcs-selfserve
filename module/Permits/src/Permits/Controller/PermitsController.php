@@ -493,13 +493,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     //TODO remove all session elements and replace with queries
     public function declarationAction()
     {
-
         $id = $this->params()->fromRoute('id', -1);
 
         //Create form from annotations
         $form = $this->getServiceLocator()
-          ->get('Helper\Form')
-          ->createForm('DeclarationForm', false, false);
+            ->get('Helper\Form')
+            ->createForm('DeclarationForm', false, false);
 
         $data = $this->params()->fromPost();
 
@@ -512,6 +511,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $session->Declaration = $data['Fields']['Declaration'];
 
                 $this->redirect()->toRoute('permits', ['action' => 'fee', 'id' => $id]);
+            }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('Declaration')->setMessages(['error.messages.checkbox']);
             }
         }
 
