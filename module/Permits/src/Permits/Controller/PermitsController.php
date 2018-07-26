@@ -329,6 +329,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             if ($form->isValid()) {
                 $this->redirect()->toRoute('permits', ['action' => 'sector', 'id' => $id]);
             }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('InternationalJourney')->setMessages(['error.messages.international-journey']);
+            }
         }
 
         return array('form' => $form, 'id' => $id);
