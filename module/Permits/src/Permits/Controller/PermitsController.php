@@ -329,6 +329,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 //Custom Error Message
                 $form->get('Fields')->get('InternationalJourney')->setMessages(['error.messages.international-journey']);
             }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('InternationalJourney')->setMessages(['error.messages.international-journey']);
+            }
         }
 
         return array('form' => $form, 'id' => $id);
