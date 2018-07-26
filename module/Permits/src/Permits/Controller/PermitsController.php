@@ -347,6 +347,22 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('SpecialistHaulageForm', false, false);
 
+        /*
+        * Get Sector List from Database
+        */
+        $response = $this->handleQuery(SectorsList::create(array()));
+        $sectorList = $response->getResult();
+
+        /*
+        * Make the sectors list the value_options of the form
+        */
+        $sectorList = $this->getServiceLocator()
+            ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
+
+        $options = array();
+        $options['value_options'] = $sectorList;
+        $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -372,22 +388,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $form->get('Fields')->get('SpecialistHaulage')->setMessages(['error.messages.sector']);
             }
         }
-
-        /*
-        * Get Sector List from Database
-        */
-        $response = $this->handleQuery(SectorsList::create(array()));
-        $sectorList = $response->getResult();
-
-        /*
-        * Make the sectors list the value_options of the form
-        */
-        $sectorList = $this->getServiceLocator()
-            ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
-
-        $options = array();
-        $options['value_options'] = $sectorList;
-        $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
 
         return array('form' => $form, 'id' => $id);
     }
