@@ -17,6 +17,7 @@ use Zend\Mvc\MvcEvent;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
 
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
@@ -483,7 +484,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     //TODO remove all session elements and replace with queries
     public function declarationAction()
     {
-
         $id = $this->params()->fromRoute('id', -1);
 
         //Create form from annotations
@@ -497,9 +497,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
-                //Save to session
-                $session = new Container(self::SESSION_NAMESPACE);
-                $session->Declaration = $data['Fields']['Declaration'];
+
+                $declaration = ($data['Fields']['Declaration'] === 'Yes') ? 1 : 0;
+                $command = UpdateDeclaration::create(['id' => $id, 'declaration' => $declaration]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
 
                 $this->redirect()->toRoute('permits', ['action' => 'fee', 'id' => $id]);
             }
