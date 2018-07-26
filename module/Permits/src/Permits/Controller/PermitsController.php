@@ -197,6 +197,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                   ->toRoute('permits',
                     ['action' => 'cabotage', 'id' => $id]);
             }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
+            }
         }
 
         return array('form' => $form, 'id' => $id);
@@ -217,7 +221,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $form->setData($data);
             if ($form->isValid()) {
                 $this->redirect()->toRoute('permits', ['action' => 'restricted-countries', 'id' => $id]);
-            }else{
+            }
+            else {
                 //Custom Error Message
                 $form->get('Fields')->get('WillCabotage')->setMessages(['error.messages.checkbox']);
             }
@@ -255,7 +260,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 }
             }else{
                 //Custom Error Message
-                $form->get('Fields')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries']);
+                $form->get('Fields')->get('restrictedCountries')->setMessages(['error.messages.restricted.countries']);
             }
         }
 
