@@ -19,6 +19,7 @@ use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
 
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCountries;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Dvsa\Olcs\Transfer\Query\Permits\ById;
@@ -26,6 +27,7 @@ use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 use Olcs\View\Model\Application\ApplicationOverviewSection as ApplicationOverviewSection;
+use Olcs\Logging\Log\Logger;
 
 class PermitsController extends AbstractOlcsController implements ToggleAwareInterface
 {
@@ -258,6 +260,15 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
                     || ($data['Fields']['restrictedCountries'] == 0))
                 {
+
+                    $countriesList = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
+                    $countryIds = $this->extractIDFromSessionData($countriesList);
+
+                    $command = UpdateEcmtCountries::create(['ecmtApplicationId' => '1', 'countryIds' => ['GB']]);
+
+                    $response = $this->handleCommand($command);
+                    $insert = $response->getResult();
+
                     $this->redirect()->toRoute('permits', ['action' => 'trips', 'id' => $id]);
                 }
                 else{
@@ -457,8 +468,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
          * Collate session data for use in view
          */
         $sessionData = array();
-        $sessionData['countriesQuestion'] = 'Are you transporting goods to a 
-                                        restricted country such as Austria, 
+        $sessionData['countriesQuestion'] = 'Are you transporting goods to a
+                                        restricted country such as Austria,
                                         Greece, Hungary, Italy or Russia?';
 
         $sessionData['countries'] = array();
@@ -722,14 +733,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //EURO 6 EMISSIONS CONFIRMATION
         $sessionData['meetsEuro6Question']
-          = 'I confirm that my ECMT permit(s) will only be 
-                used by vehicle(s) that are environmentally compliant 
+          = 'I confirm that my ECMT permit(s) will only be
+                used by vehicle(s) that are environmentally compliant
                 to Euro 6 emissions standards.';
         $sessionData['meetsEuro6Answer'] = $session->meetsEuro6  == 1 ? 'Yes' : 'No';
 
         //CABOTAGE CONFIRMATION
         $sessionData['cabotageQuestion']
-          = 'I confirm that I will not undertake a 
+          = 'I confirm that I will not undertake a
                 cabotage journey(s) with an ECMT permit.';
         $sessionData['cabotageAnswer'] = $session->willCabotage  > 1 ? 'Yes' : 'No';
 
@@ -756,7 +767,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //'PERCENTAGE' QUESTION
         $sessionData['percentageQuestion']
-          = 'What percentage of your business 
+          = 'What percentage of your business
                 is related to international journeys over the past 12 months?';
         switch ($session->internationalJourneyPercentage) {
             case 0:
