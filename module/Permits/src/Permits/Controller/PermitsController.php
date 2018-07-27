@@ -18,6 +18,7 @@ use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateInternationalJourney;
 
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCountries;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
@@ -341,6 +342,13 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+
+                $internationalJourneys = $data['Fields']['InternationalJourney'];
+                $command = UpdateInternationalJourney::create(['id' => $id, 'internationalJourney' => $internationalJourneys]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
                 $this->redirect()->toRoute('permits', ['action' => 'sector', 'id' => $id]);
             }
         }
