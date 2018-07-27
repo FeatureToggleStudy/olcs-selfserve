@@ -2,6 +2,7 @@
 namespace Permits\Controller;
 
 use Common\Controller\Interfaces\ToggleAwareInterface;
+use Olcs\Logging\Log\Logger;
 use Permits\Form\PermitApplicationForm;
 use Common\Controller\AbstractOlcsController;
 use Common\FeatureToggle;
@@ -17,6 +18,7 @@ use Zend\Mvc\MvcEvent;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtPermitsRequired;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
 
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
@@ -397,6 +399,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('PermitsRequiredForm', false, false);
 
+        if (isset($application) && $application['permitsRequired']) {
+            $form->get('Fields')->get('PermitsRequired')->setValue($application['permitsRequired']);
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -406,6 +412,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 //Save to session
                 $session = new Container(self::SESSION_NAMESPACE);
                 $session->PermitsRequired = $data['Fields']['PermitsRequired'];
+
+
+                $command = UpdateEcmtPermitsRequired::create(['id' => $id, 'permitsRequired' =>  $data['Fields']['PermitsRequired']]);
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
 
                 $this->redirect()->toRoute('permits', ['action' => 'check-answers', 'id' => $id]);
             }
