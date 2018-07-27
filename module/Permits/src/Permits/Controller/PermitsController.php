@@ -31,7 +31,6 @@ use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 use Olcs\View\Model\Application\ApplicationOverviewSection as ApplicationOverviewSection;
-use Olcs\Logging\Log\Logger;
 
 class PermitsController extends AbstractOlcsController implements ToggleAwareInterface
 {
