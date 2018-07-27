@@ -19,6 +19,7 @@ use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateInternationalJourney;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateSector;
 
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCountries;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
@@ -391,6 +392,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['SectorList']['SectorList']))
                     || ($data['Fields']['SectorList'] == 0))
                 {
+                    $tmpSectorArray[0] = $data['Fields']['SectorList']['SectorList']; //pass into array in preparation for extractIDFromSessionData()
+                    $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
+
+                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
+
+                    $response = $this->handleCommand($command);
+                    $result = $response->getResult();
+
                     $this->redirect()->toRoute('permits', ['action' => 'permits-required', 'id' => $id]);
                 }
                 else{
