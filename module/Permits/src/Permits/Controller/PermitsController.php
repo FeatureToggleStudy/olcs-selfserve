@@ -229,6 +229,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('CabotageForm', false, false);
 
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && $application['cabotage']) {
+            $form->get('Fields')->get('WillCabotage')->setValue('Yes');
+        }
+
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
@@ -316,6 +322,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         ->get('Helper\Form')
         ->createForm('TripsForm', false, false);
 
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && isset($application['trips'])) {
+            $form->get('Fields')->get('TripsAbroad')->setValue($application['trips']);
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -337,6 +349,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('InternationalJourneyForm', false, false);
+
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && isset($application['internationalJourneys'])) {
+            $form->get('Fields')->get('InternationalJourney')->setValue($application['internationalJourneys']);
+        }
 
         $data = $this->params()->fromPost();
 
@@ -528,6 +546,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $form = $this->getServiceLocator()
           ->get('Helper\Form')
           ->createForm('DeclarationForm', false, false);
+
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && isset($application['declaration'])) {
+            $form->get('Fields')->get('Declaration')->setValue($application['declaration']);
+        }
 
         $data = $this->params()->fromPost();
 
