@@ -130,10 +130,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'emissions' => ['euro6_emissions','euro6EmissionsStatus'],
             'cabotage' => ['cabotage','cabotageStatus'],
             'countrys' => ['restricted_countries','restrictedCountriesStatus'],
+            'noOfPermits' => ['permits_required','permitsRequiredStatus'],
             'trips' => ['trips','tripsStatus'],
             'internationalJourneys' => ['international_journey','internationalJourneyStatus'],
             'sectors' => ['sector','sectorStatus'],
-            'noOfPermits' => ['permits_required','permitsRequiredStatus'],
             'check_answers' => ['check_answers','checkAnswersStatus'],
             'declaration' => ['declaration','declarationStatus']
         ];
