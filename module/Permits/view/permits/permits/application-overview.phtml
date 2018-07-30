@@ -1,6 +1,6 @@
 <?php
     $title = $this->translate('permits.application.overwiew.main-title');
-    $this->headTitle($title);
+    $this->escapeHtml($this->headTitle($title));
 ?>
 
 <div class="row ecmt">
@@ -27,7 +27,7 @@
                </ol>
             </div>
             <div class="actions-container new-application--wrapper">
-                <p><a href="/permits/euro6-emissions/<?php echo $id; ?>" class="action--primary large"><?php echo $this->translate('permits.button.accept-and-continue'); ?></a></p>
+                <p><a href="/permits/euro6-emissions/<?php echo $this->escapeHtml($id); ?>" class="action--primary large"><?php echo $this->escapeHtml($this->translate('permits.button.accept-and-continue')); ?></a></p>
             </div>
         </div>
     </div>
@@ -39,8 +39,8 @@
             <div class="info-box info-box--grey">
                 <h3 class="info-box__heading">Progress</h3>
                 <p><b>1 of 8 complete</b></p>
-                <p><b>Application fee (non-refundable): </b> <?php echo $applicationFee; ?></p>
-                <p><b>Issuing fee (if application is successful): </b> <?php echo $issuingFee; ?></p>
+                <p><b>Application fee (non-refundable): </b> <?php echo $this->escapeHtml($applicationFee); ?></p>
+                <p><b>Issuing fee (if application is successful): </b> <?php echo $this->escapeHtml($issuingFee); ?></p>
                 <p>You can't submit until you've completed all of the sections</p>
             </div>
 
