@@ -1,12 +1,12 @@
 <?php
     $title = $this->translate('permits.page.fee.title');
-    $this->headTitle($title);
+    $this->escapeHtml($this->headTitle($title));
 ?>
 
 <div class="row ecmt">
     <div class="two-thirds">
         <div class="page-header">
-            <p><a href="/permits/application-overview/<?php echo $id; ?>" class="back-link"> <?php echo $this->translate('permits.back-link'); ?> </a></p>
+            <p><a href="/permits/application-overview/<?php echo $this->escapeHtml($id); ?>" class="back-link"> <?php echo $this->escapeHtml($this->translate('permits.back-link')); ?> </a></p>
             <div class="page-header__wrapper">
                 <h1 class="js-title">
                     <?php echo $this->escapeHtml($title); ?>
@@ -16,38 +16,38 @@
 
         <div class="field">
             <div class="govuk-hint">
-                <p><?php echo $this->translate('permits.page.fee.subtitle'); ?></p>
+                <p><?php echo $this->escapeHtml($this->translate('permits.page.fee.subtitle')); ?></p>
             </div>
 
             <div class="form-group">
                 <table class="fee-table">
                     <tr>
-                        <td><h4><?php echo $this->translate('permits.page.fee.application.reference'); ?></h4></td>
-                        <td><?php echo $permitsNo; ?></td>
+                        <td><h4><?php echo $this->escapeHtml($this->translate('permits.page.fee.application.reference')); ?></h4></td>
+                        <td><?php echo $this->escapeHtml($permitsNo); ?></td>
                     </tr>
                     <tr>
-                        <td><h4><?php echo $this->translate('permits.page.fee.application.date'); ?></h4></td>
-                        <td><?php echo date("d F Y"); ?></td>
+                        <td><h4><?php echo $this->escapeHtml($this->translate('permits.page.fee.application.date')); ?></h4></td>
+                        <td><?php echo $this->escapeHtml(date("d F Y")); ?></td>
                     </tr>
                     <tr>
-                        <td><h4><?php echo $this->translate('permits.page.fee.permit.type'); ?></h4></td>
+                        <td><h4><?php echo $this->escapeHtml($this->translate('permits.page.fee.permit.type')); ?></h4></td>
                         <td>ECMT</td>
                     </tr>
                     <tr>
-                        <td><h4><?php echo $this->translate('permits.page.fee.permit.validity'); ?></h4></td>
+                        <td><h4><?php echo $this->escapeHtml($this->translate('permits.page.fee.permit.validity')); ?></h4></td>
                         <td>January 2019 to December 2019</td>
                     </tr>
                     <tr>
-                        <td><h4><?php echo $this->translate('permits.page.fee.number.permits'); ?></h4></td>
+                        <td><h4><?php echo $this->escapeHtml($this->translate('permits.page.fee.number.permits')); ?></h4></td>
                         <td>10</td>
                     </tr>
                     <tr>
-                        <td><h4><?php echo $this->translate('permits.page.fee.permit.fee.single'); ?></h4></td>
+                        <td><h4><?php echo $this->escapeHtml($this->translate('permits.page.fee.permit.fee.single')); ?></h4></td>
                         <td>£10.00</td>
                     </tr>
 
                     <tr>
-                        <td><h4><?php echo $this->translate('permits.page.fee.permit.fee.total'); ?></h4></td>
+                        <td><h4><?php echo $this->escapeHtml($this->translate('permits.page.fee.permit.fee.total')); ?></h4></td>
                         <td>£100.00</td>
                     </tr>
                 </table>
@@ -55,13 +55,13 @@
 
             <div class="actions-container new-application--wrapper">
                 <p class="exclamation">
-                    <?php echo $this->translate('permits.page.fee.message'); ?>
+                    <?php echo $this->escapeHtml($this->translate('permits.page.fee.message')); ?>
                 </p>
                 <p>
-                    <a href="/permits/submitted/<?php echo $id; ?>" class="action--primary large"><?php echo $this->translate('submit-and-pay.button'); ?></a>
+                    <a href="/permits/submitted/<?php echo $this->escapeHtml($id); ?>" class="action--primary large"><?php echo $this->escapeHtml($this->translate('submit-and-pay.button')); ?></a>
                 </p>
                 <p>
-                    <a href="/permits/application-overview/<?php echo $id; ?>"> <?php echo $this->translate('permits.button.save-return-to-overview'); ?> </a>
+                    <a href="/permits/application-overview/<?php echo $this->escapeHtml($id); ?>"> <?php echo $this->escapeHtml($this->translate('permits.button.save-return-to-overview')); ?> </a>
                 </p>
             </div>
         </div>
