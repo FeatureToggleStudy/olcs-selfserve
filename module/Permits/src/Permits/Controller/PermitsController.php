@@ -243,7 +243,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
                     || ($data['Fields']['restrictedCountries'] == 0))
                 {
-                    $this->redirect()->toRoute('permits', ['action' => 'trips', 'id' => $id]);
+                    $this->redirect()->toRoute('permits', ['action' => 'permits-required', 'id' => $id]);
                 }
                 else{
                     //conditional validation failed, restricted countries list should not be empty
@@ -357,7 +357,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['SectorList']['SectorList']))
                     || ($data['Fields']['SectorList'] == 0))
                 {
-                    $this->redirect()->toRoute('permits', ['action' => 'permits-required', 'id' => $id]);
+                    $this->redirect()->toRoute('permits', ['action' => 'check-answers', 'id' => $id]);
                 }
                 else{
                     //conditional validation failed, sector list should not be empty
@@ -392,7 +392,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $session = new Container(self::SESSION_NAMESPACE);
                 $session->PermitsRequired = $data['Fields']['PermitsRequired'];
 
-                $this->redirect()->toRoute('permits', ['action' => 'check-answers', 'id' => $id]);
+                $this->redirect()->toRoute('permits', ['action' => 'trips', 'id' => $id]);
             }
         }
 
@@ -406,7 +406,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     //TODO remove all session elements and replace with queries
     public function checkAnswersAction()
     {
-
         $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
         $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
