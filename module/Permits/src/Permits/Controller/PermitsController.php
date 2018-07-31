@@ -12,6 +12,8 @@ use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCabotage;
 use Zend\Mvc\MvcEvent;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
@@ -136,18 +138,29 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function euro6EmissionsAction()
     {
 
-        $id = $this->params()->fromRoute('id', -1);
-
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('Euro6EmissionsForm', false, false);
+
+        // read data
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+        if (isset($application) && $application['emissions']) {
+            $form->get('Fields')->get('MeetsEuro6')->setValue('Yes');
+        }
 
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+                $update['emissions'] = ($data['Fields']['MeetsEuro6'] === 'Yes') ? 1 : 0;
+                $command = UpdateEcmtEmissions::create(['id' => $id, 'emissions' => $update['emissions']]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
                 $this->nextStep(EcmtSection::ROUTE_ECMT_CABOTAGE);
             }
         }
@@ -157,18 +170,31 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function cabotageAction()
     {
-        $id = $this->params()->fromRoute('id', -1);
 
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('CabotageForm', false, false);
 
+        // read data
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+        if (isset($application) && $application['cabotage']) {
+            $form->get('Fields')->get('WontCabotage')->setValue('Yes');
+        }
+
+        //  saving
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+                $cabotage = ($data['Fields']['WontCabotage'] === 'Yes') ? 1 : 0;
+                $command = UpdateEcmtCabotage::create(['id' => $id, 'cabotage' => $cabotage]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
                 $this->nextStep(EcmtSection::ROUTE_ECMT_COUNTRIES);
             }
         }
@@ -370,7 +396,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         if (is_array($data) && array_key_exists('submit', $data)) {
             //Save data to session
-            $session->willCabotage = $data['willCabotage'];
+            $session->wontCabotage = $data['wontCabotage'];
         }
 
         $sessionData = $this->collateSessionData();
@@ -390,7 +416,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         if (is_array($data) && array_key_exists('submit', $data)) {
             //Save data to session
-            $session->willCabotage = $data['willCabotage'];
+            $session->wontCabotage = $data['wontCabotage'];
         }
         /*
          * Collate session data for use in view
@@ -415,7 +441,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $sessionData['meetsEuro6'] = $session->meetsEuro6 == 1 ? 'Yes' : 'No';
 
         $sessionData['cabotageQuestion'] = 'Will you be carrying out cabotage?';
-        $sessionData['cabotage'] = $session->willCabotage == 1 ? 'Yes' : 'No';
+        $sessionData['cabotage'] = $session->wontCabotage == 1 ? 'Yes' : 'No';
 
         return array('sessionData' => $sessionData, 'applicationData' => $application);
     }
@@ -666,7 +692,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $sessionData['cabotageQuestion']
           = 'I confirm that I will not undertake a 
                 cabotage journey(s) with an ECMT permit.';
-        $sessionData['cabotageAnswer'] = $session->willCabotage  > 1 ? 'Yes' : 'No';
+        $sessionData['cabotageAnswer'] = $session->wontCabotage  > 1 ? 'Yes' : 'No';
 
         //RESTRICTED COUNTRIES
         $sessionData['restrictedCountriesQuestion']
@@ -741,4 +767,5 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
+
 }
