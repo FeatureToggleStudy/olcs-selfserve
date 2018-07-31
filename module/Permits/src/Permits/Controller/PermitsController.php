@@ -247,6 +247,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return array('form' => $form, 'id' => $id);
     }
 
+    //TODO: Move some of this to FormHelperService
     public function restrictedCountriesAction()
     {
         $id = $this->params()->fromRoute('id', -1);
@@ -264,7 +265,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $form->setData($data);
 
             if ($form->isValid()) {
-
+                
                 //EXTRA VALIDATION
                 if (($data['Fields']['restrictedCountries'] == 1
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
@@ -272,7 +273,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 {
                     $countriesList = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
                     $countryIds = $this->extractIDFromSessionData($countriesList);
-
                     $command = UpdateEcmtCountries::create(['ecmtApplicationId' => $id, 'countryIds' => $countryIds]);
 
                     $response = $this->handleCommand($command);
@@ -301,6 +301,25 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $options = array();
         $options['value_options'] = $restrictedCountryList;
         $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setOptions($options);
+
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application)) {
+            if(isset($application['countrys'])){
+                $form->get('Fields')->get('restrictedCountries')->setValue('1');
+
+                //Format results from DB before setting values on form
+                $selectedValues = array();
+                foreach($application['countrys'] as $country)
+                {
+                    $selectedValues[] = $country['id'] . $this::DEFAULT_SEPARATOR . $country['countryDesc'];
+                }
+
+                $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setValue($selectedValues);
+            }else{
+                $form->get('Fields')->get('restrictedCountries')->setValue('0');
+            }
+        }
 
         return array('form' => $form, 'id' => $id);
     }
