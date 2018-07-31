@@ -17,11 +17,11 @@ class Declaration
      *   "id" : "declaration",
      * })
      * @Form\Options({
-     *   "checked_value": "Y",
-     *     "unchecked_value": "N",
+     *   "checked_value": "Yes",
+     *     "unchecked_value": "No",
      *     "label": "permits.form.declaration.label",
      *     "label_attributes": {"class": "form-control form-control--checkbox form-control--advanced"},
-     *     "must_be_value": "Y"
+     *     "must_be_value": "Yes"
      * })
      * @Form\Type("\Common\Form\Elements\InputFilters\SingleCheckbox")
      */

@@ -2,6 +2,7 @@
 namespace Permits\Controller;
 
 use Common\Controller\Interfaces\ToggleAwareInterface;
+use Olcs\Logging\Log\Logger;
 use Permits\Form\PermitApplicationForm;
 use Common\Controller\AbstractOlcsController;
 use Common\FeatureToggle;
@@ -16,7 +17,13 @@ use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 use Zend\Mvc\MvcEvent;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtPermitsRequired;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateInternationalJourney;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateSector;
 
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCountries;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Dvsa\Olcs\Transfer\Query\Permits\ById;
@@ -165,6 +172,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             array_push($sections, $test);
         }
 
+        //TODO add new fee type and fetch the data from fees table
+
         $applicationFee = "£10.00";
         $issuingFee = "£123.00";
 
@@ -181,18 +190,29 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function euro6EmissionsAction()
     {
-        $id = $this->params()->fromRoute('id', -1);
-
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('Euro6EmissionsForm', false, false);
+
+        // read data
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+        if (isset($application) && $application['emissions']) {
+            $form->get('Fields')->get('MeetsEuro6')->setValue('Yes');
+        }
 
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+                $update['emissions'] = ($data['Fields']['MeetsEuro6'] === 'Yes') ? 1 : 0;
+                $command = UpdateEcmtEmissions::create(['id' => $id, 'emissions' => $update['emissions']]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
                 $this->redirect()
                   ->toRoute('permits',
                     ['action' => 'cabotage', 'id' => $id]);
@@ -215,6 +235,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('CabotageForm', false, false);
 
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && $application['cabotage']) {
+            $form->get('Fields')->get('WillCabotage')->setValue('Yes');
+        }
+
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
@@ -231,6 +257,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return array('form' => $form, 'id' => $id);
     }
 
+    //TODO: Move some of this to FormHelperService
     public function restrictedCountriesAction()
     {
         $id = $this->params()->fromRoute('id', -1);
@@ -256,21 +283,47 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $options['value_options'] = $restrictedCountryList;
         $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setOptions($options);
 
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application)) {
+            if(isset($application['countrys'])){
+                $form->get('Fields')->get('restrictedCountries')->setValue('1');
+
+                //Format results from DB before setting values on form
+                $selectedValues = array();
+                foreach($application['countrys'] as $country)
+                {
+                    $selectedValues[] = $country['id'] . $this::DEFAULT_SEPARATOR . $country['countryDesc'];
+                }
+
+                $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setValue($selectedValues);
+            }else{
+                $form->get('Fields')->get('restrictedCountries')->setValue('0');
+            }
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
 
             //Validate
             $form->setData($data);
+
             if ($form->isValid()) {
                 //EXTRA VALIDATION
                 if (($data['Fields']['restrictedCountries'] == 1
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
                     || ($data['Fields']['restrictedCountries'] == 0))
                 {
+                    $countriesList = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
+                    $countryIds = $this->extractIDFromSessionData($countriesList);
+                    $command = UpdateEcmtCountries::create(['ecmtApplicationId' => $id, 'countryIds' => $countryIds]);
+
+                    $response = $this->handleCommand($command);
+                    $insert = $response->getResult();
+
                     $this->redirect()->toRoute('permits', ['action' => 'permits-required', 'id' => $id]);
-                }
-                else {
+                } else {
                     //conditional validation failed, restricted countries list should not be empty
                     $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries.list']);
                 }
@@ -300,6 +353,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         ->get('Helper\Form')
         ->createForm('TripsForm', false, false);
 
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && isset($application['trips'])) {
+            $form->get('Fields')->get('TripsAbroad')->setValue($application['trips']);
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -322,12 +381,25 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('InternationalJourneyForm', false, false);
 
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && isset($application['internationalJourneys'])) {
+            $form->get('Fields')->get('InternationalJourney')->setValue($application['internationalJourneys']);
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+
+                $internationalJourneys = $data['Fields']['InternationalJourney'];
+                $command = UpdateInternationalJourney::create(['id' => $id, 'internationalJourney' => $internationalJourneys]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
                 $this->redirect()->toRoute('permits', ['action' => 'sector', 'id' => $id]);
             }
             else {
@@ -342,6 +414,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function sectorAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
 
         //Create form from annotations
         $form = $this->getServiceLocator()
@@ -364,8 +437,22 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $options['value_options'] = $sectorList;
         $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
 
-        $data = $this->params()->fromPost();
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application)) {
+            if(isset($application['sectors'])){
+                $form->get('Fields')->get('SpecialistHaulage')->setValue('1');
 
+                //Format results from DB before setting values on form
+                $selectedValue = $application['sectors']['id'] . $this::DEFAULT_SEPARATOR . $application['sectors']['description'];
+
+                $form->get('Fields')->get('SectorList')->get('SectorList')->setValue($selectedValue);
+            }else{
+                $form->get('Fields')->get('SpecialistHaulage')->setValue('0');
+            }
+        }
+
+        $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
 
             //Validate
@@ -377,6 +464,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['SectorList']['SectorList']))
                     || ($data['Fields']['SpecialistHaulage'] == 0))
                 {
+                    $tmpSectorArray[0] = $data['Fields']['SectorList']['SectorList']; //pass into array in preparation for extractIDFromSessionData()
+                    $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
+
+                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
+
+                    $response = $this->handleCommand($command);
+                    $result = $response->getResult();
+
                     $this->redirect()->toRoute('permits', ['action' => 'check-answers', 'id' => $id]);
                 }
                 else {
@@ -406,6 +501,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('PermitsRequiredForm', false, false);
 
+        if (isset($application) && $application['permitsRequired']) {
+            $form->get('Fields')->get('PermitsRequired')->setValue($application['permitsRequired']);
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -415,6 +514,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 //Save to session
                 $session = new Container(self::SESSION_NAMESPACE);
                 $session->PermitsRequired = $data['Fields']['PermitsRequired'];
+
+                $command = UpdateEcmtPermitsRequired::create(['id' => $id, 'permitsRequired' =>  $data['Fields']['PermitsRequired']]);
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
 
                 $this->redirect()->toRoute('permits', ['action' => 'trips', 'id' => $id]);
             }
@@ -499,15 +602,24 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Helper\Form')
             ->createForm('DeclarationForm', false, false);
 
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application) && isset($application['declaration'])) {
+            $form->get('Fields')->get('Declaration')->setValue($application['declaration']);
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
-                //Save to session
-                $session = new Container(self::SESSION_NAMESPACE);
-                $session->Declaration = $data['Fields']['Declaration'];
+
+                $declaration = ($data['Fields']['Declaration'] === 'Yes') ? 1 : 0;
+                $command = UpdateDeclaration::create(['id' => $id, 'declaration' => $declaration]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
 
                 $this->redirect()->toRoute('permits', ['action' => 'fee', 'id' => $id]);
             }
@@ -810,4 +922,5 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
+
 }
