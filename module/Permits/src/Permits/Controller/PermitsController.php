@@ -265,7 +265,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $form->setData($data);
 
             if ($form->isValid()) {
-                
+
                 //EXTRA VALIDATION
                 if (($data['Fields']['restrictedCountries'] == 1
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
@@ -397,6 +397,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function sectorAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
 
         //Create form from annotations
         $form = $this->getServiceLocator()
@@ -418,8 +419,22 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $options['value_options'] = $sectorList;
         $form->get('Fields')->get('SectorList')->get('SectorList')->setOptions($options);
 
-        $data = $this->params()->fromPost();
+        // Read data
+        $application = $this->getApplication($id);
+        if (isset($application)) {
+            if(isset($application['sectors'])){
+                $form->get('Fields')->get('SpecialistHaulage')->setValue('1');
 
+                //Format results from DB before setting values on form
+                $selectedValue = $application['sectors']['id'] . $this::DEFAULT_SEPARATOR . $application['sectors']['description'];
+
+                $form->get('Fields')->get('SectorList')->get('SectorList')->setValue($selectedValue);
+            }else{
+                $form->get('Fields')->get('SpecialistHaulage')->setValue('0');
+            }
+        }
+
+        $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
             $form->setData($data);
