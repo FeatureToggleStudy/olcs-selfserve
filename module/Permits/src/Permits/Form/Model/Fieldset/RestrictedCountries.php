@@ -25,7 +25,8 @@ class RestrictedCountries
      *     "value_options":{
      *          "1" : "Yes",
      *          "0" : "No"
-     *     }
+     *     },
+     *     "error-message": "You must answer the question to continue"
      * })
      * @Form\Type("Radio")
      */
