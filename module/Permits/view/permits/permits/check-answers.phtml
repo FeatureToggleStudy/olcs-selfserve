@@ -95,7 +95,7 @@ $this->headTitle($title);
                             <h4><?php echo $sessionData['percentageQuestion'] ?></h4>
                         </td>
                         <td>
-                            <?php echo $sessionData['percentageAnswer'] ?>
+                            <?php echo $this->translate($sessionData['percentageAnswer']); ?>
                         </td>
                         <td>
                             <a href="/permits/international-journey/<?php echo $id; ?>">
