@@ -262,6 +262,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
             //Validate
             $form->setData($data);
+
             if ($form->isValid()) {
 
                 //EXTRA VALIDATION
@@ -269,18 +270,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
                     || ($data['Fields']['restrictedCountries'] == 0))
                 {
-
                     $countriesList = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
                     $countryIds = $this->extractIDFromSessionData($countriesList);
 
-                    $command = UpdateEcmtCountries::create(['ecmtApplicationId' => '1', 'countryIds' => ['GB']]);
+                    $command = UpdateEcmtCountries::create(['ecmtApplicationId' => $id, 'countryIds' => $countryIds]);
 
                     $response = $this->handleCommand($command);
                     $insert = $response->getResult();
 
                     $this->redirect()->toRoute('permits', ['action' => 'trips', 'id' => $id]);
-                }
-                else{
+                } else {
                     //conditional validation failed, restricted countries list should not be empty
                     $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries']);
                 }
