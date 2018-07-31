@@ -26,6 +26,7 @@ class InternationalJourney
      *          "From 60% to 90%",
      *          "More than 90%",
      *      },
+     *      "error-message": "error.messages.international-journey"
      * })
      * @Form\Type("Radio")
      */
