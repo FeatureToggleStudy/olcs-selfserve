@@ -28,7 +28,8 @@ $this->headTitle($title);
                             <h4><?php echo $sessionData['licenceQuestion'] ?></h4>
                         </td>
                         <td>
-                            <?php echo str_replace(array("\r\n", "\n"), '<br />', $sessionData['licenceAnswer']); ?>
+                            <?php echo str_replace(array("\r\n", "\n"), '<br />', $sessionData['licenceAnswer']);
+                            ?>
                         </td>
                         <td>
                             <a href="/permits/ecmt-licence/<?php echo $id; ?>">

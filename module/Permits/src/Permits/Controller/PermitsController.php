@@ -409,21 +409,24 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 //EXTRA VALIDATION
                 if (($data['Fields']['SpecialistHaulage'] == 1
                         && isset($data['Fields']['SectorList']['SectorList']))
-                    || ($data['Fields']['SectorList'] == 0))
+                    || $data['Fields']['SpecialistHaulage'] == 0)
                 {
-                    $tmpSectorArray[0] = $data['Fields']['SectorList']['SectorList']; //pass into array in preparation for extractIDFromSessionData()
-                    $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
+                    if($data['Fields']['SpecialistHaulage'] != 0)  // If value is 0 then no need to save any data
+                    {
+                        $tmpSectorArray[0] = $data['Fields']['SectorList']['SectorList']; //pass into array in preparation for extractIDFromSessionData()
+                        $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
 
-                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
+                        $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
 
-                    $response = $this->handleCommand($command);
-                    $result = $response->getResult();
+                        $response = $this->handleCommand($command);
+                        $result = $response->getResult();
+                    }
 
                     $this->redirect()->toRoute('permits', ['action' => 'permits-required', 'id' => $id]);
                 }
                 else{
                     //conditional validation failed, sector list should not be empty
-                    $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages('error.messages.sector');
+                    $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages(['error.messages.sector']);
                 }
             }
         }
