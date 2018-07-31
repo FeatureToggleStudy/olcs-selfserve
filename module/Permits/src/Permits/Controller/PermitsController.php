@@ -477,7 +477,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     //TODO remove all session elements and replace with queries
     public function checkAnswersAction()
     {
-
         $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
         $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
@@ -490,9 +489,58 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $session->willCabotage = $data['willCabotage'];
         }
 
-        $sessionData = $this->collateSessionData();
+        $answerData = $this->collatePermitQuestions(); //Get all the questions in returned array
 
-        return array('sessionData' => $sessionData, 'applicationData' => $application, 'id' => $id);
+        $answerData['licenceAnswer'] = $application['licence']['licNo'] . "\n" . '(' . $application['licence']['trafficArea']['name'] . ')';
+        $answerData['meetsEuro6Answer'] = $application['emissions'] == 1 ? 'Yes' : 'No';
+        $answerData['cabotageAnswer'] = $application['cabotage'] == 1 ? 'Yes' : 'No';
+        $answerData['tripsAnswer'] = $application['trips'];
+        $answerData['permitsAnswer'] = $application['permitsRequired'];
+
+        //Restricted Coutries Question
+        if(isset($application['countrys']))
+        {
+            $answerData['restrictedCountriesAnswer'] = "Yes\n";
+
+            $count = 1;
+            $numOfCountries = count($application['countrys']);
+            foreach($application['countrys'] as $countryDetails)
+            {
+                $answerData['restrictedCountriesAnswer'] .= $countryDetails['countryDesc'];
+
+                if(!($count == $numOfCountries))
+                {
+                    $answerData['restrictedCountriesAnswer'] .= ', ';
+                }
+
+                $count++;
+            }
+        } else {
+            $answerData['restrictedCountriesAnswer'] = "No";
+        }
+
+        //International Journeys Question
+        switch ($application['internationalJourneys']) {
+            case 0:
+                $answerData['percentageAnswer'] = 'Less than 60%';
+                $answerData['percentageAnswer'] = 'less.than.60%';
+                break;
+            case 1:
+                $answerData['percentageAnswer'] = 'From 60% to 90%';
+                $answerData['percentageAnswer'] = 'from.60%.to.90%';
+                break;
+            case 2:
+                $answerData['percentageAnswer'] = 'More than 90%';
+                $answerData['percentageAnswer'] = 'more.than.90%';
+                break;
+        }
+
+        //Sectors Question
+        if(isset($application['sectors']['description'])){
+            $answerData['specialistHaulageAnswer'] = $application['sectors']['description'];
+        }
+
+        return array('sessionData' => $answerData, 'applicationData' => $application, 'id' => $id, 'ref' => $applicationRef);
     }
 
     //TODO remove all session elements and replace with queries
@@ -766,89 +814,55 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     //TODO remove this method once all session functionality is removed
 
     /**
-     * Returns a new array with all the user's answers (taken from the session)
-     * and associated question titles (as per the check-answers/summary page).
+     * Returns a new array with all the question titles
      *
      *
      * @return array
      */
-    private function collateSessionData()
+    private function collatePermitQuestions()
     {
-        $session = new Container(self::SESSION_NAMESPACE);
         $sessionData = array();
 
         //SELECTED LICENCE
         $sessionData['licenceQuestion']
-          = 'Licence selected';
-        $sessionData['licenceAnswer'] = $session->licence;
+            = 'Licence selected';
 
         //EURO 6 EMISSIONS CONFIRMATION
         $sessionData['meetsEuro6Question']
-          = 'I confirm that my ECMT permit(s) will only be
-                used by vehicle(s) that are environmentally compliant
+            = 'I confirm that my ECMT permit(s) will only be 
+                used by vehicle(s) that are environmentally compliant 
                 to Euro 6 emissions standards.';
-        $sessionData['meetsEuro6Answer'] = $session->meetsEuro6  == 1 ? 'Yes' : 'No';
 
         //CABOTAGE CONFIRMATION
         $sessionData['cabotageQuestion']
-          = 'I confirm that I will not undertake a
+            = 'I confirm that I will not undertake a 
                 cabotage journey(s) with an ECMT permit.';
-        $sessionData['cabotageAnswer'] = $session->willCabotage  > 1 ? 'Yes' : 'No';
 
         //RESTRICTED COUNTRIES
         $sessionData['restrictedCountriesQuestion']
-          = 'Do you intend to transport goods to
+            = 'Do you intend to transport goods to
                 Austria, Greece, Hungary, Italy or Russia?';
-        if($session->restrictedCountries  == 1)
-        {
-            $sessionData['restrictedCountriesAnswer'] = [];
-            foreach ($session->restrictedCountriesList as $country)
-            {
-                //add everything right of '|' to the list of countries to get rid of the sector ID
-                array_push($sessionData['restrictedCountriesAnswer'], substr($country, strpos($country, $this::DEFAULT_SEPARATOR) + 1));
-            }
-        }else{
-            $sessionData['restrictedCountriesAnswer'] = 'No';
-        }
 
         //NUMBER OF TRIPS PER YEAR
         $sessionData['tripsQuestion']
-          = 'How many international trips were carried out over the past 12 months?';
-        $sessionData['tripsAnswer'] = $session->trips;
+            = 'How many international trips were carried out over the past 12 months?';
 
         //'PERCENTAGE' QUESTION
         $sessionData['percentageQuestion']
-          = 'What percentage of your business
+            = 'What percentage of your business 
                 is related to international journeys over the past 12 months?';
-        switch ($session->internationalJourneyPercentage) {
-            case 0:
-                $sessionData['percentageAnswer'] = 'Less than 60%';
-                break;
-            case 1:
-                $sessionData['percentageAnswer'] = 'From 60% to 90%';
-                break;
-            case 2:
-                $sessionData['percentageAnswer'] = 'More than 90%';
-                break;
-        }
 
         //SECTORS QUESTION
         $sessionData['specialistHaulageQuestion']
-          = 'Do you specialise in carrying goods for one specific sector?';
-        if($session->specialistHaulage  == 1)
-        {
-            $sessionData['specialistHaulageAnswer'] = substr($session->sectorList, strpos($session->sectorList, $this::DEFAULT_SEPARATOR) + 1);
-        }else {
-            $sessionData['specialistHaulageAnswer'] = 'No';
-        }
+            = 'Do you specialise in carrying goods for one specific sector?';
 
         //NUMBER OF PERMITS REQUIRED
         $sessionData['permitsQuestion']
-          = 'How many permits does your business require?';
-        $sessionData['permitsAnswer'] = $session->permitsRequired;
+            = 'How many permits does your business require?';
 
         return $sessionData;
     }
+
 
     /**
      * Returns an application entry by id
