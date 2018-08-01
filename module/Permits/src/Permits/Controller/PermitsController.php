@@ -821,9 +821,4 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
-<<<<<<< HEAD
 }
-=======
-
-}
->>>>>>> project/eupermits
