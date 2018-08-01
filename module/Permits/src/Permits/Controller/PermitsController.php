@@ -24,6 +24,8 @@ use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateInternationalJourney;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateSector;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtTrips;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCabotage;
+
 
 
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCountries;
@@ -249,6 +251,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+                $cabotage = ($data['Fields']['WontCabotage'] === 'Yes') ? 1 : 0;
+                $command = UpdateEcmtCabotage::create(['id' => $id, 'cabotage' => $cabotage]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
                 $this->redirect()->toRoute('permits', ['action' => 'restricted-countries', 'id' => $id]);
             }
             else {
