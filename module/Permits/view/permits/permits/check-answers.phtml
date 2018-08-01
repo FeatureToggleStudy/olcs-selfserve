@@ -1,13 +1,14 @@
 <?php
-    $title = $this->translate('permits.page.title.check-answers');
-    $this->escapeHtml($this->headTitle($title));
+$title = $this->translate('permits.page.title.check-answers');
+$this->headTitle($title);
 ?>
 
 <div class="row ecmt">
     <div class="three-quarters">
         <div class="page-header">
-            <p><a href="/permits/application-overview/<?php echo $this->escapeHtml($id); ?>" class="back-link"> <?php echo $this->escapeHtml($this->translate('permits.back-link')); ?> </a></p>
+            <p><a href="/permits/cabotage/<?php echo $id; ?>" class="back-link"> <?php echo $this->translate('permits.back-link'); ?> </a></p>
             <div class="page-header__wrapper">
+                <h3 class="page-header__subtitle"> <?php echo $ref; ?></h3>
                 <h1 class="js-title">
                     <?php echo $this->escapeHtml($title); ?>
                 </h1>
@@ -15,142 +16,125 @@
         </div>
 
         <div class="field">
-           <div class="table_wrapper">
+            <div class="table_wrapper">
                 <table>
                     <thead>
-                        <tr>
-                        </tr>
+                    <tr>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['licenceQuestion']) ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $this->escapeHtml($sessionData['licenceAnswer']); ?>
-                            </td>
-                            <td>
-                                <a href="/permits/ecmt-licence/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['meetsEuro6Question']); ?></h4>
-                            </td>
-                            <td>
-                                <?php  echo $this->escapeHtml($sessionData['meetsEuro6Answer']); ?>
-                            </td>
-                            <td>
-                                <a href="/permits/euro6-emissions/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['cabotageQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $this->escapeHtml($sessionData['cabotageAnswer']); ?>
-                            </td>
-                            <td>
-                                <a href="/permits/cabotage/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['restrictedCountriesQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php
-                                $count = 1;
-                                $listSize = count($sessionData['restrictedCountriesAnswer']);
-                                if($listSize > 1)
-                                {
-                                    echo "Yes";
-                                    echo "<br>";
-
-                                    foreach ($sessionData['restrictedCountriesAnswer'] as $country) {
-                                        if ($count == $listSize) {
-                                            echo $this->escapeHtml($country);
-                                        } else {
-                                            echo $this->escapeHtml($country) . ', ';
-                                        }
-                                        $count++;
-                                    }
-                                }else{
-                                    echo "No";
-                                }
-                                ?>
-                            </td>
-                            <td>
-                                <a href="/permits/restricted-countries/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['tripsQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $this->escapeHtml($sessionData['tripsAnswer']); ?>
-                            </td>
-                            <td>
-                                <a href="/permits/trips/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['percentageQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $this->escapeHtml($sessionData['percentageAnswer']); ?>
-                            </td>
-                            <td>
-                                <a href="/permits/international-journey/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['specialistHaulageQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $this->escapeHtml($sessionData['specialistHaulageAnswer']); ?>
-                            </td>
-                            <td>
-                                <a href="/permits/sector/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->escapeHtml($sessionData['permitsQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $this->escapeHtml($sessionData['permitsAnswer']); ?>
-                            </td>
-                            <td>
-                                <a href="/permits/permits-required/<?php echo $this->escapeHtml($id); ?>">
-                                    Change
-                                </a>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['licenceQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo str_replace(array("\r\n", "\n"), '<br />', $sessionData['licenceAnswer']); ?>
+                        </td>
+                        <td>
+                            <a href="/permits/ecmt-licence/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['meetsEuro6Question']); ?></h4>
+                        </td>
+                        <td>
+                            <?php  echo $sessionData['meetsEuro6Answer']; ?>
+                        </td>
+                        <td>
+                            <a href="/permits/euro6-emissions/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['cabotageQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $sessionData['cabotageAnswer'] ?>
+                        </td>
+                        <td>
+                            <a href="/permits/cabotage/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['restrictedCountriesQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php
+                            echo str_replace(array("\r\n", "\n"), '<br />', $sessionData['restrictedCountriesAnswer'])
+                            ?>
+                        </td>
+                        <td>
+                            <a href="/permits/restricted-countries/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['tripsQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $sessionData['tripsAnswer'] ?>
+                        </td>
+                        <td>
+                            <a href="/permits/trips/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['percentageQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $sessionData['percentageAnswer'] ?>
+                        </td>
+                        <td>
+                            <a href="/permits/international-journey/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['specialistHaulageQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo str_replace(array("\r\n", "\n"), '<br />', $sessionData['specialistHaulageAnswer']) ?>
+                        </td>
+                        <td>
+                            <a href="/permits/sector/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['permitsQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $sessionData['permitsAnswer'] ?>
+                        </td>
+                        <td>
+                            <a href="/permits/permits-required/<?php echo $id; ?>">
+                                Change
+                            </a>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
             <div class="actions-container new-application--wrapper">
-                <p><a href="/permits/declaration/<?php echo $this->escapeHtml($id); ?>" class="action--primary large"><?php echo $this->escapeHtml($this->translate('permits.button.confirm-and-continue')); ?></a></p>
-                <p><a href="/permits/application-overview/<?php echo $this->escapeHtml($id); ?>"> <?php echo $this->escapeHtml($this->translate('permits.button.save-return-to-overview')); ?> </a></p>
+                <p><a href="/permits/declaration/<?php echo $id; ?>" class="action--primary large"><?php echo $this->translate('permits.button.confirm-and-continue'); ?></a></p>
+                <p><a href="/permits"> <?php echo $this->translate('permits.button.save-return-to-overview'); ?> </a></p>
             </div>
         </div>
     </div>
