@@ -10,6 +10,7 @@ use Dvsa\Olcs\Transfer\Query\Organisation\EligibleForPermits;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
 
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
+use Dvsa\Olcs\Transfer\Command\Permits\CancelEcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
@@ -137,7 +138,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function euro6EmissionsAction()
     {
-
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
@@ -422,8 +422,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
          * Collate session data for use in view
          */
         $sessionData = array();
-        $sessionData['countriesQuestion'] = 'Are you transporting goods to a 
-                                        restricted country such as Austria, 
+        $sessionData['countriesQuestion'] = 'Are you transporting goods to a
+                                        restricted country such as Austria,
                                         Greece, Hungary, Italy or Russia?';
 
         $sessionData['countries'] = array();
@@ -518,6 +518,60 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
         $view = new ViewModel();
         $view->setVariable('refNumber', $applicationRef);
+        return $view;
+    }
+
+    public function cancelApplicationAction()
+    {
+        $id = $this->params()->fromRoute('id', -1);
+        $request = $this->getRequest();
+        $data = (array)$request->getPost();
+
+        $application = $this->getApplication($id);
+        $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
+
+        //Create form from annotations
+        $form = $this->getServiceLocator()
+            ->get('Helper\Form')
+            ->createForm('CancelApplicationForm', false, false);
+
+        if (is_array($data) && array_key_exists('Submit', $data)) {
+
+            //Validate
+            $form->setData($data);
+
+            if ($form->isValid()) {
+                $queryParams = array();
+                $queryParams['id'] = $id;
+
+                $command = CancelEcmtPermitApplication::create($queryParams);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
+                $this->nextStep(EcmtSection::ROUTE_ECMT_CANCEL_CONFIRMATION);
+            }
+        }
+
+        $view = new ViewModel();
+
+        $view->setVariable('form', $form);
+        $view->setVariable('id', $id);
+        $view->setVariable('ref', $applicationRef);
+
+        return $view;
+    }
+
+    public function cancelConfirmationAction() {
+        $id = $this->params()->fromRoute('id', -1);
+
+        $application = $this->getApplication($id);
+        $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
+
+        $view = new ViewModel();
+
+        $view->setVariable('id', $id);
+
         return $view;
     }
 
@@ -683,14 +737,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //EURO 6 EMISSIONS CONFIRMATION
         $sessionData['meetsEuro6Question']
-          = 'I confirm that my ECMT permit(s) will only be 
-                used by vehicle(s) that are environmentally compliant 
+          = 'I confirm that my ECMT permit(s) will only be
+                used by vehicle(s) that are environmentally compliant
                 to Euro 6 emissions standards.';
         $sessionData['meetsEuro6Answer'] = $session->meetsEuro6  == 1 ? 'Yes' : 'No';
 
         //CABOTAGE CONFIRMATION
         $sessionData['cabotageQuestion']
-          = 'I confirm that I will not undertake a 
+          = 'I confirm that I will not undertake a
                 cabotage journey(s) with an ECMT permit.';
         $sessionData['cabotageAnswer'] = $session->wontCabotage  > 1 ? 'Yes' : 'No';
 
@@ -717,7 +771,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //'PERCENTAGE' QUESTION
         $sessionData['percentageQuestion']
-          = 'What percentage of your business 
+          = 'What percentage of your business
                 is related to international journeys over the past 12 months?';
         switch ($session->internationalJourneyPercentage) {
             case 0:
@@ -767,5 +821,4 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
-
 }
