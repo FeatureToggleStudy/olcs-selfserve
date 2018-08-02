@@ -21,7 +21,6 @@ use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Dvsa\Olcs\Transfer\Query\Permits\ById;
-use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 use Permits\View\Helper\EcmtSection;
@@ -369,9 +368,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
-                //Save to session
-                $session = new Container(self::SESSION_NAMESPACE);
-                $session->PermitsRequired = $data['Fields']['PermitsRequired'];
                 $this->nextStep(EcmtSection::ROUTE_ECMT_TRIPS);
             }
         }
@@ -391,13 +387,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $application = $this->getApplication($id);
         $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
 
-        $session = new Container(self::SESSION_NAMESPACE);
         $data = $this->params()->fromPost();
-
-        if (is_array($data) && array_key_exists('submit', $data)) {
-            //Save data to session
-            $session->wontCabotage = $data['wontCabotage'];
-        }
 
         $sessionData = $this->collateSessionData();
 
@@ -463,10 +453,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
-                //Save to session
-                $session = new Container(self::SESSION_NAMESPACE);
-                $session->Declaration = $data['Fields']['Declaration'];
-
                 $this->nextStep(EcmtSection::ROUTE_ECMT_FEE);
             }
         }
@@ -484,22 +470,21 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $request = $this->getRequest();
         $data = (array)$request->getPost();
-        $session = new Container(self::SESSION_NAMESPACE);
 
         if (!empty($data)) {
-            $data['ecmtPermitsApplication'] = $session->applicationId;
+            $data['ecmtPermitsApplication'] = $id;
             $data['status'] = 'permit_awaiting';
             $data['paymentStatus'] = 'lfs_ot';
             $data['intensity'] = '1';
 
-            if ($session->restrictedCountries == 1) {
-                $data['countries'] = $this->extractIDFromSessionData($session->restrictedCountriesList);
+            if (isset($application['countrys']) && count($application['countrys']) > 0) {
+                $data['countries'] = $this->extractIDFromSessionData($application['countrys']);
             }
             $command = CreateEcmtPermits::create($data);
 
             $response = $this->handleCommand($command);
             $insert = $response->getResult();
-            $session->permitsNo = $insert['id']['ecmtPermit'];
+
             $this->nextStep(EcmtSection::ROUTE_ECMT_SUBMITTED);
         }
 
