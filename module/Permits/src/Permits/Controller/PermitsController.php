@@ -549,7 +549,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $response = $this->handleCommand($command);
                 $insert = $response->getResult();
 
-                $this->redirect()->toRoute('permits', ['action' => 'cancel-confirmation', 'id' => $id]);
+                $this->nextStep(EcmtSection::ROUTE_ECMT_CANCEL_CONFIRMATION);
             }
         }
 
