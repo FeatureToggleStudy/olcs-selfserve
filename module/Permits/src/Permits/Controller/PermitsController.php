@@ -88,7 +88,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $id = $this->params()->fromRoute('id', '');
 
-        $form = $this->getEcmtLicenceForm();
+        $licenceList = $this->getRelevantLicences(); //Get licences to display from DB
+        $form = $this->getServiceLocator()->get('Helper\Form')->getEcmtLicenceForm($licenceList); //Transform into Licence Form
+
         $data = $this->params()->fromPost();
         if ($data && array_key_exists('Submit', $data)) {
             //Validate
@@ -109,6 +111,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->redirect()->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $insert['id']['ecmtPermitApplication']]);
             }
         }
+
         return array('form' => $form, 'id' => $id);
     }
 
@@ -243,7 +246,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         * Make the restricted countries list the value_options of the form
         */
         $restrictedCountryList = $this->getServiceLocator()
-            ->get('Helper\Form')->transformListIntoValueOptions($restrictedCountryList, 'description');
+            ->get('Helper\Form')->transformListIntoValueOptions($restrictedCountryList['results'], ['description']);
 
         $options = array();
         $options['value_options'] = $restrictedCountryList;
@@ -321,7 +324,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         * Make the sectors list the value_options of the form
         */
         $sectorList = $this->getServiceLocator()
-          ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
+          ->get('Helper\Form')->transformListIntoValueOptions($sectorList['results'], ['description']);
 
         $options = array();
         $options['value_options'] = $sectorList;
@@ -538,79 +541,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $organisationData['relevantLicences'];
     }
 
-    /**
-     * Modified version of the method in FormHelperServices
-     * that is used by the restricted countries view.
-     *
-     *
-     * @param array $list
-     * @param string $displayFieldName
-     * @param string $separator
-     * @return array
-     */
-    private function transformListIntoValueOptions($list = array(), $displayMembers = array('name'), $separator = '|')
-    {
-        //TODO: MOVE THIS INTO FormHelperService AND REPLACE OLD VERSION
-        if(!is_string($displayMembers[0]) || !is_array($list)){
-            //throw exception?
-            return array();
-        }
-
-        $value_options = array();
-        foreach($list as $item)
-        {
-            //Concatenate display values (incase there is more than one field to be used)
-            $displayValue = "";
-            foreach($displayMembers as $displayKey)
-            {
-                $displayValue = $displayValue . $item[$displayKey] . " ";
-            }
-
-            //add display name to the key so that it can be used after submission
-            $value_options[$item['id'] . $separator . $displayValue] = $displayValue;
-        }
-
-        return $value_options;
-    }
-
-    private function getEcmtLicenceForm()
-    {
-        //TODO: MOVE THIS TO A SERVICE/HELPER
-        /*
-         * Create form from annotations
-         */
-        $form = $this->getServiceLocator()
-            ->get('Helper\Form')
-            ->createForm('EcmtLicenceForm', false, false);
-
-        /*
-         * Get licence to display in question
-         */
-        $licenceList = $this->getRelevantLicences();
-        $value_options = $this->transformListIntoValueOptions($licenceList, array('licNo', 'trafficArea'));
-
-        /*
-         * Add brackets
-         */
-        foreach($value_options as $key => $value)
-        {
-            $spacePosition = strpos($value, ' '); //find position of first space
-            $newValue = substr_replace($value, ' (', $spacePosition, 1); //add bracket after first space
-
-            $newValue = trim($newValue) . ')';//add bracket to end
-
-            $value_options[$key] = $newValue;//set current value option to reformatted value
-        }
-
-        /*
-         * Set 'licences to display' as the value_options of the field
-         */
-        $options = array();
-        $options['value_options'] = $value_options;
-        $form->get('Fields')->get('EcmtLicence')->setOptions($options);
-
-        return $form;
-    }
 
     //TODO remove this method once all session functionality is removed
 
