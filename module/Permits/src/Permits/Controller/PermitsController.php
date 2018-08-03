@@ -531,6 +531,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
         $ecmtPermitFees = $this->getEcmtPermitFees();
 
+//        var_dump($ecmtPermitFees);die;
+
         $request = $this->getRequest();
         $data = (array)$request->getPost();
         $session = new Container(self::SESSION_NAMESPACE);
@@ -822,7 +824,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     private function getEcmtPermitFees()
     {
-        $query = EcmtPermitFees::create();
+        $query = EcmtPermitFees::create([]);
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
