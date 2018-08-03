@@ -32,7 +32,7 @@ class CustomBetween extends Between
     {
         if (!array_key_exists('too_small_message', $options) || !array_key_exists('too_large_message', $options) || !array_key_exists('not_digit_message', $options))
         {
-            throw new Exception\InvalidArgumentException("Missing option. 'not_digit_message', 'too_small_message' and 'too_large_message' have to be given");
+            throw new \InvalidArgumentException("Missing option. 'not_digit_message', 'too_small_message' and 'too_large_message' have to be given");
         }
 
         $this->messageTemplates[self::TOO_SMALL] = $options['too_small_message'];
