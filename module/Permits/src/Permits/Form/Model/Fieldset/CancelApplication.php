@@ -5,27 +5,27 @@ use Zend\Form\Annotation as Form;
 
 /**
  * @codeCoverageIgnore Auto-generated file with no methods
- * @Form\Name("Euro6Emissions")
+ * @Form\Name("CancelApplication")
  */
-class Euro6Emissions
+class CancelApplication
 {
     /**
-     * @Form\Name("MeetsEuro6")
+     * @Form\Name("ConfirmCancel")
      * @Form\Required(true)
      * @Form\Attributes({
-     *   "class" : "input--euro6",
-     *    "id" : "MeetsEuro6",
+     *   "class" : "input--confirm-cancel",
+     *   "id" : "ConfirmCancel",
      * })
      * @Form\Options({
      *   "checked_value": "Yes",
      *   "unchecked_value": "No",
-     *   "label": "permits.form.euro6.label",
-     *   "label_attributes": {"class": "form-control form-control--checkbox form-control--advanced"},
+     *   "label": "permits.form.cancel_application.label",
+     *   "label_attributes": {"class": "form-control form-control--checkbox"},
      *   "must_be_value": "Yes",
-     *   "error-message": "error.messages.euro6"
+     *   "error-message": "permits.form.cancel_application.error_message"
      * })
      * @Form\Type("\Common\Form\Elements\InputFilters\SingleCheckbox")
      */
 
-    public $meetsEuro6 = null;
+    public $confirmCancel = null;
 }

@@ -15,12 +15,24 @@ class PermitsRequired
      * @Form\Attributes({
      *   "class" : "input--permits-required",
      *   "id" : "PermitsRequired",
+     *   "step" : "any"
      * })
      * @Form\Options({
      *     "label": "permits.form.permits.required.label",
      *     "hint": "",
-     *     "short-label": "error.messages.permits.required",
+     *     "short-label": "",
+     *     "allow_empty" : true,
      * })
+     * @Form\Input("Common\InputFilter\ContinueIfEmptyInput")
+     * @Form\Validator({
+     *     "name": "Permits\Form\Validator\CustomBetween",
+     *     "options": {
+     *          "min":1,
+     *          "max":12,
+     *          "too_small_message" : "error.messages.permits.required.too-small",
+     *          "too_large_message" : "error.messages.permits.required.too-large",
+     *          "not_digit_message" : "error.messages.permits.required.not-digit"
+     *     }})
      * @Form\Type("Zend\Form\Element\Number")
      */
 
