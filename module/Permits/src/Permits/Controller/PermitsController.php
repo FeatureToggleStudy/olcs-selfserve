@@ -4,6 +4,7 @@ namespace Permits\Controller;
 use Common\Controller\Interfaces\ToggleAwareInterface;
 use Common\Controller\AbstractOlcsController;
 use Common\FeatureToggle;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateInternationalJourney;
 use Zend\View\Model\ViewModel;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries;
 use Dvsa\Olcs\Transfer\Query\Organisation\EligibleForPermits;
@@ -14,6 +15,7 @@ use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermits;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCabotage;
+use Dvsa\Olcs\Transfer\Command\Permits\CancelEcmtPermitApplication;
 use Zend\Mvc\MvcEvent;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
@@ -107,6 +109,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $response = $this->handleCommand($command);
                 $insert = $response->getResult();
                 $this->redirect()->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $insert['id']['ecmtPermitApplication']]);
+            } else {
+                //Custom Error Message
+                $form->get('Fields')->get('EcmtLicence')->setMessages(['error.messages.ecmt-licence']);
             }
         }
         return array('form' => $form, 'id' => $id);
@@ -137,6 +142,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function euro6EmissionsAction()
     {
+        $id = $this->params()->fromRoute('id', -1);
+
         //Create form from annotations
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
@@ -161,6 +168,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $insert = $response->getResult();
 
                 $this->nextStep(EcmtSection::ROUTE_ECMT_CABOTAGE);
+            } else{
+                //Custom Error Message
+                $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
             }
         }
 
@@ -189,11 +199,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $form->setData($data);
             if ($form->isValid()) {
                 $cabotage = ($data['Fields']['WontCabotage'] === 'Yes') ? 1 : 0;
-                $command = UpdateEcmtCabotage::create(['id' => $id, 'cabotage' => $cabotage]);
-
-                $response = $this->handleCommand($command);
+                $command = UpdateEcmtCabotage::create([ 'id' => $id, 'cabotage' => $cabotage]);
+            $response = $this->handleCommand($command);
                 $insert = $response->getResult();
-
                 $this->nextStep(EcmtSection::ROUTE_ECMT_COUNTRIES);
             }
         }
@@ -209,6 +217,22 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('RestrictedCountriesForm', false, false);
+
+        /*
+        * Get Countries List from Database
+        */
+        $response = $this->handleQuery(ConstrainedCountries::create(array()));
+        $restrictedCountryList = $response->getResult();
+
+        /*
+        * Make the restricted countries list the value_options of the form
+        */
+        $restrictedCountryList = $this->getServiceLocator()
+            ->get('Helper\Form')->transformListIntoValueOptions($restrictedCountryList, 'description');
+
+        $options = array();
+        $options['value_options'] = $restrictedCountryList;
+        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setOptions($options);
 
         $data = $this->params()->fromPost();
 
@@ -230,23 +254,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setMessages(['error.messages.restricted.countries']);
                 }
             }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('restrictedCountries')->setMessages(['error.messages.restricted.countries']);
+            }
         }
-
-        /*
-        * Get Countrys List from Database
-        */
-        $response = $this->handleQuery(ConstrainedCountries::create(array()));
-        $restrictedCountryList = $response->getResult();
-
-        /*
-        * Make the restricted countries list the value_options of the form
-        */
-        $restrictedCountryList = $this->getServiceLocator()
-            ->get('Helper\Form')->transformListIntoValueOptions($restrictedCountryList, 'description');
-
-        $options = array();
-        $options['value_options'] = $restrictedCountryList;
-        $form->get('Fields')->get('restrictedCountriesList')->get('restrictedCountriesList')->setOptions($options);
 
         return array('form' => $form, 'id' => $id);
     }
@@ -295,7 +307,17 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+                $commandData = [
+                    'id' => $id,
+                    'internationalJourney' => $data['Fields']['InternationalJourney'],
+                ];
+                $command = UpdateInternationalJourney::create($commandData);
+                $this->handleCommand($command);
                 $this->nextStep(EcmtSection::ROUTE_ECMT_SECTORS);
+            }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('InternationalJourney')->setMessages(['error.messages.international-journey']);
             }
         }
 
@@ -310,6 +332,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $form = $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm('SpecialistHaulageForm', false, false);
+
         /*
         * Get Sector List from Database
         */
@@ -320,7 +343,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         * Make the sectors list the value_options of the form
         */
         $sectorList = $this->getServiceLocator()
-          ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
+            ->get('Helper\Form')->transformListIntoValueOptions($sectorList, 'description');
 
         $options = array();
         $options['value_options'] = $sectorList;
@@ -329,20 +352,26 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
+
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
+
                 //EXTRA VALIDATION
                 if (($data['Fields']['SpecialistHaulage'] == 1
                         && isset($data['Fields']['SectorList']['SectorList']))
-                    || ($data['Fields']['SectorList'] == 0))
+                    || ($data['Fields']['SpecialistHaulage'] == 0))
                 {
                     $this->nextStep(EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
                 }
-                else{
+                else {
                     //conditional validation failed, sector list should not be empty
-                    $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages('error.messages.sector');
+                    $form->get('Fields')->get('SectorList')->get('SectorList')->setMessages(['error.messages.sector.list']);
                 }
+            }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('SpecialistHaulage')->setMessages(['error.messages.sector']);
             }
         }
 
@@ -351,7 +380,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
 
     //TODO remove all session elements and replace with queries
-
+    //TODO correct form validation so that max value == total vehicle authority (currently hardcoded). See acceptance criteria
     public function permitsRequiredAction()
     {
         $id = $this->params()->fromRoute('id', -1);
@@ -493,13 +522,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     //TODO remove all session elements and replace with queries
     public function declarationAction()
     {
-
         $id = $this->params()->fromRoute('id', -1);
 
         //Create form from annotations
         $form = $this->getServiceLocator()
-          ->get('Helper\Form')
-          ->createForm('DeclarationForm', false, false);
+            ->get('Helper\Form')
+            ->createForm('DeclarationForm', false, false);
 
         $data = $this->params()->fromPost();
 
@@ -512,6 +540,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $session->Declaration = $data['Fields']['Declaration'];
 
                 $this->nextStep(EcmtSection::ROUTE_ECMT_FEE);
+            }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('Declaration')->setMessages(['error.messages.checkbox']);
             }
         }
 
@@ -782,8 +814,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //CABOTAGE CONFIRMATION
         $sessionData['cabotageQuestion']
-          = 'check-answers.page.question. 
-                cabotage ';
+          = 'check-answers.page.question.cabotage';
 
         //RESTRICTED COUNTRIES
         $sessionData['restrictedCountriesQuestion']
