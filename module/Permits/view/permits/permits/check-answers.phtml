@@ -1,78 +1,120 @@
+<?php
+use Permits\View\Helper\EcmtSection;
 
-                                <?php  echo $sessionData['meetsEuro6Answer']; ?>
-                            </td>
-                            <td>
-                                <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_EURO6); ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->translate($sessionData['cabotageQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $sessionData['cabotageAnswer'] ?>
-                            </td>
-                            <td>
-                                <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_CABOTAGE); ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->translate($sessionData['restrictedCountriesQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php
-                                    echo nl2br($sessionData['restrictedCountriesAnswer'])
-                                ?>
-                            </td>
-                            <td>
-                                <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_COUNTRIES); ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->translate($sessionData['tripsQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $sessionData['tripsAnswer'] ?>
-                            </td>
-                            <td>
-                                <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_TRIPS); ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->translate($sessionData['percentageQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $this->translate($sessionData['percentageAnswer']); ?>
-                            </td>
-                            <td>
-                                <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY); ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->translate($sessionData['specialistHaulageQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo nl2br($sessionData['specialistHaulageAnswer']) ?>
-                            </td>
-                            <td>
-                                <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_SECTORS); ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <h4><?php echo $this->translate($sessionData['permitsQuestion']); ?></h4>
-                            </td>
-                            <td>
-                                <?php echo $sessionData['permitsAnswer'] ?>
-                            </td>
-                            <td>
-                                <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_NO_OF_PERMITS); ?>
-                            </td>
-                        </tr>
+$title = $this->translate('permits.page.title.check-answers');
+$this->headTitle($title);
+?>
+
+<div class="row ecmt">
+    <div class="three-quarters">
+        <div class="page-header">
+            <p><?php echo $this->permitsBackLink(); ?></p>
+            <div class="page-header__wrapper">
+                <h3 class="page-header__subtitle"> <?php echo $ref; ?></h3>
+                <h1 class="js-title">
+                    <?php echo $this->escapeHtml($title); ?>
+                </h1>
+            </div>
+        </div>
+
+        <div class="field">
+            <div class="table_wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['licenceQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo nl2br($sessionData['licenceAnswer']); ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_LICENCE); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['meetsEuro6Question']); ?></h4>
+                        </td>
+                        <td>
+                            <?php  echo $sessionData['meetsEuro6Answer']; ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_EURO6); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['cabotageQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $sessionData['cabotageAnswer'] ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_CABOTAGE); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['restrictedCountriesQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php
+                            echo nl2br($sessionData['restrictedCountriesAnswer'])
+                            ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_COUNTRIES); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['tripsQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $sessionData['tripsAnswer'] ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_TRIPS); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['percentageQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $this->translate($sessionData['percentageAnswer']); ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['specialistHaulageQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo nl2br($sessionData['specialistHaulageAnswer']) ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_SECTORS); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h4><?php echo $this->translate($sessionData['permitsQuestion']); ?></h4>
+                        </td>
+                        <td>
+                            <?php echo $sessionData['permitsAnswer'] ?>
+                        </td>
+                        <td>
+                            <?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_NO_OF_PERMITS); ?>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
