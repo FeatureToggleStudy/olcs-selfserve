@@ -20,6 +20,7 @@ use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Dvsa\Olcs\Transfer\Query\Permits\ById;
+use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitFees;
 use Zend\Session\Container; // We need this when using sessions
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
@@ -528,6 +529,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
         $applicationRef = $application['licence']['licNo'] . ' / ' . $application['id'];
+        $ecmtPermitFees = $this->getEcmtPermitFees();
 
         $request = $this->getRequest();
         $data = (array)$request->getPost();
@@ -808,6 +810,19 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     private function getApplication($id)
     {
         $query = ById::create(['id'=>$id]);
+        $response = $this->handleQuery($query);
+        return $response->getResult();
+    }
+
+    /**
+     * Returns Issuing application fees
+     *
+     * @return array
+     */
+
+    private function getEcmtPermitFees()
+    {
+        $query = EcmtPermitFees::create();
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
