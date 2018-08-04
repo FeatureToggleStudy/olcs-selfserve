@@ -23,6 +23,8 @@ use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtEmissions;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCountries;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateInternationalJourney;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateSector;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtTrips;
+
 
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 
@@ -340,6 +342,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $form->setData($data);
 
             if ($form->isValid()) {
+                $update['trips'] = $data['Fields']['TripsAbroad'];
+                $command = UpdateEcmtTrips::create(['id' => $id, 'trips' => $update['trips']]);
+                $response = $this->handleCommand($command);
+
                 $this->nextStep(EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY);
             }
         }
