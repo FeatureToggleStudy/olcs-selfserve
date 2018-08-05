@@ -413,10 +413,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     ->get('SectorList')
                     ->get('SectorList')
                     ->setValue($selectedValue);
-            } else {
-                $form->get('Fields')
-                    ->get('SpecialistHaulage')
-                    ->setValue('0');
             }
         }
 
