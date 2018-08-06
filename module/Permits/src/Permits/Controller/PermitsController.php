@@ -37,6 +37,7 @@ use Permits\View\Helper\EcmtSection;
 use Zend\Http\Header\Referer as HttpReferer;
 use Zend\Http\PhpEnvironment\Request as HttpRequest;
 use Zend\Mvc\MvcEvent;
+use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitFees;
 use Zend\Session\Container; // We need this when using sessions
 use Zend\View\Model\ViewModel;
 
@@ -47,6 +48,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     // TODO: Add event for all checks for whether or not $data(from form) is an array
     const SESSION_NAMESPACE = 'permit_application';
     const DEFAULT_SEPARATOR = '|';
+
+    const ECMT_APPLICATION_FEE_PRODUCT_REFENCE = 'IRHP_GV_APP_ECMT';
+    const ECMT_ISSUING_FEE_PRODUCT_REFENCE = 'IRHP_GV_ECMT_100_PERMIT_FEE';
+
 
     protected $applicationsTableName = 'dashboard-permit-application';
     protected $issuedTableName = 'dashboard-permits';
@@ -142,8 +147,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
 
-        $applicationFee = "£10.00";
-        $issuingFee = "£123.00";
+        // Get Fee Data
+        $ecmtFees = $this->getEcmtPermitFees();
+        $applicationFee = $ecmtFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
+        $issuingFee = $ecmtFees['fee'][$this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]['fixedValue'];
 
         $view = new ViewModel();
         $view->setVariable('id', $id);
@@ -676,6 +683,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $application = $this->getApplication($id);
 
+        // Get Fee Data
+        $ecmtPermitFees = $this->getEcmtPermitFees();
+        $ecmtApplicationFee =  $ecmtPermitFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
+        $ecmtApplicationFeeTotal = $ecmtApplicationFee * $application['permitsRequired'];
+        $ecmtIssuingFee = $ecmtPermitFees['fee'][$this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]['fixedValue'];
+
         $request = $this->getRequest();
         $data = (array)$request->getPost();
         $session = new Container(self::SESSION_NAMESPACE);
@@ -700,7 +713,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $view = new ViewModel();
         $view->setVariable('permitsNo', $application['applicationRef']);
+        $view->setVariable('applicationDate', $application['createdOn']);
         $view->setVariable('id', $id);
+        $view->setVariable('noOfPermits', $application['permitsRequired']);
+        $view->setVariable('fee', $ecmtApplicationFee);
+        $view->setVariable('totalFee', $ecmtApplicationFeeTotal);
+        $view->setVariable('issuingFee', $ecmtIssuingFee);
+
+
 
         return $view;
     }
@@ -979,4 +999,19 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         return $response->getResult();
     }
+
+    /**
+     * Returns Issuing application fees
+     *
+     * @return array
+     */
+
+    private function getEcmtPermitFees()
+    {
+        // echo 'test'; die;
+        $query = EcmtPermitFees::create(['productReferences' => [$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE, $this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]]);
+        $response = $this->handleQuery($query);
+        return $response->getResult();
+    }
+
 }

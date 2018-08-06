@@ -1,7 +1,7 @@
 <?php
-    use Permits\View\Helper\EcmtSection;
-    $title = $this->translate('permits.page.fee.title');
-    $this->headTitle($title);
+use Permits\View\Helper\EcmtSection;
+$title = $this->translate('permits.page.fee.title');
+$this->headTitle($title);
 ?>
 
 <div class="row ecmt">
@@ -17,7 +17,14 @@
 
         <div class="field">
             <div class="govuk-hint">
-                <p><?php echo $this->translate('permits.page.fee.subtitle'); ?></p>
+                <p class="fee-subtitle"><?php echo $this->translate('permits.page.fee.subtitle'); ?></p>
+                <br />
+                <div class="notice">
+                    <i class="icon icon-important">
+                        <span class="visually-hidden">warning message</span>
+                    </i>
+                    <strong><b><?php echo sprintf($this->translate('permits.page.fee.message'), '£' . $issuingFee); ?></b></strong>
+                </div>
             </div>
 
             <div class="form-group">
@@ -28,7 +35,9 @@
                     </tr>
                     <tr>
                         <td><h4><?php echo $this->translate('permits.page.fee.application.date'); ?></h4></td>
-                        <td><?php echo date("d F Y"); ?></td>
+                        <td><?php
+                            $date=date_create($applicationDate);
+                            echo date_format($date,"d F Y"); ?></td>
                     </tr>
                     <tr>
                         <td><h4><?php echo $this->translate('permits.page.fee.permit.type'); ?></h4></td>
@@ -40,22 +49,21 @@
                     </tr>
                     <tr>
                         <td><h4><?php echo $this->translate('permits.page.fee.number.permits'); ?></h4></td>
-                        <td>10</td>
+                        <td><?php echo $this->escapeHtml($noOfPermits); ?></td>
                     </tr>
                     <tr>
                         <td><h4><?php echo $this->translate('permits.page.fee.permit.fee.single'); ?></h4></td>
-                        <td>£10.00</td>
+                        <td><?php echo '£' . $this->escapeHtml($fee); ?></td>
                     </tr>
 
                     <tr>
                         <td><h4><?php echo $this->translate('permits.page.fee.permit.fee.total'); ?></h4></td>
-                        <td>£100.00</td>
+                        <td><?php echo '£' . $this->escapeHtml($totalFee); ?></td>
                     </tr>
                 </table>
             </div>
 
             <div class="actions-container new-application--wrapper">
-                <?php echo $this->translate('permits.page.fee.message'); ?>
                 <p><a href="<?php $this->url('permits/' . EcmtSection::ROUTE_ECMT_SUBMITTED, [], [], true) ?>" class="action--primary large"><?php echo $this->translate('submit-and-pay.button'); ?></a></p>
                 <p><?php echo $this->permitsBackLink('permits.button.save-return-to-permits'); ?></p>
             </div>
