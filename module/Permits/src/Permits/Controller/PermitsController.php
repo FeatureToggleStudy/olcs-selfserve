@@ -7,6 +7,7 @@ use Common\FeatureToggle;
 use Common\Form\Form;
 
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCheckAnswers;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtLicence;
 use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries;
 use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
@@ -220,6 +221,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $insert = $response->getResult();
 
                 $this->nextStep(EcmtSection::ROUTE_ECMT_COUNTRIES);
+            }else {
+                //Custom Error Message
+                $form->get('Fields')->get('WontCabotage')->setMessages(['error.messages.checkbox']);
             }
         }
 
@@ -298,7 +302,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     $form->get('Fields')
                         ->get('restrictedCountriesList')
                         ->get('restrictedCountriesList')
-                        ->setMessages(['error.messages.restricted.countries']);
+                        ->setMessages(['error.messages.restricted.countries.list']);
                 }
             } else {
                 //Custom Error Message
@@ -420,10 +424,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     ->get('SectorList')
                     ->get('SectorList')
                     ->setValue($selectedValue);
-            } else {
-                $form->get('Fields')
-                    ->get('SpecialistHaulage')
-                    ->setValue('0');
             }
         }
 
@@ -508,7 +508,35 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function checkAnswersAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+
+        $form = $this->getForm('CheckAnswersForm');
+
         $application = $this->getApplication($id);
+        $existing['Fields']['checkAnswers'] = $application['checkAnswers'];
+        $form->setData($existing);
+
+        $data = $this->params()->fromPost();
+
+        if (!empty($data)) {
+            $form->setData($data);
+
+            if ($form->isValid()) {
+                $command = UpdateEcmtCheckAnswers::create(
+                    [
+                        'id' => $id,
+                        'checkAnswers' => $data['Fields']['checkAnswers']
+                    ]
+                );
+                $this->handleCommand($command);
+
+                $this->nextStep(EcmtSection::ROUTE_ECMT_DECLARATION);
+            } else {
+                //Custom Error Message
+                $form->get('Fields')
+                    ->get('checkAnswers')
+                    ->setMessages(['error.messages.checkbox']);
+            }
+        }
 
         $answerData = $this->collatePermitQuestions(); //Get all the questions in returned array
 
@@ -566,7 +594,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $answerData['specialistHaulageAnswer'] = $application['sectors']['description'];
         }
 
-        return array('sessionData' => $answerData, 'applicationData' => $application);
+        return array('sessionData' => $answerData, 'applicationData' => $application, 'form' => $form);
     }
 
     // TODO: remove all session elements and replace with queries
