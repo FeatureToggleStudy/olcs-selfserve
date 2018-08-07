@@ -221,7 +221,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $insert = $response->getResult();
 
                 $this->nextStep(EcmtSection::ROUTE_ECMT_COUNTRIES);
-            }else {
+            } else {
                 //Custom Error Message
                 $form->get('Fields')->get('WontCabotage')->setMessages(['error.messages.checkbox']);
             }
@@ -321,7 +321,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $application = $this->getApplication($id);
 
         // TODO: insert the trips hint into the form
-        $licenceTrafficArea = $application['licence']['licNo'] . ' (' . $application['licence']['trafficArea']['name'] . ')';
+        $trafficArea = $application['licence']['trafficArea'];
+        $trafficAreaName = $trafficArea['name'];
+
+        $licenceTrafficArea = $application['licence']['licNo'] . ' (' . $trafficAreaName . ')';
         $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
         $tripsHint = $translationHelper->translateReplace('permits.page.trips.form.hint', [$licenceTrafficArea]);
 
@@ -345,7 +348,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             }
         }
 
-        return array('form' => $form, 'ref' => $application['applicationRef'], 'id' => $id);
+        return array('form' => $form, 'ref' => $application['applicationRef'], 'id' => $id, 'trafficAreaId' => $trafficArea['id']);
     }
 
     public function internationalJourneyAction()
@@ -977,5 +980,4 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
-
 }
