@@ -995,7 +995,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
      * @param $submittedData - an array of the data submitted by the form
      * @param $nextStep - the EcmtSection:: route to be taken if the form was submitted normally
      */
-    private function handleRedirect($submittedData, $nextStep)
+    private function handleRedirect(array $submittedData, string $nextStep)
     {
         if (array_key_exists('SubmitButton', $submittedData['Submit'])) {
             //Form was submitted normally so continue on chosen path
