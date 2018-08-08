@@ -359,6 +359,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //Create form from annotations
         $form = $this->getForm('InternationalJourneyForm');
 
+        // read data
+        if (isset($application) && $application['internationalJourneys']) {
+            $form->get('Fields')->get('InternationalJourney')->setValue($application['internationalJourneys']);
+        }
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
