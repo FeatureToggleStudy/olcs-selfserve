@@ -113,6 +113,18 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $form = $this->getEcmtLicenceForm();
         $data = $this->params()->fromPost();
+        $application = $this->getApplication($id);
+
+        // Read Data
+        if (isset($application) && $application['licence']) {
+            // Large amount of formatting due to the way the fields are represented.
+            $currentLicence = $application['licence']['id'] . '|' .
+                $application['licence']['licNo'] . " " .
+                $application['licence']['trafficArea']['name'] . " ";
+
+            $form->get('Fields')->get('EcmtLicence')->setValue($currentLicence);
+        }
+
         if ($data && array_key_exists('Submit', $data)) {
             //Validate
             $form->setData($data);
