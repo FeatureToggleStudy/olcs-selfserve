@@ -334,12 +334,24 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $data = $this->params()->fromPost();
 
-        if (!empty($data)) {
-            //Validate
-            $form->setData($data);
+        if (is_array($data) && array_key_exists('Submit', $data)) {
 
+            $shouldSave = false;
+
+            $form->setData($data);
             if ($form->isValid()) {
-                $command = UpdateEcmtTrips::create(['id' => $id, 'ecmtTrips' => $data['Fields']['tripsAbroad']]);
+                $shouldSave = true;
+            } else {
+                if (array_key_exists('SaveAndReturnButton', $data['Submit'])
+                    && $this->invalidBecauseIsEmpty($form->getMessages())) {
+                    $shouldSave = true;
+                }
+            }
+
+            if($shouldSave) {
+                $ecmtTrips = $data['Fields']['tripsAbroad'] == '' ? null : $data['Fields']['tripsAbroad'];
+                $command = UpdateEcmtTrips::create(['id' => $id, 'ecmtTrips' => $ecmtTrips]);
+
                 $this->handleCommand($command);
 
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY);
@@ -949,5 +961,17 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //A button other than the primary submit button was clicked so return to overview
         return $this->nextStep(EcmtSection::ROUTE_APPLICATION_OVERVIEW);
+    }
+
+    /**
+     * the is des
+     *
+     * @param array $validationMessages - validation messages as retrieved from Zend Form ->getMessages()
+     */
+    private function invalidBecauseIsEmpty(array $validationMessages) {
+        $fieldKey = key($validationMessages['Fields']);
+        $validatorName = $validationMessages['Fields'][$fieldKey];
+
+        return (key($validatorName) == 'isEmpty' && count($validatorName) == 1);
     }
 }
