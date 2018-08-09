@@ -184,6 +184,13 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
+
+            //If the SaveAndContinue button was clicked, allow blank values
+            if(array_key_exists('SaveAndReturnButton', $data['Submit'])) {
+                $form->get('Fields')->get('MeetsEuro6')->setAttribute('required', false);
+                $form->get('Fields')->get('MeetsEuro6')->setOption('must_be_value', null);
+            }
+
             $form->setData($data);
             if ($form->isValid()) {
                 $update['emissions'] = ($data['Fields']['MeetsEuro6'] === 'Yes') ? 1 : 0;
@@ -217,6 +224,13 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $data = $this->params()->fromPost();
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
+
+            //If the SaveAndContinue button was clicked, allow blank values
+            if(array_key_exists('SaveAndReturnButton', $data['Submit'])) {
+                $form->get('Fields')->get('WontCabotage')->setAttribute('required', false);
+                $form->get('Fields')->get('WontCabotage')->setOption('must_be_value', null);
+            }
+
             $form->setData($data);
             if ($form->isValid()) {
                 $cabotage = ($data['Fields']['WontCabotage'] === 'Yes') ? 1 : 0;
