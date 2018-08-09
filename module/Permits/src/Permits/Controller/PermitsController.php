@@ -472,14 +472,24 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         if (!empty($data)) {
             $data['Fields']['numVehicles'] = $application['licence']['totAuthVehicles'];
+            $shouldSave = false;
 
-            //Validate
             $form->setData($data);
             if ($form->isValid()) {
+                $shouldSave = true;
+            } else {
+                if (array_key_exists('SaveAndReturnButton', $data['Submit'])
+                    && $this->invalidBecauseIsEmpty($form->getMessages())) {
+                    $shouldSave = true;
+                }
+            }
+
+            if ($shouldSave) {
+                $permitsRequired = $data['Fields']['permitsRequired'] == '' ? null : $data['Fields']['permitsRequired'];
                 $command = UpdateEcmtPermitsRequired::create(
                     [
                         'id' => $id,
-                        'permitsRequired' => $data['Fields']['permitsRequired']
+                        'permitsRequired' => $permitsRequired
                     ]
                 );
                 $this->handleCommand($command);
@@ -964,9 +974,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     }
 
     /**
-     * the is des
+     * Determines whether the only validation messages in the passed array
+     * are for an empty value
      *
      * @param array $validationMessages - validation messages as retrieved from Zend Form ->getMessages()
+     * @return true or false
      */
     private function invalidBecauseIsEmpty(array $validationMessages) {
         $fieldKey = key($validationMessages['Fields']);
