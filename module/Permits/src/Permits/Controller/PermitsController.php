@@ -433,30 +433,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //Create form from annotations
         $form = $this->getForm('SpecialistHaulageForm');
 
-        /*
-        * Get Sector List from Database
-        */
-        $response = $this->handleQuery(SectorsList::create(array()));
-        $sectorList = $response->getResult();
-
-        /*
-        * Make the sectors list the value_options of the form
-        */
-        $sectorList = $this->getServiceLocator()
-            ->get('Helper\Form')
-            ->transformListIntoValueOptions($sectorList, 'description');
-
-        $options = array();
-        $options['value_options'] = $sectorList;
-        $form->get('Fields')
-            ->get('SectorList')
-            ->get('SectorList')
-            ->setOptions($options);
-
         // Read data
         $application = $this->getApplication($id);
 
-        if (isset($application)) {
+       /* if (isset($application)) {
             if (isset($application['sectors'])) {
                 $form->get('Fields')->get('SpecialistHaulage')->setValue('1');
 
@@ -468,7 +448,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     ->get('SectorList')
                     ->setValue($selectedValue);
             }
-        }
+        }*/
 
         $data = $this->params()->fromPost();
 
@@ -481,13 +461,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     && isset($data['Fields']['SectorList']['SectorList']))
                     || ($data['Fields']['SpecialistHaulage'] == 0)
                 ) {
-                    $tmpSectorArray[0] = $data['Fields']['SectorList']['SectorList']; //pass into array in preparation for extractIDFromSessionData()
-                    $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
+                    $sectorID = $data['Fields']['SectorList']['SectorList'];
+                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorID]);
 
-                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
-
-                    $response = $this->handleCommand($command);
-                    $result = $response->getResult();
+                    $this->handleCommand($command);
 
                     $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
                 } else {
