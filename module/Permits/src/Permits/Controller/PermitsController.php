@@ -125,7 +125,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $form->get('Fields')->get('EcmtLicence')->setValue($currentLicence);
         }
 
-        if ($data && array_key_exists('Submit', $data)) {
+        if (isset($data['Fields']['Cancel'])) {
+            $this->redirect()
+                ->toRoute('permits');
+        }
+
+        if (isset($data['Fields']['SubmitButton'])) {
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
@@ -151,6 +156,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     ->setMessages(['error.messages.ecmt-licence']);
             }
         }
+
         return array('form' => $form, 'id' => $id);
     }
 
@@ -199,7 +205,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $response = $this->handleCommand($command);
                 $insert = $response->getResult();
 
-                $this->nextStep(EcmtSection::ROUTE_ECMT_CABOTAGE);
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CABOTAGE);
             } else {
                 //Custom Error Message
                 $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
@@ -232,7 +238,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $response = $this->handleCommand($command);
                 $insert = $response->getResult();
 
-                $this->nextStep(EcmtSection::ROUTE_ECMT_COUNTRIES);
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_COUNTRIES);
             } else {
                 //Custom Error Message
                 $form->get('Fields')->get('WontCabotage')->setMessages(['error.messages.checkbox']);
@@ -308,7 +314,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     $response = $this->handleCommand($command);
                     $insert = $response->getResult();
 
-                    $this->nextStep(EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
+                    $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
                 } else {
                     //conditional validation failed, restricted countries list should not be empty
                     $form->get('Fields')
@@ -356,7 +362,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $command = UpdateEcmtTrips::create(['id' => $id, 'ecmtTrips' => $data['Fields']['tripsAbroad']]);
                 $this->handleCommand($command);
 
-                $this->nextStep(EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY);
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY);
             }
         }
 
@@ -390,7 +396,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $command = UpdateInternationalJourney::create($commandData);
 
                 $this->handleCommand($command);
-                $this->nextStep(EcmtSection::ROUTE_ECMT_SECTORS);
+
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_SECTORS);
             } else {
                 //Custom Error Message
                 $form->get('Fields')
@@ -466,7 +473,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     $response = $this->handleCommand($command);
                     $result = $response->getResult();
 
-                    $this->nextStep(EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
+                    $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
                 } else {
                     //conditional validation failed, sector list should not be empty
                     $form->get('Fields')
@@ -514,7 +521,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 );
                 $this->handleCommand($command);
 
-                $this->nextStep(EcmtSection::ROUTE_ECMT_TRIPS);
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_TRIPS);
             }
         }
 
@@ -989,12 +996,29 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
      *
      * @return array
      */
-
     private function getEcmtPermitFees()
     {
         // echo 'test'; die;
         $query = EcmtPermitFees::create(['productReferences' => [$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE, $this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]]);
         $response = $this->handleQuery($query);
         return $response->getResult();
+    }
+
+    /**
+     * Decides the route of the application
+     * after a form has been Submitted
+     *
+     * @param $submittedData - an array of the data submitted by the form
+     * @param $nextStep - the EcmtSection:: route to be taken if the form was submitted normally
+     */
+    private function handleRedirect(array $submittedData, string $nextStep)
+    {
+        if (array_key_exists('SubmitButton', $submittedData['Submit'])) {
+            //Form was submitted normally so continue on chosen path
+            return $this->nextStep($nextStep);
+        }
+
+        //A button other than the primary submit button was clicked so return to overview
+        return $this->nextStep(EcmtSection::ROUTE_APPLICATION_OVERVIEW);
     }
 }
