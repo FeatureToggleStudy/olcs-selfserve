@@ -435,6 +435,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
+
+            $shouldSave = false;
+
             $form->setData($data);
             if ($form->isValid()) {
                 //EXTRA VALIDATION
@@ -442,24 +445,37 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     && isset($data['Fields']['SectorList']['SectorList']))
                     || ($data['Fields']['SpecialistHaulage'] == 0)
                 ) {
-                    $sectorID = $data['Fields']['SectorList']['SectorList'];
-                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorID]);
-
-                    $this->handleCommand($command);
-
-                    $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
+                    $shouldSave = true;
                 } else {
-                    //conditional validation failed, sector list should not be empty
-                    $form->get('Fields')
-                        ->get('SectorList')
-                        ->get('SectorList')
-                        ->setMessages(['error.messages.sector.list']);
+                    if (array_key_exists('SaveAndReturnButton', $data['Submit'])) {
+                        $shouldSave = true;
+                    } else {
+                        //conditional validation failed, sector list should not be empty
+                        $form->get('Fields')
+                            ->get('SectorList')
+                            ->get('SectorList')
+                            ->setMessages(['error.messages.sector.list']);
+                    }
                 }
             } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('SpecialistHaulage')
-                    ->setMessages(['error.messages.sector']);
+                if (array_key_exists('SaveAndReturnButton', $data['Submit'])
+                    && $this->invalidBecauseIsEmpty($form->getMessages())) {
+                    $shouldSave = true;
+                } else {
+                    //Custom Error Message
+                    $form->get('Fields')
+                        ->get('SpecialistHaulage')
+                        ->setMessages(['error.messages.sector']);
+                }
+            }
+
+            if ($shouldSave) {
+                $sectorID = $data['Fields']['SectorList']['SectorList'];
+                $command = UpdateSector::create(['id' => $id, 'sector' => $sectorID]);
+
+                $this->handleCommand($command);
+
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
             }
         }
 
