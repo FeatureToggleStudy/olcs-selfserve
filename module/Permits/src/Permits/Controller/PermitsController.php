@@ -281,6 +281,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
+
+            $shouldSave = false;
+
             $form->setData($data);
             if ($form->isValid()) {
                 //EXTRA VALIDATION
@@ -288,25 +291,41 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
                     || ($data['Fields']['restrictedCountries'] == 0)
                 ) {
-                    $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
-                    $command = UpdateEcmtCountries::create(['ecmtApplicationId' => $id, 'countryIds' => $countryIds]);
-
-                    $response = $this->handleCommand($command);
-                    $insert = $response->getResult();
-
-                    $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
+                    $shouldSave = true;
                 } else {
-                    //conditional validation failed, restricted countries list should not be empty
-                    $form->get('Fields')
-                        ->get('restrictedCountriesList')
-                        ->get('restrictedCountriesList')
-                        ->setMessages(['error.messages.restricted.countries.list']);
+                    if (array_key_exists('SaveAndReturnButton', $data['Submit'])) {
+                        $shouldSave = true;
+                    } else {
+                        //conditional validation failed, restricted countries list should not be empty
+                        $form->get('Fields')
+                            ->get('restrictedCountriesList')
+                            ->get('restrictedCountriesList')
+                            ->setMessages(['error.messages.restricted.countries.list']);
+                    }
                 }
             } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('restrictedCountries')
-                    ->setMessages(['error.messages.restricted.countries']);
+                if (array_key_exists('SaveAndReturnButton', $data['Submit'])
+                    && $this->invalidBecauseIsEmpty($form->getMessages())) {
+                    $shouldSave = true;
+                } else {
+                    //Custom Error Message
+                    $form->get('Fields')
+                        ->get('restrictedCountries')
+                        ->setMessages(['error.messages.restricted.countries']);
+                }
+            }
+
+            if ($shouldSave) {
+                $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
+                if($countryIds == null){
+                    $countryIds = [];
+                }
+                $command = UpdateEcmtCountries::create(['ecmtApplicationId' => $id, 'countryIds' => $countryIds]);
+
+                $response = $this->handleCommand($command);
+                $insert = $response->getResult();
+
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
             }
         }
 
