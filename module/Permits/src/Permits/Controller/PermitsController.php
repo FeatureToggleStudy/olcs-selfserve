@@ -185,7 +185,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
 
-            //If the SaveAndContinue button was clicked, allow blank values
+            //If the SaveAndReturnToOverview button was clicked, allow blank values
             if(array_key_exists('SaveAndReturnButton', $data['Submit'])) {
                 $form->get('Fields')->get('MeetsEuro6')->setAttribute('required', false);
                 $form->get('Fields')->get('MeetsEuro6')->setOption('must_be_value', null);
@@ -225,7 +225,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
 
-            //If the SaveAndContinue button was clicked, allow blank values
+            //If the SaveAndReturnToOverview button was clicked, allow blank values
             if(array_key_exists('SaveAndReturnButton', $data['Submit'])) {
                 $form->get('Fields')->get('WontCabotage')->setAttribute('required', false);
                 $form->get('Fields')->get('WontCabotage')->setOption('must_be_value', null);
@@ -375,7 +375,23 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
 
+            $shouldSave = false;
+
             if ($form->isValid()) {
+                $shouldSave = true;
+            } else {
+                if (array_key_exists('SaveAndReturnButton', $data['Submit'])
+                    && $this->invalidBecauseIsEmpty($form->getMessages())) {
+                    $shouldSave = true;
+                } else {
+                    //Custom Error Message
+                    $form->get('Fields')
+                        ->get('InternationalJourney')
+                        ->setMessages(['error.messages.international-journey']);
+                }
+            }
+
+            if ($shouldSave) {
                 $commandData = [
                     'id' => $id,
                     'internationalJourney' => $data['Fields']['InternationalJourney'],
@@ -385,11 +401,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->handleCommand($command);
 
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_SECTORS);
-            } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('InternationalJourney')
-                    ->setMessages(['error.messages.international-journey']);
             }
         }
 
