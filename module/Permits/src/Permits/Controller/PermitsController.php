@@ -407,7 +407,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function sectorAction()
     {
         $id = $this->params()->fromRoute('id', -1);
-        $application = $this->getApplication($id);
 
         //Create form from annotations
         $form = $this->getForm('SpecialistHaulageForm');
@@ -882,18 +881,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->setOptions($options);
 
         return $form;
-    }
-
-    // TODO: remove this method once all session functionality is removed
-    private function extractIDFromSessionData($sessionData)
-    {
-        $IDList = array();
-        foreach ($sessionData as $entry) {
-            //Add everything before the separator to the list (ID is before separator)
-            array_push($IDList, substr($entry, 0, strpos($entry, self::DEFAULT_SEPARATOR)));
-        }
-
-        return $IDList;
     }
 
     /**
