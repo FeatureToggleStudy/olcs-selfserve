@@ -973,7 +973,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     private function getForm(string $formName): Form
     {
         //Create form from annotations
-        return $this->getServiceLocatorc()
+        return $this->getServiceLocator()
             ->get('Helper\Form')
             ->createForm($formName, true, false);
     }
