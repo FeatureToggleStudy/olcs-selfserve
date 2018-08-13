@@ -265,7 +265,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         /*
         * Get Countries List from Database
         */
-        $response = $this->handleQuery(ConstrainedCountries::create(array()));
+        $response = $this->handleQuery(ConstrainedCountries::create([]));
         $restrictedCountryList = $response->getResult();
 
         /*
@@ -953,13 +953,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
      */
     private function isEligibleForPermits(): bool
     {
-        //check whether user is allowed to access permits
-        return true;
+        $query = EligibleForPermits::create([]);
+        $response = $this->handleQuery($query)->getResult();
 
-        // $query = EligibleForPermits::create([]);
-        // $response = $this->handleQuery($query)->getResult();
-
-        // return $response['eligibleForPermits'];
+        return $response['eligibleForPermits'];
     }
 
     /**
