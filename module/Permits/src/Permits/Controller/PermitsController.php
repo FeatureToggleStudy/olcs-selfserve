@@ -522,10 +522,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->handleCommand($command);
 
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_TRIPS);
-            } else {
-                $form->get('Fields')
-                    ->get('permitsRequired')
-                    ->setMessages(['error.messages.permits.required']);
             }
         }
 
