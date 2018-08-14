@@ -785,11 +785,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $query = EcmtCountriesList::create(['isEcmtState' => 1]);
         $response = $this->handleQuery($query);
         $ecmtCountries = $response->getResult();
-        $ecmtCountryDescriptions = [];
-
-        foreach ($ecmtCountries['results'] as $countryRecord) {
-            $ecmtCountryDescriptions[] = $countryRecord['countryDesc'];
-        }
 
         // Get Fee Data
         $ecmtPermitFees = $this->getEcmtPermitFees();
@@ -797,7 +792,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $ecmtIssuingFee = $ecmtPermitFees['fee'][$this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]['fixedValue'];
 
         $view = new ViewModel();
-        $view->setVariable('ecmtCountries', $ecmtCountryDescriptions);
+        $view->setVariable('ecmtCountries', $ecmtCountries['results']);
         $view->setVariable('applicationFee', $ecmtApplicationFee);
         $view->setVariable('issueFee', $ecmtIssuingFee);
         return $view;
