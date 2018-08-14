@@ -81,17 +81,18 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             return $view;
         }
 
-        $query = EcmtPermitApplication::create(array());
+        $query = EcmtPermitApplication::create(['order' => 'DESC']);
         $response = $this->handleQuery($query);
         $applicationData = $response->getResult();
 
-        $query = EcmtPermits::create(array());
+        $query = EcmtPermits::create([]);
         $response = $this->handleQuery($query);
         $issuedData = $response->getResult();
 
         $applicationsTable = $this->getServiceLocator()
             ->get('Table')
             ->prepareTable($this->applicationsTableName, $applicationData['results']);
+
         $issuedTable = $this->getServiceLocator()
             ->get('Table')
             ->prepareTable($this->issuedTableName, $issuedData['results']);
@@ -111,6 +112,17 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $form = $this->getEcmtLicenceForm();
         $data = $this->params()->fromPost();
+        $application = $this->getApplication($id);
+
+        // Read Data
+        if ($application['licence']) {
+            // Large amount of formatting due to the way the fields are represented.
+            $currentLicence = $application['licence']['id'] . '|' .
+                $application['licence']['licNo'] . " " .
+                $application['licence']['trafficArea']['name'] . " ";
+
+            $form->get('Fields')->get('EcmtLicence')->setValue($currentLicence);
+        }
 
         if (isset($data['Fields']['Cancel'])) {
             $this->redirect()
@@ -343,6 +355,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //Create form from annotations
         $form = $this->getForm('InternationalJourneyForm');
 
+        // read data
+        $form->get('Fields')->get('InternationalJourney')->setValue($application['internationalJourneys']);
+
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -459,6 +474,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->handleCommand($command);
 
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_TRIPS);
+            } else {
+                $form->get('Fields')
+                    ->get('permitsRequired')
+                    ->setMessages(['error.messages.permits.required']);
             }
         }
 
