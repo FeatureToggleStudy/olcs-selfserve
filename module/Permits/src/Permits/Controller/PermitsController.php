@@ -555,10 +555,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     {
         $id = $this->params()->fromRoute('id', -1);
 
-        if (!empty($this->params()->fromPost())) {
+        $data = $this->params()->fromPost();
+        if (!empty($data)) {
             $command = UpdateEcmtCheckAnswers::create(['id' => $id]);
             $this->handleCommand($command);
-            $this->nextStep(EcmtSection::ROUTE_ECMT_DECLARATION);
+            $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_DECLARATION);
         }
 
         $form = $this->getForm('CheckAnswersForm');
@@ -610,7 +611,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $answerData['specialistHaulageAnswer'] = $application['sectors']['description'];
         }
 
-        return array('sessionData' => $answerData, 'applicationData' => $application, 'form' => $form);
+        return array('sessionData' => $answerData, 'applicationData' => $application, 'form' => $form, 'applicationId' => $id);
     }
 
     // TODO: remove all session elements and replace with queries
