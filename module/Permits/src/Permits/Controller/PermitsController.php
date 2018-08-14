@@ -863,11 +863,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 ->get('SubmitButton')
                 ->setAttribute('class', 'visually-hidden');
 
-            $licenceOptions = ['label' => ''];
-
             $form->get('Fields')
                 ->get('EcmtLicence')
-                ->setOptions($licenceOptions);
+                ->setOptions(['label' => '']);
         }
 
         /*
