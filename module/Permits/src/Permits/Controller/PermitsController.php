@@ -110,10 +110,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function ecmtLicenceAction()
     {
-
         $id = $this->params()->fromRoute('id', '');
+        $application = $this->getApplication($id);
 
-        $form = $this->getEcmtLicenceForm();
+        $form = $this->getEcmtLicenceForm($application['licence']['id']);
         $data = $this->params()->fromPost();
         $application = $this->getApplication($id);
 
@@ -861,7 +861,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $organisationData['relevantLicences'];
     }
 
-    private function getEcmtLicenceForm()
+    private function getEcmtLicenceForm($licenceId = null)
     {
         // TODO: MOVE THIS TO A SERVICE/HELPER
         /*
@@ -875,11 +875,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $licenceList = $this->getRelevantLicences();
 
         $value_options = array();
-
         foreach ($licenceList as $item) {
             $tmp = array();
-            $tmp['value'] = $item['id'] . '|' . $item['licNo'] . ' ' . $item['trafficArea'];
+            $tmp['value'] = $item['id'];
             $tmp['label'] = $item['licNo'] . ' (' . $item['trafficArea'] . ')';
+
+            if($licenceId == $item['id']) {
+                $tmp['selected'] = true;
+            }
 
             if($item['licenceType']['id'] == 'ltyp_r') {
                 $tmp['attributes'] = [
