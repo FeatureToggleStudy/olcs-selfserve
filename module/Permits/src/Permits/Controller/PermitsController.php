@@ -552,10 +552,36 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $answerData = $this->collatePermitQuestions(); //Get all the questions in returned array
 
         $answerData['licenceAnswer'] = $application['licence']['licNo'] . "\n" . '(' . $application['licence']['trafficArea']['name'] . ')';
-        $answerData['meetsEuro6Answer'] = $application['emissions'] == 1 ? 'Yes' : 'No';
-        $answerData['cabotageAnswer'] = $application['cabotage'] == 1 ? 'Yes' : 'No';
-        $answerData['tripsAnswer'] = $application['trips'];
-        $answerData['permitsAnswer'] = $application['permitsRequired'];
+
+        // Series of if statements to check the status of the questions answered.
+        // Should redirect back to the overview page is the question is not answered.
+        if ($application['emissions'] !== null) {
+            $answerData['meetsEuro6Answer'] = $application['emissions'] == 1 ? 'Yes' : 'No';
+        } else {
+            $this->redirect()
+            ->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $id]);
+        }
+
+        if ($application['cabotage'] !== null) {
+            $answerData['cabotageAnswer'] = $application['cabotage'] == 1 ? 'Yes' : 'No';
+        } else {
+            $this->redirect()
+            ->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $id]);
+        }
+
+        if ($application['trips'] !== null) {
+            $answerData['tripsAnswer'] = $application['trips'];
+        } else {
+            $this->redirect()
+            ->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $id]);
+        }
+
+        if ($application['permitsRequired'] !== null) {
+            $answerData['permitsAnswer'] = $application['permitsRequired'];
+        } else {
+            $this->redirect()
+            ->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $id]);
+        }
 
         //Restricted Coutries Question
         $answerData['restrictedCountriesAnswer'] = "No";
@@ -574,6 +600,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
                 $count++;
             }
+        } else {
+            $this->redirect()
+                ->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $id]);
         }
 
         //International Journeys Question
@@ -583,7 +612,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
          * Can be removed following OLCS-21033
          */
         if ($application['internationalJourneys'] === null) {
-            $answerData['percentageAnswer'] = 'Not completed';
+            $this->redirect()
+                ->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $id]);
         } else {
             switch ($application['internationalJourneys']) {
                 case 0:
@@ -603,6 +633,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         if (isset($application['sectors']['description'])) {
             $answerData['specialistHaulageAnswer'] = $application['sectors']['description'];
+        } else {
+            $this->redirect()
+                ->toRoute('permits/' . EcmtSection::ROUTE_APPLICATION_OVERVIEW, ['id' => $id]);
         }
 
         return array('sessionData' => $answerData, 'applicationData' => $application, 'form' => $form);
