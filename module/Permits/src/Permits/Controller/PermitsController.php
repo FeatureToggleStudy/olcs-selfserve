@@ -17,6 +17,7 @@ use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
 use Dvsa\Olcs\Transfer\Query\Permits\ById;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
+use Dvsa\Olcs\Transfer\Query\Permits\EcmtCountriesList;
 
 use Dvsa\Olcs\Transfer\Command\Permits\CancelEcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
@@ -779,6 +780,24 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $view;
     }
 
+    public function ecmtGuidanceAction()
+    {
+        $query = EcmtCountriesList::create(['isEcmtState' => 1]);
+        $response = $this->handleQuery($query);
+        $ecmtCountries = $response->getResult();
+
+        // Get Fee Data
+        $ecmtPermitFees = $this->getEcmtPermitFees();
+        $ecmtApplicationFee =  $ecmtPermitFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
+        $ecmtIssuingFee = $ecmtPermitFees['fee'][$this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]['fixedValue'];
+
+        $view = new ViewModel();
+        $view->setVariable('ecmtCountries', $ecmtCountries['results']);
+        $view->setVariable('applicationFee', $ecmtApplicationFee);
+        $view->setVariable('issueFee', $ecmtIssuingFee);
+        return $view;
+    }
+
     /**
      * Used to retrieve the licences for the ecmt-licence page.
      *
@@ -801,8 +820,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
      * that is used by the restricted countries view.
      *
      *
-     * @param array $list
-     * @param string $displayFieldName
+     * @param array  $list
+     * @param string $displayMembers
      * @param string $separator
      * @return array
      */
@@ -983,7 +1002,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     /**
      * Returns an application entry by id
      *
-     * @param $id application id
+     * @param number $id application id
      * @return array
      */
     private function getApplication($id)
