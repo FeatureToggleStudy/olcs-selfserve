@@ -857,6 +857,19 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $value_options[$key] = $newValue;//set current value option to reformatted value
         }
 
+        // If we don't have any licences then don't show the submit button.
+        if (count($value_options) == 0) {
+            $form->get('Fields')
+                ->get('SubmitButton')
+                ->setAttribute('class', 'visually-hidden');
+
+            $licenceOptions = ['label' => ''];
+
+            $form->get('Fields')
+                ->get('EcmtLicence')
+                ->setOptions($licenceOptions);
+        }
+
         /*
          * Set 'licences to display' as the value_options of the field
          */
