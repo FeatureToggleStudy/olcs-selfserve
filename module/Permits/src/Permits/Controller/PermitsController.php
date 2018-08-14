@@ -113,6 +113,17 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $form = $this->getEcmtLicenceForm();
         $data = $this->params()->fromPost();
+        $application = $this->getApplication($id);
+
+        // Read Data
+        if ($application['licence']) {
+            // Large amount of formatting due to the way the fields are represented.
+            $currentLicence = $application['licence']['id'] . '|' .
+                $application['licence']['licNo'] . " " .
+                $application['licence']['trafficArea']['name'] . " ";
+
+            $form->get('Fields')->get('EcmtLicence')->setValue($currentLicence);
+        }
 
         if (isset($data['Fields']['Cancel'])) {
             $this->redirect()
@@ -365,6 +376,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //Create form from annotations
         $form = $this->getForm('InternationalJourneyForm');
+
+        // read data
+        $form->get('Fields')->get('InternationalJourney')->setValue($application['internationalJourneys']);
 
         $data = $this->params()->fromPost();
 
