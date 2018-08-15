@@ -175,12 +175,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         // Get Fee Data
         $ecmtFees = $this->getEcmtPermitFees();
         $applicationFee = $ecmtFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
-        $issuingFee = $ecmtFees['fee'][$this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]['fixedValue'];
+        $applicationFeeTotal = $applicationFee * $application['permitsRequired'];
 
         $view = new ViewModel();
         $view->setVariable('id', $id);
         $view->setVariable('applicationFee', $applicationFee);
-        $view->setVariable('issuingFee', $issuingFee);
+        $view->setVariable('totalFee', $applicationFeeTotal);
         $view->setVariable('application', $application);
 
         return $view;
@@ -504,6 +504,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
 
+        $ecmtPermitFees = $this->getEcmtPermitFees();
+        $ecmtApplicationFee =  $ecmtPermitFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
+
         //Create form from annotations
         $form = $this->getForm('PermitsRequiredForm');
 
@@ -524,16 +527,19 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         'permitsRequired' => $data['Fields']['permitsRequired']
                     ]
                 );
-                $this->handleCommand($command);
+                $response = $this->handleCommand($command);
 
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_TRIPS);
             }
         }
 
         $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
-        $totalVehicles = $translationHelper->translateReplace('permits.page.permits.required.info', [$application['licence']['totAuthVehicles']]);
+        $totalVehicles = $translationHelper->translateReplace('permits.form.permits-required.hint', [$application['licence']['totAuthVehicles']]);
+        $form->get('Fields')->get('permitsRequired')->setOption('hint', $totalVehicles);
 
-        return array('form' => $form, 'totalVehicles' => $totalVehicles, 'id' => $id, 'ref' => $application['applicationRef']);
+        $guidanceMessage = $translationHelper->translateReplace('permits.form.permits-required.fee.guidance', ['£' . $ecmtApplicationFee]);
+
+        return array('form' => $form, 'guidanceMessage' => $guidanceMessage, 'id' => $id, 'ref' => $application['applicationRef']);
     }
 
     // TODO: remove all session elements and replace with queries
