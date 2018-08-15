@@ -73,8 +73,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function indexAction()
     {
         $eligibleForPermits = $this->isEligibleForPermits();
-        $view = new ViewModel();
-        $view->setVariable('isEligible', $eligibleForPermits);
 
         if (!$eligibleForPermits) {
             if (!$this->referredFromGovUkPermits($this->getEvent())) {
@@ -82,6 +80,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             }
             return $view;
         }
+
+        $licenceList = $this->getRelevantLicences();
 
         $query = EcmtPermitApplication::create(['order' => 'DESC']);
         $response = $this->handleQuery($query);
@@ -99,8 +99,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Table')
             ->prepareTable($this->issuedTableName, $issuedData['results']);
 
-        $licenceList = $this->getRelevantLicences();
-
         $introMarkUp['value'] = 'markup-ecmt-permit-guidance-first-time';
         $introMarkUp['switch'] = true;
 
@@ -109,6 +107,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $introMarkUp['switch'] = false;
         }
 
+        $view = new ViewModel();
+        $view->setVariable('isEligible', $eligibleForPermits);
         $view->setVariable('introMarkUp', $introMarkUp);
         $view->setVariable('issuedNo', $issuedData['count']);
         $view->setVariable('applicationsNo', $applicationData['count']);
@@ -882,7 +882,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         /*
          * Get licence to display in question
          */
+
         $licenceList = $this->getRelevantLicences();
+
+        $query = EcmtPermitApplication::create(['order' => 'DESC']);
+        $response = $this->handleQuery($query);
+        $applicationData = $response->getResult();
+
+        //var_dump($applicationData);die;
+
+
 
         $value_options = array();
         foreach ($licenceList as $item) {
