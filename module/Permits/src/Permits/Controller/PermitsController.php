@@ -433,14 +433,13 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $options = array();
         $options['value_options'] = $sectorList;
         $form->get('Fields')
-            ->get('SectorList')
-            ->get('SectorList')
+            ->get('SpecialistHaulage')
             ->setOptions($options);
 
         // Read data
         $application = $this->getApplication($id);
 
-        if (isset($application)) {
+        /*if (isset($application)) {
             if (isset($application['sectors'])) {
                 $form->get('Fields')->get('SpecialistHaulage')->setValue('1');
 
@@ -452,7 +451,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     ->get('SectorList')
                     ->setValue($selectedValue);
             }
-        }
+        }*/
 
         $data = $this->params()->fromPost();
 
@@ -460,32 +459,20 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
-                //EXTRA VALIDATION
-                if (($data['Fields']['SpecialistHaulage'] == 1
-                    && isset($data['Fields']['SectorList']['SectorList']))
-                    || ($data['Fields']['SpecialistHaulage'] == 0)
-                ) {
-                    $tmpSectorArray[0] = $data['Fields']['SectorList']['SectorList']; //pass into array in preparation for extractIDFromSessionData()
-                    $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
+                $tmpSectorArray[0] = $data['Fields']['SpecialistHaulage'];
+                $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
 
-                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
+                $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
 
-                    $response = $this->handleCommand($command);
-                    $result = $response->getResult();
+                $response = $this->handleCommand($command);
+                $result = $response->getResult();
 
-                    $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
-                } else {
-                    //conditional validation failed, sector list should not be empty
-                    $form->get('Fields')
-                        ->get('SectorList')
-                        ->get('SectorList')
-                        ->setMessages(['error.messages.sector.list']);
-                }
+                $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
             } else {
                 //Custom Error Message
                 $form->get('Fields')
                     ->get('SpecialistHaulage')
-                    ->setMessages(['error.messages.sector']);
+                    ->setMessages(['error.messages.sector.list']);
             }
         }
 

@@ -11,35 +11,24 @@ class SpecialistHaulage
 {
     /**
      * @Form\Name("SpecialistHaulage")
-     * @Form\Required(true)
+     * @Form\Required(false)
      * @Form\Attributes({
-     *   "class" : "input--specialist-haulier",
-     *   "id" : "specialistHaulierRadio",
+     *   "class" : "input--trips",
+     *    "id" : "EcmtLicence",
      * })
      * @Form\Options({
-     *     "label": "",
-     *     "label_attributes":{
-     *          "class" : "form-control form-control--radio form-control--inline specialistRadio"
-     *     },
-     *     "value_options":{
-     *          "1" : "Yes",
-     *          "0" : "No"
-     *     },
-     *     "error-message": "error.messages.sector"
+     *      "label": "markup-ecmt-sector-list-label",
+     *      "fieldset-attributes": {"id": "sector-list"},
+     *      "fieldset-data-group": "sector-list",
+     *      "label_attributes": {"class": "form-control form-control--radio"},
+     *      "value_options": {
+     *          "Food products, beverages and tobacco, products of agriculture,
+     *                      hunting and forests, fish and other fishing products",
+     *          "Unrefined coal and lignite, crude petroleum and natural gas",
+     *          "Textiles and textile products, leather and leather products",
+     *      },
      * })
      * @Form\Type("Radio")
      */
-    public $specialistHaulage = null;
-
-    /**
-     * @Form\Name("SectorList")
-     * @Form\Attributes({
-     *      "allowWrap":true,
-     *      "data-container-class": "form-control__container",
-     *      "id" : "sectorList",
-     * })
-     * @Form\ComposedObject("Permits\Form\Model\Fieldset\SectorList")
-     */
-    public $sectorList = null;
-
+    public $SectorList = null;
 }
