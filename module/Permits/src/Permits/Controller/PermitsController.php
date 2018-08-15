@@ -73,16 +73,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function indexAction()
     {
         $eligibleForPermits = $this->isEligibleForPermits();
-        $view = new ViewModel();
-        $view->setVariable('isEligible', $eligibleForPermits);
 
+        $view = new ViewModel();
         if (!$eligibleForPermits) {
             if (!$this->referredFromGovUkPermits($this->getEvent())) {
                 return $this->notFoundAction();
             }
-
             return $view;
         }
+
+        $licenceList = $this->getRelevantLicences();
 
         $query = EcmtPermitApplication::create(['order' => 'DESC']);
         $response = $this->handleQuery($query);
@@ -100,6 +100,17 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('Table')
             ->prepareTable($this->issuedTableName, $issuedData['results']);
 
+        $introMarkUp['value'] = 'markup-ecmt-permit-guidance-first-time';
+        $introMarkUp['switch'] = true;
+
+        if (empty($licenceList)){
+            $introMarkUp['value'] = 'markup-ecmt-permit-guidance-no-licence';
+            $introMarkUp['switch'] = false;
+        }
+
+
+        $view->setVariable('isEligible', $eligibleForPermits);
+        $view->setVariable('introMarkUp', $introMarkUp);
         $view->setVariable('issuedNo', $issuedData['count']);
         $view->setVariable('applicationsNo', $applicationData['count']);
         $view->setVariable('applicationsTable', $applicationsTable);
@@ -110,10 +121,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function ecmtLicenceAction()
     {
-
         $id = $this->params()->fromRoute('id', '');
+        $application = $this->getApplication($id);
 
-        $form = $this->getEcmtLicenceForm();
+        $form = $this->getEcmtLicenceForm($application['licence']['id']);
         $data = $this->params()->fromPost();
         $application = $this->getApplication($id);
 
@@ -265,7 +276,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         /*
         * Get Countries List from Database
         */
-        $response = $this->handleQuery(ConstrainedCountries::create(array()));
+        $response = $this->handleQuery(ConstrainedCountries::create([]));
         $restrictedCountryList = $response->getResult();
 
         /*
@@ -861,42 +872,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $organisationData['relevantLicences'];
     }
 
-    /**
-     * Modified version of the method in FormHelperServices
-     * that is used by the restricted countries view.
-     *
-     *
-     * @param array  $list
-     * @param string $displayMembers
-     * @param string $separator
-     * @return array
-     */
-    private function transformListIntoValueOptions($list = array(), $displayMembers = array('name'), $separator = '|')
-    {
-        // TODO: MOVE THIS INTO FormHelperService AND REPLACE OLD VERSION
-        if (!is_string($displayMembers[0]) || !is_array($list)) {
-            //throw exception?
-            return array();
-        }
-
-        $value_options = array();
-
-        foreach ($list as $item) {
-            //Concatenate display values (incase there is more than one field to be used)
-            $displayValue = "";
-
-            foreach ($displayMembers as $displayKey) {
-                $displayValue = $displayValue . $item[$displayKey] . " ";
-            }
-
-            //add display name to the key so that it can be used after submission
-            $value_options[$item['id'] . $separator . $displayValue] = $displayValue;
-        }
-
-        return $value_options;
-    }
-
-    private function getEcmtLicenceForm()
+    private function getEcmtLicenceForm($licenceId = null)
     {
         // TODO: MOVE THIS TO A SERVICE/HELPER
         /*
@@ -908,23 +884,51 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
          * Get licence to display in question
          */
         $licenceList = $this->getRelevantLicences();
-        $value_options = $this->transformListIntoValueOptions($licenceList, array('licNo', 'trafficArea'));
 
-        /*
-         * Add brackets
-         */
-        foreach ($value_options as $key => $value) {
-            $spacePosition = strpos($value, ' '); //find position of first space
-            $newValue = substr_replace($value, ' (', $spacePosition, 1); //add bracket after first space
+        $value_options = array();
+        foreach ($licenceList as $item) {
+            $tmp = array();
+            $tmp['value'] = $item['id'];
+            $tmp['label'] = $item['licNo'] . ' (' . $item['trafficArea'] . ')';
 
-            $newValue = trim($newValue) . ')';//add bracket to end
+            if($licenceId === $item['id']) {
+                $tmp['selected'] = true;
+            }
 
-            $value_options[$key] = $newValue;//set current value option to reformatted value
+            if($item['licenceType']['id'] === 'ltyp_r') {
+                $tmp['attributes'] = [
+                    'class' => 'restricted-licence ' . $form->get('Fields')->get('EcmtLicence')->getAttributes()['class']
+                ];
+                $tmp['label_attributes'] = [
+                    'class' => 'restricted-licence-label ' . $form->get('Fields')->get('EcmtLicence')->getLabelAttributes()['class']
+                ];
+                $value_options[] = $tmp;
+
+                $tmp = array();
+                $tmp['value'] = '';
+                $tmp['label'] = 'permits.form.ecmt-licence.restricted-licence.hint';
+                $tmp['label_attributes'] = [
+                    'class' => 'restricted-licence-hint ' . $form->get('Fields')->get('EcmtLicence')->getLabelAttributes()['class']
+                ];
+                $tmp['attributes'] = [
+                    'class' => 'visually-hidden'
+                ];
+                $value_options[] = $tmp;
+            } else {
+                $value_options[] = $tmp;
+            }
         }
 
-        /*
-         * Set 'licences to display' as the value_options of the field
-         */
+        if (count($value_options) == 0) {
+            $form->get('Fields')
+                ->get('SubmitButton')
+                ->setAttribute('class', 'visually-hidden');
+
+            $form->get('Fields')
+                ->get('EcmtLicence')
+                ->setOptions(['label' => '']);
+        }
+
         $options = array();
         $options['value_options'] = $value_options;
         $form->get('Fields')
@@ -953,13 +957,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
      */
     private function isEligibleForPermits(): bool
     {
-        //check whether user is allowed to access permits
-        return true;
+        $query = EligibleForPermits::create([]);
+        $response = $this->handleQuery($query)->getResult();
 
-        // $query = EligibleForPermits::create([]);
-        // $response = $this->handleQuery($query)->getResult();
-
-        // return $response['eligibleForPermits'];
+        return $response['eligibleForPermits'];
     }
 
     /**
