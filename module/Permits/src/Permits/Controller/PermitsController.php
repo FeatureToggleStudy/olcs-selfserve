@@ -420,7 +420,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         /*
         * Get Sector List from Database
         */
-        $response = $this->handleQuery(SectorsList::create(array()));
+        $response = $this->handleQuery(SectorsList::create(['sort' => 'description', 'order' => 'ASC']));
         $sectorList = $response->getResult();
 
         /*
