@@ -527,7 +527,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                         'permitsRequired' => $data['Fields']['permitsRequired']
                     ]
                 );
-                $this->handleCommand($command);
+                $response = $this->handleCommand($command);
 
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_TRIPS);
             }
@@ -535,7 +535,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
         $totalVehicles = $translationHelper->translateReplace('permits.form.permits-required.hint', [$application['licence']['totAuthVehicles']]);
-        $form->get('Fields')->get('PermitsRequired')->setOption('hint', $totalVehicles);
+        $form->get('Fields')->get('permitsRequired')->setOption('hint', $totalVehicles);
 
         $guidanceMessage = $translationHelper->translateReplace('permits.form.permits-required.fee.guidance', ['£' . $ecmtApplicationFee]);
 
