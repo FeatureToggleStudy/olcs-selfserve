@@ -14,7 +14,7 @@ class SubmitAccept
      * @Form\Attributes({
      *     "class":"action--primary large",
      *     "id":"submit-accept-button",
-     *     "value":"permits.button.accept-and-continue",
+     *     "value":"permits.button.confirm-and-continue",
      * })
      * @Form\Type("Zend\Form\Element\Submit")
      */
