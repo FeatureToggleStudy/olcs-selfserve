@@ -755,8 +755,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $view;
     }
 
-
-
     public function changeLicenceAction()
     {
         $id = $this->params()->fromRoute('id', -1);
