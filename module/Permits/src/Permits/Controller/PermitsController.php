@@ -117,16 +117,25 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $id = $this->params()->fromRoute('id', '');
         $application = $this->getApplication($id);
 
-        $form = $this->getEcmtLicenceForm($application['licence']['id']);
-        $data = $this->params()->fromPost();
-        $application = $this->getApplication($id);
+        $licences = $this->getRelevantLicences();
+        $form = $this->getEcmtLicenceForm($application['licence']['id'], $licences['result']);
 
-        // Read Data
-        if (isset($application['licence'])) {
+        $data = $this->params()->fromPost();
+
+        /*
+         * Read existing value
+         */
+        if (isset($application['licence'])) { //there is an existing value
+            $licenceData = $application['licence'];
+        } else if (count($licences['result']) == 1) { //only 1 licence so it will be hidden (need to fill value for user since they can't select)
+            $licenceData = $licences['result'][0];
+        }
+
+        if (isset($licenceData)) {
             // Large amount of formatting due to the way the fields are represented.
-            $currentLicence = $application['licence']['id'] . '|' .
-                $application['licence']['licNo'] . " " .
-                $application['licence']['trafficArea']['name'] . " ";
+            $currentLicence = $licenceData['id'] . '|' .
+                $licenceData['licNo'] . " " .
+                $licenceData['trafficArea']['name'] . " ";
 
             $form->get('Fields')->get('EcmtLicence')->setValue($currentLicence);
         }
@@ -154,7 +163,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                             ['id' => $existingApplicationId],
                             [ 'query' => [
                                 'licenceId' => $licenceId
-                                ]
+                            ]
                             ]);
                 }
 
@@ -168,8 +177,14 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             }
         }
 
-        return array('form' => $form, 'id' => $id);
+        return array(
+            'form'          => $form,
+            'id'            => $id,
+            'licences'      => $licences,
+            'application'   => $application,
+        );
     }
+
 
     public function applicationOverviewAction()
     {
@@ -751,8 +766,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $view;
     }
 
-
-
     public function changeLicenceAction()
     {
         $id = $this->params()->fromRoute('id', -1);
@@ -825,7 +838,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $organisationData['eligibleEcmtLicences'];
     }
 
-    private function getEcmtLicenceForm($licenceId = null)
+    private function getEcmtLicenceForm($licenceId = null, $licenceList = array())
     {
         // TODO: MOVE THIS TO A SERVICE/HELPER
         /*
@@ -833,22 +846,24 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
          */
         $form = $this->getForm('EcmtLicenceForm');
 
-        /*
-         * Get licence to display in question
-         */
-        $licenceList = $this->getRelevantLicences();
-
         $value_options = array();
         foreach ($licenceList as $item) {
             $tmp = array();
             $tmp['value'] = $item['id'];
             $tmp['label'] = $item['licNo'] . ' (' . $item['trafficArea'] . ')';
 
-            if($licenceId === $item['id']) {
+            if ($licenceId === $item['id']) {
                 $tmp['selected'] = true;
             }
 
-            if($item['licenceType']['id'] === 'ltyp_r') {
+            if (count($licenceList) == 1) { //do not hide if there is one licence but there is an application
+                $tmp['label_attributes'] = [
+                    'class' => 'visually-hidden'
+                ];
+                $value_options[] = $tmp;
+                break;
+            }
+            if ($item['licenceType']['id'] === 'ltyp_r') {
                 $tmp['attributes'] = [
                     'class' => 'restricted-licence ' . $form->get('Fields')->get('EcmtLicence')->getAttributes()['class']
                 ];
@@ -888,8 +903,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('EcmtLicence')
             ->setOptions($options);
 
+
         return $form;
     }
+
 
     // TODO: remove this method once all session functionality is removed
     private function extractIDFromSessionData($sessionData)
