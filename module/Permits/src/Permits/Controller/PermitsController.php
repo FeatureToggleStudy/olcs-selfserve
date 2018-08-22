@@ -177,7 +177,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'id'            => $id,
             'licences'      => $licences,
             'application'   => $application,
-            'translator'    => $this->getServiceLocator()->get('Helper\Translation'),
         );
     }
 
