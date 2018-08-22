@@ -234,7 +234,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CABOTAGE);
             } else {
                 //Custom Error Message
-                $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox']);
+                $form->get('Fields')->get('MeetsEuro6')->setMessages(['error.messages.checkbox.euro6']);
             }
         }
 
@@ -267,7 +267,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_COUNTRIES);
             } else {
                 //Custom Error Message
-                $form->get('Fields')->get('WontCabotage')->setMessages(['error.messages.checkbox']);
+                $form->get('Fields')->get('WontCabotage')->setMessages(['error.messages.checkbox.cabotage']);
             }
         }
 
@@ -389,6 +389,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $this->handleCommand($command);
 
                 $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY);
+            }
+            else {
+                //Custom Error Message
+                $form->get('Fields')->get('tripsAbroad')->setMessages(['error.messages.trips']);
             }
         }
 
