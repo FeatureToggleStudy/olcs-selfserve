@@ -9,8 +9,6 @@ use Common\Form\Form;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateDeclaration;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCheckAnswers;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtLicence;
-use Dvsa\Olcs\Transfer\Query\Permits\ConstrainedCountries;
-use Dvsa\Olcs\Transfer\Query\Permits\SectorsList;
 
 use Dvsa\Olcs\Transfer\Query\Organisation\EligibleForPermits;
 use Dvsa\Olcs\Transfer\Query\Organisation\Organisation;
@@ -102,7 +100,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         $issuedTable = $this->getServiceLocator()
             ->get('Table')
             ->prepareTable($this->issuedTableName, $issuedData['results']);
-        
+
         $view->setVariable('isEligible', $eligibleForPermits);
         $view->setVariable('issuedNo', $issuedData['count']);
         $view->setVariable('applicationsNo', $applicationData['count']);
@@ -281,26 +279,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         //Create form from annotations
         $form = $this->getForm('RestrictedCountriesForm');
 
-        /*
-        * Get Countries List from Database
-        */
-        $response = $this->handleQuery(ConstrainedCountries::create([]));
-        $restrictedCountryList = $response->getResult();
-
-        /*
-        * Make the restricted countries list the value_options of the form
-        */
-        $restrictedCountryList = $this->getServiceLocator()
-            ->get('Helper\Form')
-            ->transformListIntoValueOptions($restrictedCountryList, 'description');
-
-        $options = array();
-        $options['value_options'] = $restrictedCountryList;
-        $form->get('Fields')
-            ->get('restrictedCountriesList')
-            ->get('restrictedCountriesList')
-            ->setOptions($options);
-
         // Read data
         $application = $this->getApplication($id);
 
@@ -313,7 +291,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $selectedValues = array();
 
             foreach ($application['countrys'] as $country) {
-                $selectedValues[] = $country['id'] . $this::DEFAULT_SEPARATOR . $country['countryDesc'];
+                $selectedValues[] = $country['id'];
             }
 
             $form->get('Fields')
@@ -333,8 +311,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
                     || ($data['Fields']['restrictedCountries'] == 0)
                 ) {
-                    $countriesList = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
-                    $countryIds = $this->extractIDFromSessionData($countriesList);
+                    $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
                     $command = UpdateEcmtCountries::create(['ecmtApplicationId' => $id, 'countryIds' => $countryIds]);
 
                     $response = $this->handleCommand($command);
@@ -441,30 +418,9 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function sectorAction()
     {
         $id = $this->params()->fromRoute('id', -1);
-        $application = $this->getApplication($id);
 
         //Create form from annotations
         $form = $this->getForm('SpecialistHaulageForm');
-
-        /*
-        * Get Sector List from Database
-        */
-        $response = $this->handleQuery(SectorsList::create(array()));
-        $sectorList = $response->getResult();
-
-        /*
-        * Make the sectors list the value_options of the form
-        */
-        $sectorList = $this->getServiceLocator()
-            ->get('Helper\Form')
-            ->transformListIntoValueOptions($sectorList, 'description');
-
-        $options = array();
-        $options['value_options'] = $sectorList;
-        $form->get('Fields')
-            ->get('SectorList')
-            ->get('SectorList')
-            ->setOptions($options);
 
         // Read data
         $application = $this->getApplication($id);
@@ -474,7 +430,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 $form->get('Fields')->get('SpecialistHaulage')->setValue('1');
 
                 //Format results from DB before setting values on form
-                $selectedValue = $application['sectors']['id'] . $this::DEFAULT_SEPARATOR . $application['sectors']['description'];
+                $selectedValue = $application['sectors']['id'];
 
                 $form->get('Fields')
                     ->get('SectorList')
@@ -494,13 +450,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                     && isset($data['Fields']['SectorList']['SectorList']))
                     || ($data['Fields']['SpecialistHaulage'] == 0)
                 ) {
-                    $tmpSectorArray[0] = $data['Fields']['SectorList']['SectorList']; //pass into array in preparation for extractIDFromSessionData()
-                    $sectorIDArray = $this->extractIDFromSessionData($tmpSectorArray);
+                    $sectorID = $data['Fields']['SectorList']['SectorList'];
+                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorID]);
 
-                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorIDArray[0]]); //$sectorIDArray[0] because should only be 1 entry
-
-                    $response = $this->handleCommand($command);
-                    $result = $response->getResult();
+                    $this->handleCommand($command);
 
                     $this->handleRedirect($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
                 } else {
@@ -621,17 +574,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         if ($application['internationalJourneys'] === null) {
             $answerData['percentageAnswer'] = 'Not completed';
         } else {
-            switch ($application['internationalJourneys']) {
-                case 0:
-                    $answerData['percentageAnswer'] = 'less.than.60%';
-                    break;
-                case 1:
-                    $answerData['percentageAnswer'] = 'from.60%.to.90%';
-                    break;
-                case 2:
-                    $answerData['percentageAnswer'] = 'more.than.90%';
-                    break;
-            }
+            $answerData['percentageAnswer'] = $application['internationalJourneys']['description'];
         }
 
         //Sectors Question
