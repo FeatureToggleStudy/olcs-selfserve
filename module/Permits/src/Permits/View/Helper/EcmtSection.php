@@ -32,6 +32,10 @@ class EcmtSection extends AbstractHelper
     const ROUTE_ECMT_CANCEL_APPLICATION = 'ecmt-cancel-application';
     const ROUTE_ECMT_CANCEL_CONFIRMATION = self::ROUTE_ECMT_CANCEL_APPLICATION . '/confirmation';
 
+    //withdraw
+    const ROUTE_ECMT_WITHDRAW_APPLICATION = 'ecmt-withdraw-application';
+    const ROUTE_ECMT_WITHDRAW_CONFIRMATION = self::ROUTE_ECMT_WITHDRAW_APPLICATION . '/confirmation';
+
     /**
      * list of overview routes and the field denoting completion status
      */
@@ -93,7 +97,7 @@ class EcmtSection extends AbstractHelper
     public function __invoke(array $application): array
     {
         //if the application isn't submitted, build the overview as normal
-        if ($application['isNotYetSubmitted']){
+        if ($application['isNotYetSubmitted']) {
             $sections = [];
             $appId = $application['id'];
 
@@ -109,7 +113,7 @@ class EcmtSection extends AbstractHelper
                     $colour = self::COMPLETION_STATUS_COLOUR[$status];
                     array_push($sections, $this->createSection($route, $status, $colour, $appId, false));
                 }
-            } else{
+            } else {
                 foreach (self::CONFIRMATION_ROUTE_ORDER as $route => $testedField) {
                     $status = $application['confirmationSectionCompletion'][$testedField];
                     $colour = self::COMPLETION_STATUS_COLOUR[$status];

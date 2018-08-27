@@ -18,6 +18,7 @@ use Dvsa\Olcs\Transfer\Query\Permits\EcmtPermits;
 use Dvsa\Olcs\Transfer\Query\Permits\EcmtCountriesList;
 
 use Dvsa\Olcs\Transfer\Command\Permits\CancelEcmtPermitApplication;
+use Dvsa\Olcs\Transfer\Command\Permits\WithdrawEcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCabotage;
@@ -157,7 +158,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 } else {
                     // Redirect to confirmation page before clearning answers. Possibly better in Session than as GET Param?
                     $this->redirect()
-                        ->toRoute('permits/' . EcmtSection::ROUTE_ECMT_CONFIRM_CHANGE,
+                        ->toRoute(
+                            'permits/' . EcmtSection::ROUTE_ECMT_CONFIRM_CHANGE,
                             ['id' => $existingApplicationId],
                             [ 'query' => [
                                 'licenceId' => $licenceId
@@ -182,7 +184,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             'application'   => $application,
         );
     }
-
 
     public function applicationOverviewAction()
     {
@@ -773,6 +774,53 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
         return $view;
     }
 
+    public function withdrawApplicationAction()
+    {
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+
+        if (!$application['canBeWithdrawn']) {
+            $this->redirect()->toRoute('permits');
+        }
+
+        $data = $this->params()->fromPost();
+
+        //Create form from annotations
+        $form = $this->getForm('WithdrawApplicationForm');
+
+        if (isset($data['Submit'])) {
+            //Validate
+            $form->setData($data);
+
+            if ($form->isValid()) {
+                $command = WithdrawEcmtPermitApplication::create(['id' => $id]);
+                $this->handleCommand($command);
+                $this->nextStep(EcmtSection::ROUTE_ECMT_WITHDRAW_CONFIRMATION);
+            }
+        }
+
+        $view = new ViewModel();
+
+        $view->setVariable('id', $id);
+        $view->setVariable('form', $form);
+        $view->setVariable('ref', $application['applicationRef']);
+
+        return $view;
+    }
+
+    public function withdrawConfirmationAction()
+    {
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+
+        $view = new ViewModel();
+
+        $view->setVariable('id', $id);
+        $view->setVariable('ref', $application['applicationRef']);
+
+        return $view;
+    }
+
     /**
      * Used to retrieve the licences for the ecmt-licence page.
      *
@@ -816,7 +864,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
                 break;
             }
             if ($item['licenceType']['id'] === 'ltyp_r') {
-                $tmp['attributes'] = [
+            $tmp['attributes'] = [
                     'class' => 'restricted-licence ' . $form->get('Fields')->get('EcmtLicence')->getAttributes()['class']
                 ];
                 $tmp['label_attributes'] = [
@@ -855,10 +903,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             ->get('EcmtLicence')
             ->setOptions($options);
 
-
         return $form;
     }
-
 
     // TODO: remove this method once all session functionality is removed
     private function extractIDFromSessionData($sessionData)
