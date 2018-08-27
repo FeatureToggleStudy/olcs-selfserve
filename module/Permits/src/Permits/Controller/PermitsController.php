@@ -138,12 +138,12 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
             $form->get('Fields')->get('EcmtLicence')->setValue($currentLicence);
         }
 
-        if (isset($data['Fields']['Cancel'])) {
+        if (isset($data['Submit']['Cancel'])) {
             $this->redirect()
                 ->toRoute('permits');
         }
 
-        if (isset($data['Fields']['SubmitButton'])) {
+        if (isset($data['Submit']['SubmitButton'])) {
             //Validate
             $form->setData($data);
             if ($form->isValid()) {
