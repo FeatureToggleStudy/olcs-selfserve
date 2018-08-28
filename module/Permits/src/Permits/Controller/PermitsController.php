@@ -822,6 +822,75 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     }
 
     /**
+     * Page displayed when from the Permit Dashboard
+     * the user clicks the Reference of an application
+     * in status 'Under Consideration'.
+     *
+     * From this page the user may or may not be given the
+     * opportunity to withdraw the application.
+     *
+     */
+    public function underConsiderationAction() {
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+
+        if (!$application['isUnderConsideration']) {
+            $this->redirect()->toRoute('permits');
+        }
+
+        $ecmtPermitFees = $this->getEcmtPermitFees();
+        $ecmtApplicationFee =  $ecmtPermitFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
+        $ecmtApplicationFeeTotal = $ecmtApplicationFee * $application['permitsRequired'];
+
+        /**
+         * @todo status view helper and table config shouldn't be in the controller
+         * @var \Common\View\Helper\Status $statusHelper 
+         */
+         $statusHelper = $this->getServiceLocator()->get('ViewHelperManager')->get('status');
+
+         $tableData = array(
+             'results' => array(
+                 0 => array(
+                     'applicationDetailsTitle' => 'permits.page.ecmt.consideration.application.status',
+                     'applicationDetailsAnswer' => $statusHelper->__invoke($application['status'])
+                 ),
+                 1 => array(
+                     'applicationDetailsTitle' => 'permits.page.ecmt.consideration.permit.type',
+                     'applicationDetailsAnswer' => $application['permitType']['description']
+                 ),
+                 2 => array(
+                     'applicationDetailsTitle' => 'permits.page.ecmt.consideration.reference.number',
+                     'applicationDetailsAnswer' => $application['applicationRef']
+                 ),
+                 3 => array(
+                     'applicationDetailsTitle' => 'permits.page.ecmt.consideration.application.date',
+                     'applicationDetailsAnswer' => date(\DATETIME_FORMAT, strtotime($application['dateReceived']))
+                 ),
+                 4 => array(
+                     'applicationDetailsTitle' => 'permits.page.ecmt.consideration.permits.required',
+                     'applicationDetailsAnswer' => $application['permitsRequired']
+                 ),
+                 5 => array(
+                     'applicationDetailsTitle' => 'permits.page.ecmt.consideration.application.fee',
+                     'applicationDetailsAnswer' => '£' . $ecmtApplicationFeeTotal
+                 )
+             )
+         );
+
+        /** @var \Common\Service\Table\TableBuilder $table */
+        $table = $this->getServiceLocator()
+            ->get('Table')
+            ->prepareTable('under-consideration', $tableData);
+
+        $view = new ViewModel();
+        $view->setVariable('application', $application);
+        $view->setVariable('table', $table);
+        $view->setVariable('responseDate', '30 November 2018'); /** @todo this needs to be a system parameter */
+
+        return $view;
+    }
+
+    /**
      * Used to retrieve the licences for the ecmt-licence page.
      *
      * @return array
@@ -1035,7 +1104,6 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
      */
     private function getEcmtPermitFees()
     {
-        // echo 'test'; die;
         $query = EcmtPermitFees::create(['productReferences' => [$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE, $this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]]);
         $response = $this->handleQuery($query);
         return $response->getResult();
