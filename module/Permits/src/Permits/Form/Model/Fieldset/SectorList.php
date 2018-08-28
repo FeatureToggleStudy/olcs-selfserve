@@ -12,7 +12,7 @@ class SectorList
 
     /**
      * @Form\Name("SectorList")
-     * @Form\Required(false)
+     * @Form\Required(true)
      * @Form\Options({
      *     "fieldset-attributes": {"id": "sector-list"},
      *     "fieldset-data-group": "sector-list",
@@ -27,5 +27,4 @@ class SectorList
      * @Form\Type("DynamicRadio")
      */
     public $SectorList;
-
 }
