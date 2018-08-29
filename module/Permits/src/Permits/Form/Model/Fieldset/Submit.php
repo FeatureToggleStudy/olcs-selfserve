@@ -14,7 +14,7 @@ class Submit
      * @Form\Attributes({
      *     "class":"action--primary large",
      *     "id":"submitbutton",
-     *     "value":"Save and continue",
+     *     "value":"permits.button.save-and-continue",
      * })
      * @Form\Type("Zend\Form\Element\Submit")
      */
@@ -25,7 +25,7 @@ class Submit
      * @Form\Attributes({
      *     "class":"action--primary large return-overview",
      *     "id":"save-return-button",
-     *     "value":"Save and return to overview",
+     *     "value":"permits.button.save-return-to-overview",
      * })
      * @Form\Type("Zend\Form\Element\Submit")
      */

@@ -25,7 +25,7 @@ class SubmitAccept
      * @Form\Attributes({
      *     "class":"action--primary large return-overview",
      *     "id":"save-return-button",
-     *     "value":"Save and return to overview",
+     *     "value":"permits.button.save-return-to-overview",
      * })
      * @Form\Type("Zend\Form\Element\Submit")
      */
