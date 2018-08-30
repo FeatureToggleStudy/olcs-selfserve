@@ -141,6 +141,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function ecmtLicenceAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
         $application = $this->getApplication($id);
 
         $form = $this->getForm('EcmtLicenceForm');
@@ -169,6 +170,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function applicationOverviewAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
         $application = $this->getApplication($id);
 
         // Get Fee Data
@@ -188,6 +190,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function euro6EmissionsAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
         //Create form from annotations
         $form = $this->getForm('Euro6EmissionsForm');
@@ -223,10 +226,11 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
     public function cabotageAction()
     {
+        $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
         $form = $this->getForm('CabotageForm');
 
         // read data
-        $id = $this->params()->fromRoute('id', -1);
         $application = $this->getApplication($id);
         if (isset($application) && $application['cabotage']) {
             $form->get('Fields')->get('WontCabotage')->setValue('Yes');
@@ -257,6 +261,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function restrictedCountriesAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
         //Create form from annotations
         $form = $this->getForm('RestrictedCountriesForm');
@@ -327,6 +332,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function tripsAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
         $application = $this->getApplication($id);
 
         // TODO: insert the trips hint into the form
@@ -365,6 +371,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function internationalJourneyAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
         $application = $this->getApplication($id);
         $trafficArea = $application['licence']['trafficArea'];
 
@@ -404,6 +411,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function sectorAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
         //Create form from annotations
         $form = $this->getForm('SpecialistHaulageForm');
@@ -450,6 +458,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function permitsRequiredAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
         $application = $this->getApplication($id);
 
         $ecmtPermitFees = $this->getEcmtPermitFees();
@@ -494,6 +503,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function checkAnswersAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
         $application = $this->getApplication($id);
 
         if (!$application['sectionCompletion']['allCompleted']) {
@@ -562,6 +572,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function declarationAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
 
         $form = $this->getForm('DeclarationForm');
@@ -600,6 +611,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function feeAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
         if (!empty($this->params()->fromPost())) {
             $command = EcmtSubmitApplication::create(['id' => $id]);
@@ -632,6 +644,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function submittedAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
         $application = $this->getApplication($id);
 
@@ -644,6 +657,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function cancelApplicationAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
         $request = $this->getRequest();
         $data = (array)$request->getPost();
@@ -683,6 +697,10 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     {
         $id = $this->params()->fromRoute('id', -1);
 
+        if (!$this->isCancelled($id)) {
+            $this->redirect()->toRoute('permits');
+        }
+
         $view = new ViewModel();
         $view->setVariable('id', $id);
 
@@ -692,6 +710,7 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     public function changeLicenceAction()
     {
         $id = $this->params()->fromRoute('id', -1);
+        $this->cancelRedirect($id);
 
         $request = $this->getRequest();
         $data = (array)$request->getPost();
@@ -1002,5 +1021,25 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
 
         //A button other than the primary submit button was clicked so return to overview
         return $this->nextStep(EcmtSection::ROUTE_APPLICATION_OVERVIEW);
+    }
+
+    /**
+     * Check whether the application has been cancelled or not.
+     */
+    private function isCancelled($id) {
+        return $this->getApplication($id)['status']['id'] === 'ecmt_permit_cancelled';
+    }
+
+    /**
+     * Redirect the user to the permits tab if the application
+     * has been cancelled as they are no longer allowed to
+     * navigate to the route they are trying to get to.
+     */
+    private function cancelRedirect($id) {
+        if ($this->getApplication($id)) {
+            if ($this->isCancelled($id)) {
+                $this->redirect()->toRoute('permits');
+            }
+        }
     }
 }
