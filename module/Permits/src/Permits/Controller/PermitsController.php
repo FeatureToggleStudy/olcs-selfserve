@@ -1032,14 +1032,16 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
     /**
      * Check whether the application has been cancelled.
      */
-    private function isCancelled($id) {
+    private function isCancelled($id)
+    {
         return $this->getApplication($id)['status']['id'] === 'ecmt_permit_cancelled';
     }
 
     /**
      * Check whether the application has been withdrawn.
      */
-    private function isWithdrawn($id) {
+    private function isWithdrawn($id)
+    {
         return $this->getApplication($id)['status']['id'] === 'ecmt_permit_withdrawn';
     }
 
@@ -1048,7 +1050,8 @@ class PermitsController extends AbstractOlcsController implements ToggleAwareInt
      * has been cancelled as they are no longer allowed to
      * navigate to the route they are trying to get to.
      */
-    private function cancelWithdrawRedirect($id) {
+    private function cancelWithdrawRedirect($id)
+    {
         if ($this->getApplication($id)) {
             if ($this->isCancelled($id) || $this->isWithdrawn($id)) {
                 $this->redirect()->toRoute('permits');
