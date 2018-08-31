@@ -529,19 +529,19 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
                     'applicationDetailsAnswer' => $application['permitType']['description']
                 ),
                 2 => array(
-                    'applicationDetailsTitle' => 'Permit start and end date',
+                    'applicationDetailsTitle' => 'permits.page.ecmt.fee-part-successful.permit.validity',
                     'applicationDetailsAnswer' => ''
                 ),
                 3 => array(
-                    'applicationDetailsTitle' => 'Issuing fee per permit',
+                    'applicationDetailsTitle' => 'permits.page.ecmt.fee-part-successful.issuing.fee',
                     'applicationDetailsAnswer' => $application['permitsRequired'] . ' x £' . $ecmtIssuingFee
                 ),
                 4 => array(
-                    'applicationDetailsTitle' => 'Total issuing fee to be paid',
+                    'applicationDetailsTitle' => 'permits.page.ecmt.fee-part-successful.issuing.fee.total',
                     'applicationDetailsAnswer' => '£' . $totalIssuingFee . ' (non-refundable)'
                 ),
                 5 => array(
-                    'applicationDetailsTitle' => 'Payment due by',
+                    'applicationDetailsTitle' => 'permits.page.ecmt.fee-part-successful.payment.due',
                     'applicationDetailsAnswer' => '13 December 2018'
                 ),
              )
