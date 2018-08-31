@@ -275,6 +275,20 @@ return array(
                   ],
                   'may_terminate' => false,
               ],
+              'ecmt-fee-part-successful' => [
+                'type'    => 'segment',
+                'options' => [
+                    'route'    => '/:id/ecmt-fee-part-successful[/]',
+                    'defaults' => [
+                        'controller'    => 'Permits\Controller\Permits',
+                        'action'        => 'feePartSuccessful',
+                    ],
+                    'constraints' => [
+                        'id' => '[0-9]+',
+                    ],
+                ],
+                'may_terminate' => false,
+            ],
               'ecmt-cancel-application' => [
                   'type'    => 'segment',
                   'options' => [

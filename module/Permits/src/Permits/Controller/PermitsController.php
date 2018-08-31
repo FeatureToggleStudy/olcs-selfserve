@@ -508,6 +508,58 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         return $view;
     }
 
+
+    public function feePartSuccessfulAction()
+    {
+        $id = $this->params()->fromRoute('id', -1);
+        $application = $this->getApplication($id);
+
+        $ecmtPermitFees = $this->getEcmtPermitFees();
+        $ecmtIssuingFee = $ecmtPermitFees['fee'][$this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]['fixedValue'];
+        $totalIssuingFee = $application['permitsRequired'] * $ecmtIssuingFee;
+
+         $tableData = array(
+             'results' => array(
+                 0 => array(
+                     'applicationDetailsTitle' => 'permits.page.ecmt.consideration.reference.number',
+                     'applicationDetailsAnswer' => $application['applicationRef']
+                 ),
+                 1 => array(
+                    'applicationDetailsTitle' => 'permits.page.ecmt.consideration.permit.type',
+                    'applicationDetailsAnswer' => $application['permitType']['description']
+                ),
+                2 => array(
+                    'applicationDetailsTitle' => 'Permit start and end date',
+                    'applicationDetailsAnswer' => ''
+                ),
+                3 => array(
+                    'applicationDetailsTitle' => 'Issuing fee per permit',
+                    'applicationDetailsAnswer' => $application['permitsRequired'] . ' x £' . $ecmtIssuingFee
+                ),
+                4 => array(
+                    'applicationDetailsTitle' => 'Total issuing fee to be paid',
+                    'applicationDetailsAnswer' => '£' . $totalIssuingFee . ' (non-refundable)'
+                ),
+                5 => array(
+                    'applicationDetailsTitle' => 'Payment due by',
+                    'applicationDetailsAnswer' => ''
+                ),
+             )
+         );
+
+        /** @var \Common\Service\Table\TableBuilder $table */
+        $table = $this->getServiceLocator()
+            ->get('Table')
+            ->prepareTable('fee-part-successful', $tableData);
+
+        $view = new ViewModel();
+        $view->setVariable('application', $application);
+        $view->setVariable('table', $table);
+        $view->setVariable('responseDate', '30 November 2018'); /** @todo this needs to be a system parameter */
+
+        return $view;
+    }
+
     /**
      * Whether the organisation is eligible for permits
      *

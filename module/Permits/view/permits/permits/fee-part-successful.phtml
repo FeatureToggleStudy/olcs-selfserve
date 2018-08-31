@@ -1,0 +1,29 @@
+<?php
+    use Permits\View\Helper\EcmtSection;
+?>
+
+<div class="row ecmt">
+    <div class="two-thirds">
+        <div class="page-header">
+            <p><a href="<?php echo $this->url('permits') ?>" class="back-link"> <?php echo $this->escapeHtml($this->translate('common.link.back.label')); ?></a></p>
+            <div class="page-header__wrapper">
+                <h1 class="js-title">
+                    <?php echo $this->escapeHtml($this->translate('permits.page.fee-part-successful.title')); ?>
+                    <div class="guidance pre-selected highlight-box">
+                        <p><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.consideration.header')); ?></p>
+                    </div>
+                </h1>
+            </div>
+        </div>
+        <div class="field">
+            <fieldset id="fee-part-successful" class="inline" data-group="fee-part-successful">
+                <?php echo $this->table; ?>
+            </fieldset>
+            <p>
+                <a class="action--primary" href="<?php echo $this->url('permits/' . EcmtSection::ROUTE_ECMT_WITHDRAW_APPLICATION, [], [], true); ?>">Accept and pay</a>
+                <a class="action--primary" href="<?php echo $this->url('permits/' . EcmtSection::ROUTE_ECMT_WITHDRAW_APPLICATION, [], [], true); ?>">Decline permits</a>
+            </p>
+        </div>
+        <p><a href="<?php echo $this->url('permits'); ?>"> <?php echo $this->escapeHtml($this->translate('permits.link.cancel.return.to.dashboard')); ?></a></p>
+    </div>
+</div>
