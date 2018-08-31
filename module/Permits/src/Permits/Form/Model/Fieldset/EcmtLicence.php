@@ -24,9 +24,9 @@ class EcmtLicence
      *      "service_name": "Common\Service\Data\EcmtLicence",
      *      "category": "",
      *      "disable_inarray_validator" : true,
-     *      "error-message": "error.messages.ecmt-licence"
+     *      "error-message": "error.messages.ecmt-licence",
      * })
-     * @Form\Type("DynamicRadio")
+     * @Form\Type("DynamicRadioHtml")
      */
 
     public $ecmtLicence = null;

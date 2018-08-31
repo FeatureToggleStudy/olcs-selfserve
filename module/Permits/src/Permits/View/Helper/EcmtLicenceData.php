@@ -62,7 +62,7 @@ class EcmtLicenceData extends AbstractHelper
                 preg_replace ("/<div(.*?)>(.*?)<\/div>/i", "", $licences[0]['label']));
         }
 
-        if (empty($application) && array_key_exists('label_attributes',$licences[0]) && empty($application)) {
+        if (empty($application) && array_key_exists('html_elements',$licences[0]) && empty($application)) {
             $data['copy'] .= '<p>' . $this->view->translate('permits.form.ecmt-licence.restricted-licence.hint') . '</p>';
         }
 
