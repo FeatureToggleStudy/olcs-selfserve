@@ -542,7 +542,7 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
                 ),
                 5 => array(
                     'applicationDetailsTitle' => 'Payment due by',
-                    'applicationDetailsAnswer' => ''
+                    'applicationDetailsAnswer' => '13 December 2018'
                 ),
              )
          );
