@@ -1,13 +1,32 @@
 <?php
 namespace Permits;
 
+use Permits\Controller\CancelApplicationController;
+use Permits\Controller\EmissionsController;
+use Permits\Controller\CabotageController;
+use Permits\Controller\WithdrawApplicationController;
+use Permits\Controller\CheckAnswersController;
+use Permits\Controller\DeclarationController;
+use Permits\Controller\FeeController;
+use Permits\Controller\OverviewController;
+use Permits\Controller\SubmittedController;
+use Permits\Controller\PermitsController;
+
 return array(
   'controllers' => array(
     'invokables' => array(
-      'Permits\Controller\Permits' => 'Permits\Controller\PermitsController',
+        PermitsController::class => PermitsController::class,
+        EmissionsController::class => EmissionsController::class,
+        CabotageController::class => CabotageController::class,
+        CheckAnswersController::class => CheckAnswersController::class,
+        DeclarationController::class => DeclarationController::class,
+        OverviewController::class => OverviewController::class,
+        FeeController::class => FeeController::class,
+        SubmittedController::class => SubmittedController::class,
+        CancelApplicationController::class => CancelApplicationController::class,
+        WithdrawApplicationController::class => WithdrawApplicationController::class
     ),
   ),
-
   'router' => array(
     'routes' => array(
       'permits' => array(
@@ -15,7 +34,7 @@ return array(
         'options' => array(
           'route'    => '/permits',
           'defaults' => array(
-            'controller'    => 'Permits\Controller\Permits',
+            'controller'    => PermitsController::class,
             'action'        => 'index',
           ),
         ),
@@ -26,7 +45,7 @@ return array(
                   'options' => [
                       'route'    => '/ecmt-guidance[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'ecmtGuidance',
                       ],
                   ],
@@ -37,8 +56,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/application-overview[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'applicationOverview',
+                          'controller'    => OverviewController::class,
+                          'action'        => 'generic',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -51,7 +70,7 @@ return array(
                   'options' => [
                       'route'    => '[/:id]/ecmt-licence[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'ecmtLicence',
                       ],
                       'constraints' => [
@@ -65,7 +84,7 @@ return array(
                   'options' => [
                       'route'    => '/ecmt-add-licence[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'add',
                       ],
                       'constraints' => [
@@ -79,7 +98,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-change-licence[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'changeLicence',
                       ],
                       'constraints' => [
@@ -93,8 +112,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-euro6[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'euro6Emissions',
+                          'controller'    => EmissionsController::class,
+                          'action'        => 'generic',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -107,8 +126,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-cabotage[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'cabotage',
+                          'controller'    => CabotageController::class,
+                          'action'        => 'generic',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -121,7 +140,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-countries[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'restrictedCountries',
                       ],
                       'constraints' => [
@@ -135,7 +154,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-trips[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'trips',
                       ],
                       'constraints' => [
@@ -149,7 +168,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-international-journey[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'internationalJourney',
                       ],
                       'constraints' => [
@@ -163,7 +182,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-sectors[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'sector',
                       ],
                       'constraints' => [
@@ -177,7 +196,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-no-of-permits[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'permitsRequired',
                       ],
                       'constraints' => [
@@ -191,8 +210,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-check-answers[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'checkAnswers',
+                          'controller'    => CheckAnswersController::class,
+                          'action'        => 'generic',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -205,8 +224,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-declaration[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'declaration',
+                          'controller'    => DeclarationController::class,
+                          'action'        => 'generic',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -219,8 +238,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-fee[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'fee',
+                          'controller'    => FeeController::class,
+                          'action'        => 'generic',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -233,8 +252,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-submitted[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'submitted',
+                          'controller'    => SubmittedController::class,
+                          'action'        => 'generic',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -247,7 +266,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-under-consideration[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
+                          'controller'    => PermitsController::class,
                           'action'        => 'underConsideration',
                       ],
                       'constraints' => [
@@ -261,8 +280,8 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-cancel-application[/]',
                       'defaults' => [
-                          'controller'    => 'Permits\Controller\Permits',
-                          'action'        => 'cancelApplication',
+                          'controller'    => CancelApplicationController::class,
+                          'action'        => 'cancel',
                       ],
                       'constraints' => [
                           'id' => '[0-9]+',
@@ -275,8 +294,8 @@ return array(
                           'options' => [
                               'route'    => 'confirmation[/]',
                               'defaults' => [
-                                  'controller'    => 'Permits\Controller\Permits',
-                                  'action'        => 'cancelConfirmation',
+                                  'controller'    => CancelApplicationController::class,
+                                  'action'        => 'confirmation',
                               ],
                           ],
                           'may_terminate' => false,
@@ -288,8 +307,8 @@ return array(
                     'options' => [
                         'route' => '/:id/ecmt-withdraw-application[/]',
                         'defaults' => [
-                            'controller' => 'Permits\Controller\Permits',
-                            'action' => 'withdrawApplication'
+                            'controller' => WithdrawApplicationController::class,
+                            'action' => 'withdraw'
                         ],
                         'constraints' => [
                             'id' => '[0-9]+',
@@ -302,8 +321,8 @@ return array(
                             'options' => [
                                 'route'    => 'confirmation[/]',
                                 'defaults' => [
-                                    'controller'    => 'Permits\Controller\Permits',
-                                    'action'        => 'withdrawConfirmation',
+                                    'controller'    => WithdrawApplicationController::class,
+                                    'action'        => 'confirmation',
                                 ],
                             ],
                             'may_terminate' => false,
@@ -314,6 +333,7 @@ return array(
       ),
     ),
   ),
+    /** @todo we don't need all of these different link helpers! OLCS-21512 */
     'view_helpers' => [
         'invokables' => [
             'ecmtSection' => \Permits\View\Helper\EcmtSection::class,
