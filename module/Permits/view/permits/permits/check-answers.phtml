@@ -18,12 +18,15 @@
         </div>
 
         <div class="field">
+            <dl class="govuk-check-your-answers">
+                <div>
+                    <dt class="cya-question"><h4><?php echo $this->escapeHtml($this->translate($this->escapeHtml($sessionData['licenceQuestion']))); ?></h4></dt>
+                    <dd class="cya-answer"><?php echo nl2br($this->escapeHtml($sessionData['licenceAnswer'])); ?></dd>
+                    <dd class="cya-change"><?php echo $this->changeAnswerLink(EcmtSection::ROUTE_ECMT_LICENCE); ?></dd>
+                </div>
+            </dl>
            <div class="table_wrapper">
                 <table>
-                    <thead>
-                        <tr>
-                        </tr>
-                    </thead>
                     <tbody>
                         <tr>
                             <td>
