@@ -519,7 +519,7 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         $totalIssuingFee = $application['permitsRequired'] * $ecmtIssuingFee;
 
          $tableData = array(
-             'results' => array(
+             'results' => array( 
                  0 => array(
                      'applicationDetailsTitle' => 'permits.page.ecmt.consideration.reference.number',
                      'applicationDetailsAnswer' => $application['applicationRef']
