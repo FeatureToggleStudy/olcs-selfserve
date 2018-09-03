@@ -22,8 +22,24 @@ class PermitsRequired
      *     "hint": "permits.form.permits-required.hint",
      *     "short-label": "",
      * })
+     * @Form\Validator({
+     *      "name": "Zend\Validator\NotEmpty",
+     *      "options": {
+     *          "message": {
+     *              "isEmpty": "error.messages.permits.required"
+     *          }
+     *     }
+     * })
+     * @Form\Validator({
+     *      "name": "Zend\Validator\GreaterThan",
+     *      "options": {
+     *          "min":0,
+     *          "message": {
+     *              "notGreaterThan": "The input is not greater than 0"
+     *          }
+     *     }
+     * })
      * @Form\Validator({"name":"Zend\Validator\Digits"})
-     * @Form\Validator({"name":"Zend\Validator\GreaterThan", "options": {"min": 0}})
      * @Form\Validator({
      *     "name": "NumberCompare",
      *     "options": {
