@@ -71,4 +71,18 @@ class ConditionalDisplayConfig
             'value' => true
         ],
     ];
+
+    const PERMIT_APP_CAN_BE_DECLINE = [
+        PermitAppDataSource::DATA_KEY => [
+            'key' => 'canBeDeclined',
+            'value' => true
+        ],
+    ];
+
+    const PERMIT_APP_IS_DECLINED = [
+        PermitAppDataSource::DATA_KEY => [
+            'key' => 'isDeclined',
+            'value' => true
+        ],
+    ];
 }
