@@ -2,6 +2,7 @@
 namespace Permits;
 
 use Permits\Controller\CancelApplicationController;
+use Permits\Controller\DeclineApplicationController;
 use Permits\Controller\EmissionsController;
 use Permits\Controller\CabotageController;
 use Permits\Controller\WithdrawApplicationController;
@@ -24,7 +25,8 @@ return array(
         FeeController::class => FeeController::class,
         SubmittedController::class => SubmittedController::class,
         CancelApplicationController::class => CancelApplicationController::class,
-        WithdrawApplicationController::class => WithdrawApplicationController::class
+        WithdrawApplicationController::class => WithdrawApplicationController::class,
+        DeclineApplicationController::class => DeclineApplicationController::class
     ),
   ),
   'router' => array(
@@ -328,7 +330,20 @@ return array(
                             'may_terminate' => false,
                         ],
                     ],
-                ]
+              ],
+              'ecmt-decline-application' => [
+                  'type' => 'segment',
+                  'options' => [
+                      'route' => '/:id/ecmt-decline-application[/]',
+                      'defaults' => [
+                          'controller' => DeclineApplicationController::class,
+                          'action' => 'generic'
+                      ],
+                      'constraints' => [
+                          'id' => '[0-9]+',
+                      ],
+                  ]
+              ]
           ],
       ),
     ),
