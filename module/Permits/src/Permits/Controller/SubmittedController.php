@@ -26,6 +26,15 @@ class SubmittedController extends AbstractSelfserveController implements ToggleA
         'decline' => 'permits/submitted',
     ];
 
+    public function genericAction()
+    {
+        $view = parent::genericAction();
+        $view->setVariable('partialName', 'markup-ecmt-application-submitted');
+        $view->setVariable('titleName', 'permits.application.submitted.title');
+
+        return $view;
+    }
+
     public function declineAction()
     {
         $view = parent::genericAction();
