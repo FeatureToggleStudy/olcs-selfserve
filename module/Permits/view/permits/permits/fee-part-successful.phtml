@@ -1,5 +1,12 @@
 <?php
     use Permits\View\Helper\EcmtSection;
+
+$title = $this->translate('permits.page.fee.title');
+$this->headTitle($title);
+$application = $data['application'];
+$translatorHelper = $this->getHelperPluginManager()->getServiceLocator()->get('Helper\Translation');
+$feeData = $this->ecmtFees($application);
+
 ?>
 
 <div class="row ecmt">
@@ -9,21 +16,58 @@
             <div class="page-header__wrapper">
                 <h1 class="js-title">
                     <?php echo $this->escapeHtml($this->translate('permits.page.fee-part-successful.title')); ?>
-                    <div class="guidance pre-selected highlight-box">
-                        <p><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.consideration.header')); ?></p>
-                    </div>
+                    <?php echo $translatorHelper->translateReplace(
+                            'markup-ecmt-fee-part-successful-hint',
+                            [$application['irhpPermitApplications'][0]['successfulPermitApplications'],
+                             $application['permitsRequired']]
+                    ); ?>
                 </h1>
             </div>
         </div>
         <div class="field">
-            <fieldset id="fee-part-successful" class="inline" data-group="fee-part-successful">
-                <?php echo $this->table; ?>
-            </fieldset>
-            <p>
-                <a class="action--primary" href="<?php echo $this->url('permits/' . EcmtSection::ROUTE_ECMT_WITHDRAW_APPLICATION, [], [], true); ?>">Accept and pay</a>
-                <a class="action--primary" href="<?php echo $this->url('permits/' . EcmtSection::ROUTE_ECMT_WITHDRAW_APPLICATION, [], [], true); ?>">Decline permits</a>
-            </p>
+            <div class="form-group form-steps ">
+                <div class="form-group">
+                    <dl>
+                        <dt><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.consideration.reference.number')); ?></dt>
+                        <dd>
+                            <?php echo $application['applicationRef']; ?>
+                        </dd>
+
+                        <dt><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.consideration.permit.type')); ?></dt>
+                        <dd>
+                            <?php echo $application['permitType']['description']; ?>
+                        </dd>
+
+                        <dt><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.fee-part-successful.permit.validity')); ?></dt>
+                        <dd>
+                            <?php
+                                echo date(\DATE_FORMAT, strtotime($application['irhpPermitApplications'][0]['irhpPermitWindow']['irhpPermitStock']['validFrom']));
+                                echo ' ' . $this->translate('to') . ' ';
+                                echo date(\DATE_FORMAT, strtotime($application['irhpPermitApplications'][0]['irhpPermitWindow']['irhpPermitStock']['validTo']));
+                            ?>
+                        </dd>
+
+                        <dt><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.fee-part-successful.issuing.fee')); ?></dt>
+                        <dd>
+                            <?php echo $application['irhpPermitApplications'][0]['successfulPermitApplications']; ?> x
+                            <?php echo $this->currencyFormatter($application['fees'][0]['grossAmount']); ?> <br />
+                            <a href="<?php echo $this->url('permits/' . EcmtSection::ROUTE_ECMT_PARTIAL_PERMITS, [], [], true); ?>">
+                                <?php echo $this->escapeHtml($this->translate('permits.page.view.permits')); ?>
+                            </a>
+                        </dd>
+
+                        <dt><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.fee-part-successful.issuing.fee.total')); ?></dt>
+                        <dd><?php echo $this->currencyFormatter($feeData['totalFee']); ?></dd>
+
+                        <dt><?php echo $this->escapeHtml($this->translate('permits.page.ecmt.fee-part-successful.payment.due')); ?></dt>
+                        <dd><?php echo date(\DATE_FORMAT, strtotime($feeData['dueDate'])); ?></dd>
+                    </dl>
+                </div>
+            </div>
+            <?php
+            echo $this->form($form);
+            ?>
+            <p><?php echo $this->permitsBackLink('permits.link.cancel.return.to.dashboard'); ?></p>
         </div>
-        <p><a href="<?php echo $this->url('permits'); ?>"> <?php echo $this->escapeHtml($this->translate('permits.link.cancel.return.to.dashboard')); ?></a></p>
     </div>
 </div>

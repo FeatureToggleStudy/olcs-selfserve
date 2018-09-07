@@ -4,7 +4,9 @@ namespace Permits\Controller\Config\DataSource;
 
 use Permits\Controller\Config\DataSource\FeeList as FeeListDto;
 use Permits\Controller\Config\DataSource\PermitApplication as PermitAppDataSource;
+use Permits\Controller\Config\DataSource\PermitIssuedApplication as PermitIssuedAppDataSource;
 use Permits\Data\Mapper\FeeList as FeeListMapper;
+use Permits\Data\Mapper\PermitIssuedData as PermitIssuedDataMapper;
 
 /**
  * Holds data source configs that are used regularly

@@ -71,7 +71,11 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
             [
                 'order' => 'DESC',
                 'organisationId' => $this->getCurrentOrganisationId(),
-                'statusIds' => [RefData::ECMT_APP_STATUS_NOT_YET_SUBMITTED, RefData::ECMT_APP_STATUS_UNDER_CONSIDERATION, RefData::ECMT_APP_STATUS_AWAITING_FEE]
+                'statusIds' => [
+                    RefData::ECMT_APP_STATUS_NOT_YET_SUBMITTED,
+                    RefData::ECMT_APP_STATUS_UNDER_CONSIDERATION,
+                    RefData::ECMT_APP_STATUS_AWAITING_FEE
+                ]
             ]
         );
         $response = $this->handleQuery($query);
@@ -617,7 +621,12 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
      */
     private function getEcmtPermitFees()
     {
-        $query = EcmtPermitFees::create(['productReferences' => [$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE, $this::ECMT_ISSUING_FEE_PRODUCT_REFENCE]]);
+        $query = EcmtPermitFees::create([
+            'productReferences' => [
+                $this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE,
+                $this::ECMT_ISSUING_FEE_PRODUCT_REFENCE
+            ]
+        ]);
         $response = $this->handleQuery($query);
         return $response->getResult();
     }
