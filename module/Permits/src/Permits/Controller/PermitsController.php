@@ -66,6 +66,9 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
             return $view;
         }
 
+        /*
+        * Get the ONGOING Permit Application
+        */
         $query = EcmtPermitApplication::create(
             [
                 'order' => 'DESC',
@@ -80,12 +83,26 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
             ->get('Table')
             ->prepareTable($this->applicationsTableName, $applicationData['results']);
 
+
+        /*
+        * Get the VALID Permit Application
+        */
+        $query = EcmtPermitApplication::create(
+            [
+                'order' => 'DESC',
+                'organisation' => $this->getCurrentOrganisationId(),
+                'statusIds' => [RefData::ECMT_APP_STATUS_VALID]
+            ]
+        );
+        $response = $this->handleQuery($query);
+        $validApplicationData = $response->getResult();
+
         $issuedTable = $this->getServiceLocator()
             ->get('Table')
-            ->prepareTable($this->issuedTableName, []);
+            ->prepareTable($this->issuedTableName, $validApplicationData['results']);
 
         $view->setVariable('isEligible', $eligibleForPermits);
-        $view->setVariable('issuedNo', 0);
+        $view->setVariable('issuedNo',  $validApplicationData['count']);
         $view->setVariable('applicationsNo', $applicationData['count']);
         $view->setVariable('applicationsTable', $applicationsTable);
         $view->setVariable('issuedTable', $issuedTable);

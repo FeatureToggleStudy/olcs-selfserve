@@ -29,18 +29,13 @@
 
         <?php if($isEligible): ?>
 
-            <?php if($issuedNo != 0 || $applicationsNo != 0) : ?>
-                <?php if($issuedNo === 0): ?>
-                    <div class="table__header">
-                <?php else : ?>
+           <?php if($issuedNo != 0 || $applicationsNo != 0) : ?>
+                <?php if($issuedNo > 0): ?>
                     <?php echo $issuedTable; ?>
                 <?php endif; ?>
-                </div>
-                <div class="table__header">
-                    <?php if($applicationsNo > 0): ?>
-                        <?php echo $applicationsTable; ?>
-                    <?php endif; ?>
-                </div>
+                <?php if($applicationsNo > 0): ?>
+                    <?php echo $applicationsTable; ?>
+                <?php endif; ?>
 
             <?php endif; ?>
             <p class="extra-space">&nbsp;</p>
