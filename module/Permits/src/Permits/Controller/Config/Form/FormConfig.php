@@ -69,4 +69,10 @@ class FormConfig
             'formClass' => 'DeclineApplicationForm',
         ],
     ];
+
+    const FORM_RESTRICTED_COUNTRIES = [
+        'countries' => [
+            'formClass' => 'RestrictedCountriesForm',
+        ],
+    ];
 }

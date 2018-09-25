@@ -102,7 +102,6 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         );
         $response = $this->handleQuery($query);
         $issuedData = $response->getResult();
-
         $issuedTable = $this->getServiceLocator()
             ->get('Table')
             ->prepareTable($this->issuedTableName, $issuedData['results']);
@@ -197,77 +196,6 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         }
 
         return $view;
-    }
-
-    public function restrictedCountriesAction()
-    {
-        $id = $this->params()->fromRoute('id', -1);
-
-        //Create form from annotations
-        $form = $this->getForm('RestrictedCountriesForm');
-
-        // Read data
-        $application = $this->getApplication($id);
-
-        if (!is_null($application['hasRestrictedCountries'])) {
-            $restrictedCountries = $application['hasRestrictedCountries'] == true ? 1 : 0;
-
-            $form->get('Fields')
-                ->get('restrictedCountries')
-                ->setValue($restrictedCountries);
-        }
-
-        if (count($application['countrys']) > 0) {
-            //Format results from DB before setting values on form
-            $selectedValues = array();
-
-            foreach ($application['countrys'] as $country) {
-                $selectedValues[] = $country['id'];
-            }
-
-            $form->get('Fields')
-                ->get('restrictedCountriesList')
-                ->get('restrictedCountriesList')
-                ->setValue($selectedValues);
-        }
-
-        $data = $this->params()->fromPost();
-
-        if (is_array($data) && array_key_exists('Submit', $data)) {
-            //Validate
-            $form->setData($data);
-            if ($form->isValid()) {
-                //EXTRA VALIDATION
-                if ((
-                    $data['Fields']['restrictedCountries'] == 1
-                    && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
-                    || ($data['Fields']['restrictedCountries'] == 0)
-                ) {
-                    if ($data['Fields']['restrictedCountries'] == 0) {
-                        $countryIds = [];
-                    } else {
-                        $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
-                    }
-
-                    $command = UpdateEcmtCountries::create(['id' => $id, 'countryIds' => $countryIds]);
-                    $this->handleCommand($command);
-                    $this->handleSaveAndReturnStep($data, EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
-                } else {
-                    //conditional validation failed, restricted countries list should not be empty
-                    $form->get('Fields')
-                        ->get('restrictedCountriesList')
-                        ->get('restrictedCountriesList')
-                        ->setMessages(['error.messages.restricted.countries.list']);
-                }
-            } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('restrictedCountries')
-                    ->setMessages(['error.messages.restricted.countries']);
-            }
-        }
-
-        return array('form' => $form, 'id' => $id, 'ref' => $application['applicationRef']);
     }
 
     public function tripsAction()

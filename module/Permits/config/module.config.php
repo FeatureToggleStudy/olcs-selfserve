@@ -14,6 +14,7 @@ use Permits\Controller\OverviewController;
 use Permits\Controller\DeclineController;
 use Permits\Controller\SubmittedController;
 use Permits\Controller\PermitsController;
+use Permits\Controller\ListController;
 
 return array(
   'controllers' => array(
@@ -30,7 +31,8 @@ return array(
         DeclineController::class => DeclineController::class,
         SubmittedController::class => SubmittedController::class,
         CancelApplicationController::class => CancelApplicationController::class,
-        WithdrawApplicationController::class => WithdrawApplicationController::class
+        WithdrawApplicationController::class => WithdrawApplicationController::class,
+        ListController::class => ListController::class
     ),
   ),
   'router' => array(
@@ -146,7 +148,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-countries[/]',
                       'defaults' => [
-                          'controller'    => PermitsController::class,
+                          'controller'    => ListController::class,
                           'action'        => 'restrictedCountries',
                       ],
                       'constraints' => [
