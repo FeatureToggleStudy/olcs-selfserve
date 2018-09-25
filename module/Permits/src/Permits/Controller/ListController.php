@@ -50,20 +50,6 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
         // Read data
         $application = $this->data['application'];
 
-        if (count($application['countrys']) > 0) {
-            //Format results from DB before setting values on form
-            $selectedValues = array();
-
-            foreach ($application['countrys'] as $country) {
-                $selectedValues[] = $country['id'];
-            }
-
-            $this->form->get('Fields')
-                ->get('restrictedCountriesList')
-                ->get('restrictedCountriesList')
-                ->setValue($selectedValues);
-        }
-
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -79,7 +65,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
                     if ($data['Fields']['hasRestrictedCountries'] == 0) {
                         $countryIds = [];
                     } else {
-                        $countryIds = $data['Fields']['hasRestrictedCountries']['restrictedCountriesList'];
+                        $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
                     }
 
                     $command = UpdateEcmtCountries::create(['id' => $id, 'countryIds' => $countryIds]);
