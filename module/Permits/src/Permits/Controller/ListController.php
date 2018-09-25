@@ -50,14 +50,6 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
         // Read data
         $application = $this->data['application'];
 
-        if (!is_null($application['hasRestrictedCountries'])) {
-            $restrictedCountries = $application['hasRestrictedCountries'] == true ? 1 : 0;
-
-            $this->form->get('Fields')
-                ->get('restrictedCountries')
-                ->setValue($restrictedCountries);
-        }
-
         if (count($application['countrys']) > 0) {
             //Format results from DB before setting values on form
             $selectedValues = array();
@@ -80,14 +72,14 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
             if ($this->form->isValid()) {
                 //EXTRA VALIDATION
                 if ((
-                    $data['Fields']['restrictedCountries'] == 1
+                    $data['Fields']['hasRestrictedCountries'] == 1
                     && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
-                    || ($data['Fields']['restrictedCountries'] == 0)
+                    || ($data['Fields']['hasRestrictedCountries'] == 0)
                 ) {
-                    if ($data['Fields']['restrictedCountries'] == 0) {
+                    if ($data['Fields']['hasRestrictedCountries'] == 0) {
                         $countryIds = [];
                     } else {
-                        $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
+                        $countryIds = $data['Fields']['hasRestrictedCountries']['restrictedCountriesList'];
                     }
 
                     $command = UpdateEcmtCountries::create(['id' => $id, 'countryIds' => $countryIds]);
@@ -103,7 +95,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
             } else {
                 //Custom Error Message
                 $this->form->get('Fields')
-                    ->get('restrictedCountries')
+                    ->get('hasRestrictedCountries')
                     ->setMessages(['error.messages.restricted.countries']);
             }
         }

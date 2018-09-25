@@ -12,7 +12,7 @@ class RestrictedCountriesForm
 {
     /**
      * @Form\Name("Fields")
-     * @Form\ComposedObject("Permits\Form\Model\Fieldset\RestrictedCountries")
+     * @Form\ComposedObject("Permits\Form\Model\Fieldset\HasRestrictedCountries")
      */
     public $fields = null;
 
