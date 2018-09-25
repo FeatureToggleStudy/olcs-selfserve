@@ -24,7 +24,7 @@ class EcmtLicenceData extends AbstractHelper
      * @param array $application
      * @return string
      */
-    public function __invoke($form, $application = [], $stock)
+    public function __invoke($form, $stock, $application = [])
     {
         $permitType = isset($application['permitType']['description']) ? $application['permitType']['description'] : 'ECMT';
         $validFrom = date('d F Y', strtotime($stock[0]['validFrom']));
