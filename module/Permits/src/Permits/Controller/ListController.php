@@ -68,9 +68,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
                         $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
                     }
 
-                    $command = UpdateEcmtCountries::create(['id' => $id, 'countryIds' => $countryIds]);
-                    $this->handleCommand($command);
-                    $this->handleSaveAndReturnStep($data, EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
+                    $this-> handleSaveAndRedirect(['id' => $id, 'countryIds' => $countryIds]);
                 } else {
                     //conditional validation failed, restricted countries list should not be empty
                     $this->form->get('Fields')
