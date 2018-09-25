@@ -5,12 +5,12 @@ use Zend\Form\Annotation as Form;
 
 /**
  * @codeCoverageIgnore Auto-generated file with no methods
- * @Form\Name("RestrictedCountries")
+ * @Form\Name("HasRestrictedCountries")
  */
-class RestrictedCountries
+class HasRestrictedCountries
 {
     /**
-     * @Form\Name("restrictedCountries")
+     * @Form\Name("hasRestrictedCountries")
      * @Form\Required(true)
      * @Form\Attributes({
      *   "class" : "input--restricted-countries",
