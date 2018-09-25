@@ -99,17 +99,18 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
 
         $applicationData = $issuedData = [];
 
-        foreach ($data['results'] as $item) {
-            if ($item['status']['id'] === RefData::PERMIT_APP_STATUS_VALID) {
-                $issuedData[] = $item;
-            } else {
-                $applicationData[] = $item;
-            }
-        }
-
-        $table = $this->getServiceLocator()->get('Table');
-        $issuedTable = $table->prepareTable($this->issuedTableName, $issuedData);
-        $applicationsTable = $table->prepareTable($this->applicationsTableName, $applicationData);
+        $query = EcmtPermitApplication::create(
+            [
+                'order' => 'DESC',
+                'organisation' => $this->getCurrentOrganisationId(),
+                'statusIds' => [RefData::PERMIT_VALID]
+            ]
+        );
+        $response = $this->handleQuery($query);
+        $issuedData = $response->getResult();
+        $issuedTable = $this->getServiceLocator()
+            ->get('Table')
+            ->prepareTable($this->issuedTableName, $issuedData['results']);
 
         $view->setVariable('isEligible', $eligibleForPermits);
         $view->setVariable('issuedNo', count($issuedData));
@@ -210,75 +211,6 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         $view->setTemplate('permits/ecmt-licence');
 
         return $view;
-    }
-
-    public function restrictedCountriesAction()
-    {
-        $id = $this->params()->fromRoute('id', -1);
-
-        //Create form from annotations
-        $form = $this->getForm('RestrictedCountriesForm');
-        $setDefaultValues = true;
-
-        $data = $this->params()->fromPost();
-
-        if (is_array($data) && array_key_exists('Submit', $data)) {
-            //Validate
-            $form->setData($data);
-            $setDefaultValues = false;
-
-            if ($form->isValid()) {
-                //EXTRA VALIDATION
-                if ((
-                    $data['Fields']['restrictedCountries'] == 1
-                    && isset($data['Fields']['restrictedCountriesList']['restrictedCountriesList']))
-                    || ($data['Fields']['restrictedCountries'] == 0)
-                ) {
-                    if ($data['Fields']['restrictedCountries'] == 0) {
-                        $countryIds = [];
-                    } else {
-                        $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
-                    }
-
-                    $command = UpdateEcmtCountries::create(['id' => $id, 'countryIds' => $countryIds]);
-                    $this->handleCommand($command);
-                    return $this->handleSaveAndReturnStep($data, EcmtSection::ROUTE_ECMT_NO_OF_PERMITS);
-                } else {
-                    //conditional validation failed, restricted countries list should not be empty
-                    $form->get('Fields')
-                        ->get('restrictedCountriesList')
-                        ->get('restrictedCountriesList')
-                        ->setMessages(['error.messages.restricted.countries.list']);
-                }
-            } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('restrictedCountries')
-                    ->setMessages(['error.messages.restricted.countries']);
-            }
-        }
-
-        // Read data
-        $application = $this->getApplication($id);
-
-        if ($setDefaultValues) {
-            if (!is_null($application['hasRestrictedCountries'])) {
-                $restrictedCountries = $application['hasRestrictedCountries'] == true ? 1 : 0;
-
-                $form->get('Fields')
-                    ->get('restrictedCountries')
-                    ->setValue($restrictedCountries);
-            }
-
-            if (count($application['countrys']) > 0) {
-                $form->get('Fields')
-                    ->get('restrictedCountriesList')
-                    ->get('restrictedCountriesList')
-                    ->setValue(array_column($application['countrys'], 'id'));
-            }
-        }
-
-        return array('form' => $form, 'id' => $id, 'ref' => $application['applicationRef']);
     }
 
     public function tripsAction()
@@ -389,51 +321,6 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
             'ref' => $application['applicationRef'],
             'trafficAreaId' => $application['licence']['trafficArea']['id']
         );
-    }
-
-    public function sectorAction()
-    {
-        $id = $this->params()->fromRoute('id', -1);
-
-        //Create form from annotations
-        $form = $this->getForm('SpecialistHaulageForm');
-
-        $setDefaultValues = true;
-
-        $data = $this->params()->fromPost();
-
-        if (is_array($data) && array_key_exists('Submit', $data)) {
-            //Validate
-            $form->setData($data);
-
-            if ($form->isValid()) {
-                $command = UpdateSector::create(['id' => $id, 'sector' => $data['Fields']['SectorList']]);
-                $this->handleCommand($command);
-
-                return $this->handleSaveAndReturnStep($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
-            } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('SectorList')
-                    ->setMessages(['error.messages.sector.list']);
-
-                $setDefaultValues = false;
-            }
-        }
-
-        // Read data
-        $application = $this->getApplication($id);
-
-        if ($setDefaultValues && isset($application) && isset($application['sectors'])) {
-            //Format results from DB before setting values on form
-            $selectedValue = $application['sectors']['id'];
-
-            $form->get('Fields')
-                ->get('SectorList')
-                ->setValue($selectedValue);
-        }
-
-        return array('form' => $form, 'id' => $id, 'ref' => $application['applicationRef']);
     }
 
     public function permitsRequiredAction()

@@ -3,6 +3,8 @@
 namespace Permits\Controller\Config\Form;
 
 use Permits\Controller\Config\DataSource\PermitApplication as PermitApplicationDataSource;
+use Common\Data\Mapper\Permits\RestrictedCountriesMapper;
+use Common\Data\Mapper\Permits\SectorMapper;
 
 /**
  * Holds conditional display configs that are used regularly - eventually it'd be nice to have ::class in here
@@ -67,6 +69,22 @@ class FormConfig
     const FORM_DECLINE_PERMIT = [
         'decline' => [
             'formClass' => 'DeclineApplicationForm',
+        ],
+    ];
+
+    const FORM_RESTRICTED_COUNTRIES = [
+        'countries' => [
+            'formClass' => 'RestrictedCountriesForm',
+            'dataSource' => PermitApplicationDataSource::DATA_KEY,
+            'mapper' => RestrictedCountriesMapper::class
+        ],
+    ];
+
+    const FORM_SECTOR = [
+        'sector' => [
+            'formClass' => 'SpecialistHaulageForm',
+            'dataSource' => PermitApplicationDataSource::DATA_KEY,
+            'mapper' => SectorMapper::class
         ],
     ];
 }

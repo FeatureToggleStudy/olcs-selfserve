@@ -230,7 +230,6 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
                     $saveData = DefaultMapper::mapFromForm($this->postParams);
                 }
 
-                $config = $this->configsForAction('postConfig');
                 $params = array_merge($saveData, $this->fetchHandlePostParams());
 
                 if (isset($config['command'])) {
@@ -257,9 +256,26 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
                     }
                 }
 
-                return $this->handleSaveAndReturnStep($this->postParams, $config['step']);
+                return $this->handleSaveAndRedirect($params);
             }
         }
+    }
+
+    /**
+     * Saves data to the backend and redirects
+     * to the next page after a post.
+     */
+    protected function handleSaveAndRedirect(array $commandParams)
+    {
+        $config = $this->configsForAction('postConfig');
+
+        if (isset($config['command'])) {
+            $command = $config['command']::create($commandParams);
+            $response = $this->handleCommand($command);
+            $this->handleResponse($response);
+        }
+
+        return $this->handleSaveAndReturnStep($this->postParams, $config['step']);
     }
 
     /**
