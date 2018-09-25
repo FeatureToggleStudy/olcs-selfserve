@@ -9,7 +9,6 @@ use Permits\Controller\Config\ConditionalDisplay\ConditionalDisplayConfig;
 use Permits\Controller\Config\FeatureToggle\FeatureToggleConfig;
 use Permits\Controller\Config\Form\FormConfig;
 use Permits\Controller\Config\Params\ParamsConfig;
-use Dvsa\Olcs\Transfer\Query\Permits\ById;
 
 use Permits\View\Helper\EcmtSection;
 use Zend\View\Model\ViewModel;
