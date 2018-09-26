@@ -89,14 +89,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
             }
         }
 
-        $view = new ViewModel();
-
-        $view->setVariable('id', $id);
-        $view->setVariable('form', $this->form);
-        $view->setVariable('ref', $this->data['application']['applicationRef']);
-        $view->setTemplate($this->templateConfig[$this->action]);
-
-        return $view;
+        return $this->listView();
     }
 
     public function sectorAction()
@@ -119,9 +112,14 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
             }
         }
 
+        return $this->listView();
+    }
+
+    private function listView()
+    {
         $view = new ViewModel();
 
-        $view->setVariable('id', $id);
+        $view->setVariable('id', $this->params()->fromRoute('id', -1));
         $view->setVariable('form', $this->form);
         $view->setVariable('ref', $this->data['application']['applicationRef']);
         $view->setTemplate($this->templateConfig[$this->action]);
