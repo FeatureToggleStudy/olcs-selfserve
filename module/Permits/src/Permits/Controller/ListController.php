@@ -85,7 +85,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
 
         $view->setVariable('id', $id);
         $view->setVariable('form', $this->form);
-        $view->setVariable('ref', $this->data['application']);
+        $view->setVariable('ref', $this->data['application']['applicationRef']);
         $view->setTemplate($this->templateConfig[$this->action]);
 
         return $view;
