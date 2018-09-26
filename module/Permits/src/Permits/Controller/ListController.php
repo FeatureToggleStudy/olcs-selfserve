@@ -39,10 +39,15 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
     ];
 
     protected $postConfig = [
-        'default' => [
+        'restrictedcountries' => [
             'command' => UpdateEcmtCountries::class,
             'params' => ParamsConfig::ID_FROM_ROUTE,
             'step' => EcmtSection::ROUTE_ECMT_NO_OF_PERMITS,
+        ],
+        'sector' => [
+            'command' => UpdateSector::class,
+            'params' => ParamsConfig::ID_FROM_ROUTE,
+            'step' => EcmtSection::ROUTE_ECMT_CHECK_ANSWERS,
         ],
     ];
 
@@ -68,7 +73,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
                         $countryIds = $data['Fields']['restrictedCountriesList']['restrictedCountriesList'];
                     }
 
-                    $this-> handleSaveAndRedirect(['id' => $id, 'countryIds' => $countryIds]);
+                    $this->handleSaveAndRedirect(['id' => $id, 'countryIds' => $countryIds]);
                 } else {
                     //conditional validation failed, restricted countries list should not be empty
                     $this->form->get('Fields')
@@ -98,38 +103,17 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
     {
         $id = $this->params()->fromRoute('id', -1);
 
-        //Create form from annotations
-        $form = $this->getForm('SpecialistHaulageForm');
-
-        // Read data
-        $application = $this->data['application'];
-
-        if (isset($application)) {
-            if (isset($application['sectors'])) {
-                //Format results from DB before setting values on form
-                $selectedValue = $application['sectors']['id'];
-
-                $form->get('Fields')
-                    ->get('SectorList')
-                    ->setValue($selectedValue);
-            }
-        }
-
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
             //Validate
-            $form->setData($data);
-            if ($form->isValid()) {
+            $this->form->setData($data);
+            if ($this->form->isValid()) {
                     $sectorID = $data['Fields']['SectorList'];
-                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorID]);
-
-                    $this->handleCommand($command);
-
-                    $this->handleSaveAndReturnStep($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
+                    $this->handleSaveAndRedirect(['id' => $id, 'sector' => $sectorID]);
             } else {
                 //Custom Error Message
-                $form->get('Fields')
+                $this->form->get('Fields')
                     ->get('SectorList')
                     ->setMessages(['error.messages.sector.list']);
             }
@@ -138,7 +122,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
         $view = new ViewModel();
 
         $view->setVariable('id', $id);
-        $view->setVariable('form', $form);
+        $view->setVariable('form', $this->form);
         $view->setVariable('ref', $this->data['application']['applicationRef']);
         $view->setTemplate($this->templateConfig[$this->action]);
 

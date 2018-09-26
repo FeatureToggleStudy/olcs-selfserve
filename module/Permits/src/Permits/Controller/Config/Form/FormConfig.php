@@ -4,6 +4,7 @@ namespace Permits\Controller\Config\Form;
 
 use Permits\Controller\Config\DataSource\PermitApplication as PermitApplicationDataSource;
 use Common\Data\Mapper\Permits\RestrictedCountriesMapper;
+use Common\Data\Mapper\Permits\SectorMapper;
 
 /**
  * Holds conditional display configs that are used regularly - eventually it'd be nice to have ::class in here
@@ -83,6 +84,7 @@ class FormConfig
         'sector' => [
             'formClass' => 'SpecialistHaulageForm',
             'dataSource' => PermitApplicationDataSource::DATA_KEY,
+            'mapper' => SectorMapper::class
         ],
     ];
 }
