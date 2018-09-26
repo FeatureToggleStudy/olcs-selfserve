@@ -14,6 +14,12 @@ use Permits\Controller\Config\Params\ParamsConfig;
 use Permits\View\Helper\EcmtSection;
 use Zend\View\Model\ViewModel;
 
+/**
+ * @todo: there's a lot of custom validation and other things being
+ *          done in actions inside the controller that should be changed
+ *          to make use of reusable code in AbstractSelfserveController.
+ *          This is just a good half-way point.
+ */
 class ListController extends AbstractSelfserveController implements ToggleAwareInterface
 {
     protected $toggleConfig = [
@@ -115,6 +121,11 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
         return $this->listView();
     }
 
+    /**
+     * returns the view common for this controller.
+     *
+     * @return ViewModel
+     */
     private function listView()
     {
         $view = new ViewModel();
