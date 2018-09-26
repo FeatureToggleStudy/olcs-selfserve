@@ -47,9 +47,6 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
     {
         $id = $this->params()->fromRoute('id', -1);
 
-        // Read data
-        $application = $this->data['application'];
-
         $data = $this->params()->fromPost();
 
         if (is_array($data) && array_key_exists('Submit', $data)) {
@@ -88,7 +85,7 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
 
         $view->setVariable('id', $id);
         $view->setVariable('form', $this->form);
-        $view->setVariable('ref', $application['applicationRef']);
+        $view->setVariable('ref', $this->data['application']);
         $view->setTemplate($this->templateConfig[$this->action]);
 
         return $view;
