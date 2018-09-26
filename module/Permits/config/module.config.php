@@ -190,7 +190,7 @@ return array(
                   'options' => [
                       'route'    => '/:id/ecmt-sectors[/]',
                       'defaults' => [
-                          'controller'    => PermitsController::class,
+                          'controller'    => ListController::class,
                           'action'        => 'sector',
                       ],
                       'constraints' => [

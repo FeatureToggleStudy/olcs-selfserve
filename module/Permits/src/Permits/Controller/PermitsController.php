@@ -297,50 +297,6 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         return array('form' => $form, 'id' => $id, 'ref' => $application['applicationRef'], 'trafficAreaId' => $trafficArea['id']);
     }
 
-    public function sectorAction()
-    {
-        $id = $this->params()->fromRoute('id', -1);
-
-        //Create form from annotations
-        $form = $this->getForm('SpecialistHaulageForm');
-
-        // Read data
-        $application = $this->getApplication($id);
-
-        if (isset($application)) {
-            if (isset($application['sectors'])) {
-                //Format results from DB before setting values on form
-                $selectedValue = $application['sectors']['id'];
-
-                $form->get('Fields')
-                    ->get('SectorList')
-                    ->setValue($selectedValue);
-            }
-        }
-
-        $data = $this->params()->fromPost();
-
-        if (is_array($data) && array_key_exists('Submit', $data)) {
-            //Validate
-            $form->setData($data);
-            if ($form->isValid()) {
-                    $sectorID = $data['Fields']['SectorList'];
-                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorID]);
-
-                    $this->handleCommand($command);
-
-                    $this->handleSaveAndReturnStep($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
-            } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('SectorList')
-                    ->setMessages(['error.messages.sector.list']);
-            }
-        }
-
-        return array('form' => $form, 'id' => $id, 'ref' => $application['applicationRef']);
-    }
-
     public function permitsRequiredAction()
     {
         $id = $this->params()->fromRoute('id', -1);

@@ -78,4 +78,11 @@ class FormConfig
             'mapper' => RestrictedCountriesMapper::class
         ],
     ];
+
+    const FORM_SECTOR = [
+        'sector' => [
+            'formClass' => 'SpecialistHaulageForm',
+            'dataSource' => PermitApplicationDataSource::DATA_KEY,
+        ],
+    ];
 }

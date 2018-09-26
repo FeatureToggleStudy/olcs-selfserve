@@ -4,6 +4,7 @@ namespace Permits\Controller;
 use Common\Controller\Interfaces\ToggleAwareInterface;
 use Olcs\Controller\AbstractSelfserveController;
 use Dvsa\Olcs\Transfer\Command\Permits\UpdateEcmtCountries;
+use Dvsa\Olcs\Transfer\Command\Permits\UpdateSector;
 use Permits\Controller\Config\DataSource\DataSourceConfig;
 use Permits\Controller\Config\ConditionalDisplay\ConditionalDisplayConfig;
 use Permits\Controller\Config\FeatureToggle\FeatureToggleConfig;
@@ -29,10 +30,12 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
 
     protected $formConfig = [
         'restrictedcountries' => FormConfig::FORM_RESTRICTED_COUNTRIES,
+        'sector' => FormConfig::FORM_SECTOR
     ];
 
     protected $templateConfig = [
-        'restrictedcountries' => 'permits/restricted-countries'
+        'restrictedcountries' => 'permits/restricted-countries',
+        'sector' => 'permits/sector'
     ];
 
     protected $postConfig = [
@@ -85,6 +88,57 @@ class ListController extends AbstractSelfserveController implements ToggleAwareI
 
         $view->setVariable('id', $id);
         $view->setVariable('form', $this->form);
+        $view->setVariable('ref', $this->data['application']['applicationRef']);
+        $view->setTemplate($this->templateConfig[$this->action]);
+
+        return $view;
+    }
+
+    public function sectorAction()
+    {
+        $id = $this->params()->fromRoute('id', -1);
+
+        //Create form from annotations
+        $form = $this->getForm('SpecialistHaulageForm');
+
+        // Read data
+        $application = $this->data['application'];
+
+        if (isset($application)) {
+            if (isset($application['sectors'])) {
+                //Format results from DB before setting values on form
+                $selectedValue = $application['sectors']['id'];
+
+                $form->get('Fields')
+                    ->get('SectorList')
+                    ->setValue($selectedValue);
+            }
+        }
+
+        $data = $this->params()->fromPost();
+
+        if (is_array($data) && array_key_exists('Submit', $data)) {
+            //Validate
+            $form->setData($data);
+            if ($form->isValid()) {
+                    $sectorID = $data['Fields']['SectorList'];
+                    $command = UpdateSector::create(['id' => $id, 'sector' => $sectorID]);
+
+                    $this->handleCommand($command);
+
+                    $this->handleSaveAndReturnStep($data, EcmtSection::ROUTE_ECMT_CHECK_ANSWERS);
+            } else {
+                //Custom Error Message
+                $form->get('Fields')
+                    ->get('SectorList')
+                    ->setMessages(['error.messages.sector.list']);
+            }
+        }
+
+        $view = new ViewModel();
+
+        $view->setVariable('id', $id);
+        $view->setVariable('form', $form);
         $view->setVariable('ref', $this->data['application']['applicationRef']);
         $view->setTemplate($this->templateConfig[$this->action]);
 
