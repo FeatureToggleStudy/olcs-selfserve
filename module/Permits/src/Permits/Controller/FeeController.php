@@ -68,8 +68,7 @@ class FeeController extends AbstractSelfserveController implements ToggleAwareIn
         $dtoData = [
             'reference' => $reference,
             'cpmsData' => $queryStringData,
-            'paymentMethod' => RefData::FEE_PAYMENT_METHOD_CARD_ONLINE,
-            'submitEcmtPermitApplicationId' => $id
+            'paymentMethod' => RefData::FEE_PAYMENT_METHOD_CARD_ONLINE
 
         ];
 
