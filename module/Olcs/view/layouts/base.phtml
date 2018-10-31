@@ -43,7 +43,7 @@
     <?php } ?>
     <?php echo $this->partial('partials/google-tag-manager'); ?>
     <?php echo $this->version(); ?>
-    
+
     <script>document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');</script>
 
     <a class="visually-hidden" id="skipToContent" href="#main"><?php echo $this->translate('skip-content'); ?></a>
@@ -120,7 +120,7 @@
     <?php } ?>
 
     <div class="page-wrapper">
-        <div class="user-header">
+        <div class="user-header" role="complementary">
             <?php echo $this->translate('markup-alpha-banner'); ?>
             <?php if($this->currentUser()->isLoggedIn()):?>
                 <ul class="user-menu">
