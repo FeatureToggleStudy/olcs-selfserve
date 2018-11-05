@@ -120,26 +120,26 @@
     <?php } ?>
 
     <div class="page-wrapper">
-        <div class="user-header" role="complementary">
-            <?php echo $this->translate('markup-alpha-banner'); ?>
-            <?php if($this->currentUser()->isLoggedIn()):?>
-                <ul class="user-menu">
-                    <li class="user-menu__item">
-                        <?php if($this->IsGranted('can-manage-user-selfserve')):?>
-                            <?php echo $this->currentUser()->getFullName() ?> (<?php echo $this->translate('Admin'); ?>),
-                        <?php else: ?>
-                            <?php echo $this->currentUser()->getFullName() ?>,
-                        <?php endif;?>
-                        <b><?php echo $this->currentUser()->getOrganisationName() ?></b>
-                    </li>
-                </ul>
-            <?php endif;?>
-        </div><!-- user-header -->
-
         <main id="main" role="main">
-            <?php echo $this->content; ?>
-        </main><!-- main -->
+            <div class="user-header">
+                <?php echo $this->translate('markup-alpha-banner'); ?>
+                <?php if($this->currentUser()->isLoggedIn()):?>
+                    <ul class="user-menu">
+                        <li class="user-menu__item">
+                            <?php if($this->IsGranted('can-manage-user-selfserve')):?>
+                                <?php echo $this->currentUser()->getFullName() ?> (<?php echo $this->translate('Admin'); ?>),
+                            <?php else: ?>
+                                <?php echo $this->currentUser()->getFullName() ?>,
+                            <?php endif;?>
+                            <b><?php echo $this->currentUser()->getOrganisationName() ?></b>
+                        </li>
+                    </ul>
+                <?php endif;?>
+            </div><!-- user-header -->
 
+            <?php echo $this->content; ?>
+
+        </main><!-- main -->
     </div><!-- page-wrapper-->
 
     <footer class="global-footer" role="contentinfo">
