@@ -50,41 +50,4 @@ class FeePartSuccessfulController extends AbstractSelfserveController implements
 
         return parent::handlePost();
     }
-
-    public function retrieveData()
-    {
-        $dataSourceConfig = $this->configsForAction('dataSourceConfig');
-
-        //retrieve DTO data
-        foreach ($dataSourceConfig as $dataSource => $config) {
-            /**
-             * @var DataSourceInterface $source
-             * @var QueryInterface $query
-             */
-            $source = new $dataSource();
-            $query = $source->queryFromParams(array_merge($this->routeParams, $this->queryParams));
-
-            $response = $this->handleQuery($query);
-            $data = $this->handleResponse($response);
-
-            if (isset($config['mapper'])) {
-                $mapper = isset($config['mapper']) ? $config['mapper'] : DefaultMapper::class;
-                if (isset($config['mapperUseTranslations'])){
-                    $data = $mapper::mapForDisplay($data, $this->getServiceLocator()->get('Helper\Translation'));
-                }else {
-                    $data = $mapper::mapForDisplay($data);
-                }
-            }
-            $this->data[$source::DATA_KEY] = $data;
-            if (isset($config['append'])) {
-                foreach ($config['append'] as $appendTo => $mapper) {
-                    $combinedData = [
-                        $appendTo => $this->data[$appendTo],
-                        $source::DATA_KEY => $data
-                    ];
-                    $this->data[$appendTo] = $mapper::mapForDisplay($combinedData);
-                }
-            }
-        }
-    }
 }
