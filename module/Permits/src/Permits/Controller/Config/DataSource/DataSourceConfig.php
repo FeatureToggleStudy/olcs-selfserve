@@ -8,6 +8,8 @@ use Permits\Controller\Config\DataSource\ValidEcmtPermits as ValidEcmtPermitsDat
 use Permits\Controller\Config\DataSource\UnpaidEcmtPermits as UnpaidEcmtPermitsDataSource;
 use Permits\Data\Mapper\FeeList as FeeListMapper;
 use Permits\Data\Mapper\ApplicationFees as ApplicationFeesMapper;
+use Permits\Data\Mapper\AcceptOrDeclinePermits as AcceptOrDeclineMapper;
+
 use Permits\Data\Mapper\ValidEcmtPermits as ValidEcmtPermitsMapper;
 use Permits\Data\Mapper\CheckAnswers as CheckAnswersMapper;
 use Permits\Controller\Config\DataSource\EcmtConstrainedCountriesList as EcmtConstrainedCountriesDataSource;
@@ -25,6 +27,13 @@ class DataSourceConfig
     const PERMIT_APP_WITH_FEES = [
         PermitAppDataSource::class => [
             'mapper' => ApplicationFeesMapper::class
+        ],
+    ];
+
+    const PERMIT_APP_FOR_ACCEPT_OR_DECLINE = [
+        PermitAppDataSource::class => [
+            'mapper' => AcceptOrDeclineMapper::class,
+            'mapperUseTranslations' => 'true'
         ],
     ];
 
