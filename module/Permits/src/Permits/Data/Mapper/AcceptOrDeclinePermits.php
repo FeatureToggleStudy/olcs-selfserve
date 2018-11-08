@@ -14,7 +14,7 @@ class AcceptOrDeclinePermits
      * Maps data appropriately for the Definition List on the FeePartSuccessful page
      *
      * @param array $data an array of data retrieved from the backend
-     * @param TranslationHelperService translation helper
+     * @param TranslationHelperService $translatorSrv translation helper
      * @return array
      */
     public static function mapForDisplay(array $data, TranslationHelperService $translatorSrv)

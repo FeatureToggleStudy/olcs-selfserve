@@ -22,12 +22,6 @@ class DataSourceConfig
         PermitAppDataSource::class => [],
     ];
 
-    const PERMIT_APP_WITH_FEES = [
-        PermitAppDataSource::class => [
-            'mapper' => ApplicationFeesMapper::class
-        ],
-    ];
-
     const PERMIT_APP_FOR_ACCEPT_OR_DECLINE = [
         PermitAppDataSource::class => [
             'mapper' => AcceptOrDeclineMapper::class,
