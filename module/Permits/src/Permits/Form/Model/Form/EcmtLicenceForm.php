@@ -12,6 +12,10 @@ class EcmtLicenceForm
 {
     /**
      * @Form\Name("Fields")
+     * @Form\Options({
+     *     "label": "permits.page.ecmt.licence.question",
+     *     "label_attributes": {"class": "visually-hidden"},
+     * })
      * @Form\ComposedObject("Permits\Form\Model\Fieldset\EcmtLicence")
      */
     public $fields = null;
