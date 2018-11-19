@@ -99,18 +99,17 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
 
         $applicationData = $issuedData = [];
 
-        $query = EcmtPermitApplication::create(
-            [
-                'order' => 'DESC',
-                'organisation' => $this->getCurrentOrganisationId(),
-                'statusIds' => [RefData::PERMIT_VALID]
-            ]
-        );
-        $response = $this->handleQuery($query);
-        $issuedData = $response->getResult();
-        $issuedTable = $this->getServiceLocator()
-            ->get('Table')
-            ->prepareTable($this->issuedTableName, $issuedData['results']);
+        foreach ($data['results'] as $item) {
+            if ($item['status']['id'] === RefData::PERMIT_APP_STATUS_VALID) {
+                $issuedData[] = $item;
+            } else {
+                $applicationData[] = $item;
+            }
+        }
+
+        $table = $this->getServiceLocator()->get('Table');
+        $issuedTable = $table->prepareTable($this->issuedTableName, $issuedData);
+        $applicationsTable = $table->prepareTable($this->applicationsTableName, $applicationData);
 
         $view->setVariable('isEligible', $eligibleForPermits);
         $view->setVariable('issuedNo', count($issuedData));
