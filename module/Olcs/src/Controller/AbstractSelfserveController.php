@@ -124,7 +124,6 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
      */
     protected $postConfig = [];
 
-
     /**
      * onDispatch method
      *
@@ -211,30 +210,6 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
 
                 $params = array_merge($saveData, $this->fetchHandlePostParams());
 
-                if (isset($config['command'])) {
-                    $command = $config['command']::create($params);
-                    $response = $this->handleCommand($command);
-                    $this->handleResponse($response);
-                }
-
-                if (isset($config['conditional'])) {
-                    if ($this->data['application'][$config['conditional']['field']] === $config['conditional']['value']) {
-                        if (isset($config['conditional']['command'])) {
-                            $conditionalCommand = $config['conditional']['command']::create([
-                                $config['conditional']['params'] => $this->data['application'][$config['conditional']['params']]
-                            ]);
-                            $conditionalResponse = $this->handleCommand($conditionalCommand);
-                            $this->handleResponse($conditionalResponse);
-                        }
-
-                        return $this->redirect()
-                            ->toRoute(
-                                'permits/' . $config['conditional']['step'],
-                                ['id' => $this->data['application']['id']]
-                            );
-                    }
-                }
-
                 return $this->handleSaveAndRedirect($params);
             }
         }
@@ -285,17 +260,13 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
      */
     public function retrieveData()
     {
-        if (!$this->shouldRunOnRequest(__FUNCTION__)) {
-            return;
-        }
-
         $dataSourceConfig = $this->configsForAction('dataSourceConfig');
 
         //retrieve DTO data
         foreach ($dataSourceConfig as $dataSource => $config) {
             /**
              * @var DataSourceInterface $source
-             * @var QueryInterface      $query
+             * @var QueryInterface $query
              */
             $source = new $dataSource();
             $query = $source->queryFromParams(array_merge($this->routeParams, $this->queryParams));
@@ -307,16 +278,8 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
                 $mapper = isset($config['mapper']) ? $config['mapper'] : DefaultMapper::class;
                 $data = $mapper::mapForDisplay($data);
             }
+
             $this->data[$source::DATA_KEY] = $data;
-            if (isset($config['append'])) {
-                foreach ($config['append'] as $appendTo => $mapper) {
-                    $combinedData = [
-                        $appendTo => $this->data[$appendTo],
-                        $source::DATA_KEY => $data
-                    ];
-                    $this->data[$appendTo] = $mapper::mapForDisplay($combinedData);
-                }
-            }
         }
     }
 
@@ -325,16 +288,12 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
      */
     public function retrieveForms()
     {
-        if (!$this->shouldRunOnRequest(__FUNCTION__)) {
-            return;
-        }
-
         $formConfig = $this->configsForAction('formConfig');
 
         foreach ($formConfig as $name => $config) {
             $formData = [];
 
-            if (isset($config['dataSource']) && isset($this->data[$config['dataSource']])) {
+            if (isset($config['dataSource'])) {
                 /** @var MapperInterface $mapperClass */
                 $mapperClass = isset($config['mapper']) ? $config['mapper'] : DefaultMapper::class;
                 $formData = $mapperClass::mapFromResult($this->data[$config['dataSource']]);
@@ -357,14 +316,10 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
      */
     public function retrieveTables()
     {
-        if (!$this->shouldRunOnRequest(__FUNCTION__)) {
-            return;
-        }
-
         $tableConfig = $this->configsForAction('tableConfig');
 
         foreach ($tableConfig as $name => $config) {
-            $tableData = isset($this->data[$config['dataSource']]) ? $this->data[$config['dataSource']] : [];
+            $tableData = $this->data[$config['dataSource']];
             $this->tables[$name] = $this->getTable($config['tableName'], $tableData, $this->queryParams);
         }
     }
@@ -376,10 +331,6 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
      */
     public function checkConditionalDisplay()
     {
-        if (!$this->shouldRunOnRequest(__FUNCTION__)) {
-            return;
-        }
-
         $conditionalDisplayConfig = $this->configsForAction('conditionalDisplayConfig');
         foreach ($conditionalDisplayConfig as $source => $criteria) {
             $data = $this->data[$source];
@@ -485,7 +436,7 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
      * for wider selfserve use. Permits needs to start using VOL standard buttons before this can be truly reusable
      *
      * @param $submittedData - an array of the data submitted by the form
-     * @param $nextStep      - the EcmtSection:: route to be taken if the form was submitted normally
+     * @param $nextStep - the EcmtSection:: route to be taken if the form was submitted normally
      *
      * @return HttpResponse
      */
@@ -509,53 +460,6 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
     protected function nextStep(string $route): HttpResponse
     {
         return $this->redirect()->toRoute('permits/' . $route, [], [], true);
-    }
-
-    /**
-     * Decide whether a method needs to run for this request. Right now this is only implemented for POST requests
-     * and neither does it support anything conditional. This can be added later.
-     *
-     * @param string $method the method we wish to run
-     *
-     * @return bool
-     */
-    protected function shouldRunOnRequest(string $method): bool
-    {
-        if ($this->request->isPost()) {
-            return $this->shouldRunOnPost($method);
-        }
-
-        return $this->shouldRunOnGet($method);
-    }
-
-    /**
-     * Returns whether a method should run for POST requests
-     *
-     * @param string $method the method we wish to run
-     *
-     * @return bool
-     */
-    protected function shouldRunOnPost(string $method): bool
-    {
-        $config = $this->configsForAction('postConfig');
-
-        if (isset($config[$method]) && !$config[$method]) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns whether a method should run for GET requests - for now everything will
-     *
-     * @param string $method the method we wish to run
-     *
-     * @return bool
-     */
-    protected function shouldRunOnGet(string $method): bool
-    {
-        return true;
     }
 
     /**
