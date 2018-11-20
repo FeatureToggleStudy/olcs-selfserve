@@ -65,7 +65,8 @@
         "mockery/mockery": "~0.9.3",
         "mikey179/vfsstream": "^1.4.0",
         "olcs/olcs-testhelpers": "dev-develop",
-        "xificurk/phpstan-shim": "^0.10.4"
+        "xificurk/phpstan-shim": "^0.10.4",
+        "roave/security-advisories": "dev-master"
     },
     "autoload": {
         "classmap": [
