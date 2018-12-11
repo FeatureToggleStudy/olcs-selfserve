@@ -131,7 +131,15 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
         'generic' => '',
         'question' => 'permits/single-question',
         'cancel' => '',
+        'default' => '',
     ];
+
+    /**
+     * Template name
+     *
+     * @var string
+     */
+    protected $template = '';
 
     /**
      * @todo look at where this could be made generic
@@ -194,7 +202,10 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
 
     public function mergeTemplateVars()
     {
-        $this->template = isset($this->templateConfig[$this->action]) ? $this->templateConfig[$this->action] : $this->templateConfig['default'];
+        $this->template = isset($this->templateConfig[$this->action]) ?
+            $this->templateConfig[$this->action] :
+            $this->templateConfig['default'];
+
         $templateVars = $this->configsForAction('templateVarsConfig');
         $this->data = array_merge($this->data, $templateVars);
 
@@ -541,6 +552,9 @@ abstract class AbstractSelfserveController extends AbstractOlcsController
      */
     protected function handleSaveAndReturnStep(array $submittedData, string $nextStep, array $params = [], array $options = []): HttpResponse
     {
+        // Clear the template to prevent it being shown when a request is fired.
+        $this->template = '';
+
         if (array_key_exists('SubmitButton', $submittedData['Submit'])) {
             //Form was submitted normally so continue on chosen path
             return $this->nextStep($nextStep, $params, $options);
