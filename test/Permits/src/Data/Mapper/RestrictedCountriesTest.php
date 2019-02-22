@@ -154,9 +154,7 @@ class RestrictedCountriesTest extends TestCase
                 'label' => 'Austria',
                 'selected' => true
             ]
-            ];
-
-
+        ];
 
         $mockForm->shouldReceive('get')
             ->with('fields')
