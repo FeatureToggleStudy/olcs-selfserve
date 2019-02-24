@@ -2,6 +2,7 @@
 
 namespace PermitsTest\Data\Mapper;
 
+use Common\RefData;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Permits\Data\Mapper\CheckAnswers;
 
@@ -39,6 +40,7 @@ class CheckAnswersTest extends MockeryTestCase
                 'canCheckAnswers' => true,
                 'hasCheckedAnswers' => false,
                 'isNotYetSubmitted' => true,
+                'windowEmissionsCategory' => RefData::EMISSIONS_CATEGORY_EURO5
             ],
             'windows' => [
                 'windows' => [
@@ -79,7 +81,7 @@ class CheckAnswersTest extends MockeryTestCase
                 3 => [
                     'question' => 'permits.form.restricted.countries.euro5.label',
                     'route' => 'permits/ecmt-countries',
-                    'answer' => 'No',
+                    'answer' => 'Yes',
                 ],
                 4 => [
                     'question' => 'permits.page.permits.required.question',
@@ -140,6 +142,7 @@ class CheckAnswersTest extends MockeryTestCase
                 'canCheckAnswers' => true,
                 'hasCheckedAnswers' => false,
                 'isNotYetSubmitted' => true,
+                'windowEmissionsCategory' => RefData::EMISSIONS_CATEGORY_EURO6
             ],
             'windows' => [
                 'windows' => [
