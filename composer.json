@@ -14,8 +14,8 @@
             "type": "vcs"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-common.git",
-            "type": "vcs"
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/composer-test/olcs/common/1.0/olcs-common-1.0.zip",
+            "type": "composer"
         },
         {
             "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-transfer.git",
