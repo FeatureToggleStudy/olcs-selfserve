@@ -71,10 +71,10 @@
     "autoload": {
         "classmap": [
             "module/Olcs/src",
-            "vendor/olcs/OlcsCommon/Common/src/Common"
+            "vendor/olcs/olcscommon/Common/src/Common"
         ],
         "psr-4": {
-            "Common\\": "vendor/olcs/OlcsCommon/Common/src/Common"
+            "Common\\": "vendor/olcs/olcscommon/Common/src/Common"
         }
     },
     "config": {
