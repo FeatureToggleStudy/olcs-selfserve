@@ -14,7 +14,7 @@
             "type": "vcs"
         },
         {
-            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/composer-test",
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-common",
             "type": "composer"
         },
         {
@@ -26,8 +26,8 @@
             "type": "vcs"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-auth.git",
-            "type": "vcs"
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-auth",
+            "type": "composer"
         },
         {
             "type": "vcs",
@@ -56,7 +56,7 @@
         "olcs/common": "1.0",
         "olcs/olcs-transfer": "dev-develop",
         "olcs/olcs-utils": "dev-develop",
-        "olcs/olcs-auth": "dev-develop",
+        "olcs/auth": "1.0",
         "olcs/olcs-logging": "dev-develop"
     },
     "require-dev": {
