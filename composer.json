@@ -14,7 +14,7 @@
             "type": "vcs"
         },
         {
-            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/composer-test/olcs/common/1.0/olcs-common-1.0.zip",
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/composer-test",
             "type": "composer"
         },
         {
