@@ -10,40 +10,40 @@
             "type": "composer"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-logging.git",
-            "type": "vcs"
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-logging",
+            "type": "composer"
         },
         {
             "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-common",
             "type": "composer"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-transfer.git",
-            "type": "vcs"
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-transfer",
+            "type": "composer"
         },
         {
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-utils.git",
-            "type": "vcs"
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-utils",
+            "type": "composer"
         },
         {
             "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-auth",
             "type": "composer"
         },
         {
-            "type": "vcs",
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-autoload.git"
+            "type": "composer",
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-autoload"
         },
         {
-            "type": "vcs",
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-testhelpers.git"
+            "type": "composer",
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-testhelpers"
         },
         {
-            "type": "vcs",
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-devtools.git"
+            "type": "composer",
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-devtools"
         },
         {
-            "type": "vcs",
-            "url": "git@repo.shd.ci.nonprod.dvsa.aws:olcs/olcs-coding-standards.git"
+            "type": "composer",
+            "url": "http://nexus.shd.ci.nonprod.dvsa.aws/repository/olcs-coding-standards"
 
         }
     ],
@@ -53,16 +53,16 @@
         "doctrine/annotations": "^1.2.3",
         "symfony/Filesystem": "~2.6.0",
         "zf-commons/zfc-rbac": "~2.4.0",
-        "olcs/OlcsCommon": "1.0",
-        "olcs/olcs-transfer": "dev-develop",
-        "olcs/olcs-utils": "dev-develop",
+        "olcs/olcscommon": "1.0",
+        "olcs/olcs-transfer": "1.0",
+        "olcs/olcs-utils": "1.0",
         "olcs/olcs-auth": "1.0",
-        "olcs/olcs-logging": "dev-develop"
+        "olcs/olcs-logging": "1.0"
     },
     "require-dev": {
-        "olcs/olcs-devtools": "dev-master",
+        "olcs/olcs-devtools": "1.0",
         "mikey179/vfsstream": "^1.4.0",
-        "olcs/olcs-testhelpers": "dev-develop",
+        "olcs/olcs-testhelpers": "1.0",
         "phpstan/phpstan-shim": "^0.10.5",
         "phpstan/phpstan-mockery": "^0.10.2",
         "mockery/mockery": "^1.2.0",
