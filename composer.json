@@ -53,10 +53,10 @@
         "doctrine/annotations": "^1.2.3",
         "symfony/Filesystem": "~2.6.0",
         "zf-commons/zfc-rbac": "~2.4.0",
-        "olcs/common": "1.0",
+        "olcs/OlcsCommon": "1.0",
         "olcs/olcs-transfer": "dev-develop",
         "olcs/olcs-utils": "dev-develop",
-        "olcs/auth": "1.0",
+        "olcs/olcs-auth": "1.0",
         "olcs/olcs-logging": "dev-develop"
     },
     "require-dev": {
