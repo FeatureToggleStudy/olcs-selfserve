@@ -27,6 +27,8 @@ use Permits\Controller\NoOfPermitsController;
 use Permits\Controller\IrhpCheckAnswersController;
 use Permits\Controller\CancelIrhpApplicationController;
 use Permits\Controller\IrhpValidPermitsController;
+use Permits\Controller\QaController;
+use Permits\Controller\QaControllerFactory;
 
 return [
   'controllers' => [
@@ -57,6 +59,9 @@ return [
         IrhpApplicationFeeController::class => IrhpApplicationFeeController::class,
         IrhpValidPermitsController::class => IrhpValidPermitsController::class,
         RestrictedCountriesController::class => RestrictedCountriesController::class,
+    ],
+    'factories' => [
+        QaController::class => QaControllerFactory::class,
     ],
   ],
   'router' => [
@@ -104,17 +109,15 @@ return [
                       'question' => [
                           'type'    => 'segment',
                           'options' => [
-                              'route'    => 'question/:question[/]',
+                              'route'    => ':slug[/]',
                               'defaults' => [
                                   // TODO - OLCS-23877 / OLCS-22835 / OLCS-23878
-                                  'controller'    => IrhpApplicationController::class,
-                                  'action'        => 'question',
-                              ],
-                              'constraints' => [
-                                  'question' => '[0-9]+',
+                                  'controller'    => QaController::class,
+                                  'action'        => 'index',
                               ],
                           ],
                           'may_terminate' => true,
+                          'priority' => -1,
                       ],
                       'licence' => [
                           'type'    => 'segment',
