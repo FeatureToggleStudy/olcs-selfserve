@@ -72,7 +72,7 @@ class CheckAnswersTest extends MockeryTestCase
                     'options' => [],
                 ],
                 1 => [
-                    'question' => 'permits.form.euro5.label',
+                    'question' => 'permits.form.euro-emissions.label',
                     'route' => 'permits/ecmt-emissions',
                     'answer' => 'Yes',
                     'questionType' => null,
@@ -198,7 +198,7 @@ class CheckAnswersTest extends MockeryTestCase
                     'options' => [],
                 ],
                 1 => [
-                    'question' => 'permits.form.euro6.label',
+                    'question' => 'permits.form.euro-emissions.label',
                     'route' => 'permits/ecmt-emissions',
                     'answer' => 'Yes',
                     'questionType' => null,
@@ -324,7 +324,7 @@ class CheckAnswersTest extends MockeryTestCase
                     'options' => [],
                 ],
                 1 => [
-                    'question' => 'permits.form.euro6.label',
+                    'question' => 'permits.form.euro-emissions.label',
                     'route' => 'permits/ecmt-emissions',
                     'answer' => 'Yes',
                     'questionType' => null,
