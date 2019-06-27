@@ -153,77 +153,6 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         return $data;
     }
 
-    public function restrictedCountriesAction()
-    {
-        $id = $this->params()->fromRoute('id', -1);
-
-        //Create form from annotations
-        $form = $this->getForm('RestrictedCountriesForm');
-        $setDefaultValues = true;
-
-        $data = $this->params()->fromPost();
-
-        if (is_array($data) && array_key_exists('Submit', $data)) {
-            //Validate
-            $form->setData($data);
-            $setDefaultValues = false;
-
-            if ($form->isValid()) {
-                //EXTRA VALIDATION
-                if (($data['Fields']['restrictedCountries'] == 1
-                    && isset($data['Fields']['yesContent']['restrictedCountriesList']))
-                    || ($data['Fields']['restrictedCountries'] == 0)) {
-                    if ($data['Fields']['restrictedCountries'] == 0) {
-                        $countryIds = [];
-                    } else {
-                        $countryIds = $data['Fields']['yesContent']['restrictedCountriesList'];
-                    }
-
-                    $command = UpdateEcmtCountries::create(['id' => $id, 'countryIds' => $countryIds]);
-                    $this->handleCommand($command);
-                    return $this->handleSaveAndReturnStep(
-                        $data,
-                        EcmtSection::ROUTE_ECMT_NO_OF_PERMITS,
-                        EcmtSection::ROUTE_APPLICATION_OVERVIEW
-                    );
-                } else {
-                    //conditional validation failed, restricted countries list should not be empty
-                    $form->get('Fields')
-                        ->get('yesContent')
-                        ->get('restrictedCountriesList')
-                        ->setMessages(['error.messages.restricted.countries.list']);
-                }
-            } else {
-                //Custom Error Message
-                $form->get('Fields')
-                    ->get('restrictedCountries')
-                    ->setMessages(['error.messages.restricted.countries']);
-            }
-        }
-
-        // Read data
-        $application = $this->getApplication($id);
-
-        if ($setDefaultValues) {
-            if (!is_null($application['hasRestrictedCountries'])) {
-                $restrictedCountries = $application['hasRestrictedCountries'] == true ? 1 : 0;
-
-                $form->get('Fields')
-                    ->get('restrictedCountries')
-                    ->setValue($restrictedCountries);
-            }
-
-            if (count($application['countrys']) > 0) {
-                $form->get('Fields')
-                    ->get('yesContent')
-                    ->get('restrictedCountriesList')
-                    ->setValue(array_column($application['countrys'], 'id'));
-            }
-        }
-
-        return array('form' => $form, 'id' => $id, 'ref' => $application['applicationRef']);
-    }
-
     public function tripsAction()
     {
         $id = $this->params()->fromRoute('id', -1);
@@ -361,7 +290,8 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
                 $command = UpdateEcmtPermitsRequired::create(
                     [
                         'id' => $id,
-                        'permitsRequired' => $data['Fields']['permitsRequired']
+                        'requiredEuro5' => $data['Fields']['requiredEuro5'],
+                        'requiredEuro6' => $data['Fields']['requiredEuro6']
                     ]
                 );
                 $this->handleCommand($command);
@@ -377,6 +307,7 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         }
 
         $application = $this->getApplication($id);
+
         $numberOfVehicles = $application['licence']['totAuthVehicles'];
 
         if ($setDefaultValues) {
@@ -389,12 +320,35 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
             $form->setData($existing);
         }
 
+        $irhpPermitStock = $application['irhpPermitApplications'][0]['irhpPermitWindow']['irhpPermitStock'];
+        if (!$irhpPermitStock['hasEuro5Range']) {
+            $form->get('Fields')->remove('requiredEuro5');
+            $form->get('Fields')->add([
+                'type' => 'hidden',
+                'name' => 'requiredEuro5'
+            ]);
+        }
+
+        if (!$irhpPermitStock['hasEuro6Range']) {
+            $form->get('Fields')->remove('requiredEuro6');
+            $form->get('Fields')->add([
+                'type' => 'hidden',
+                'name' => 'requiredEuro6'
+            ]);
+        }
+
         $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
         $totalVehicles = $translationHelper->translateReplace(
-            'permits.form.permits-required.hint',
+            'permits.page.no-of-permits.max.this.year',
             [$numberOfVehicles]
         );
-        $form->get('Fields')->get('permitsRequired')->setOption('hint', $totalVehicles);
+        $form->get('Fields')->get('topLabel')->setOption('hint', $totalVehicles);
+
+        $yearLabel = $translationHelper->translateReplace(
+            'permits.page.no-of-permits.for.year',
+            [date('Y', strtotime($irhpPermitStock['validTo']))]
+        );
+        $form->get('Fields')->get('topLabel')->setLabel($yearLabel);
 
         $ecmtPermitFees = $this->getEcmtPermitFees();
         $ecmtApplicationFee = $ecmtPermitFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
