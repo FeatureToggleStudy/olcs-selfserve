@@ -290,7 +290,8 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
                 $command = UpdateEcmtPermitsRequired::create(
                     [
                         'id' => $id,
-                        'permitsRequired' => $data['Fields']['permitsRequired']
+                        'requiredEuro5' => $data['Fields']['requiredEuro5'],
+                        'requiredEuro6' => $data['Fields']['requiredEuro6']
                     ]
                 );
                 $this->handleCommand($command);
@@ -306,6 +307,7 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         }
 
         $application = $this->getApplication($id);
+
         $numberOfVehicles = $application['licence']['totAuthVehicles'];
 
         if ($setDefaultValues) {
@@ -318,12 +320,35 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
             $form->setData($existing);
         }
 
+        $irhpPermitStock = $application['irhpPermitApplications'][0]['irhpPermitWindow']['irhpPermitStock'];
+        if (!$irhpPermitStock['hasEuro5Range']) {
+            $form->get('Fields')->remove('requiredEuro5');
+            $form->get('Fields')->add([
+                'type' => 'hidden',
+                'name' => 'requiredEuro5'
+            ]);
+        }
+
+        if (!$irhpPermitStock['hasEuro6Range']) {
+            $form->get('Fields')->remove('requiredEuro6');
+            $form->get('Fields')->add([
+                'type' => 'hidden',
+                'name' => 'requiredEuro6'
+            ]);
+        }
+
         $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
         $totalVehicles = $translationHelper->translateReplace(
-            'permits.form.permits-required.hint',
+            'permits.page.no-of-permits.max.this.year',
             [$numberOfVehicles]
         );
-        $form->get('Fields')->get('permitsRequired')->setOption('hint', $totalVehicles);
+        $form->get('Fields')->get('topLabel')->setOption('hint', $totalVehicles);
+
+        $yearLabel = $translationHelper->translateReplace(
+            'permits.page.no-of-permits.for.year',
+            [date('Y', strtotime($irhpPermitStock['validTo']))]
+        );
+        $form->get('Fields')->get('topLabel')->setLabel($yearLabel);
 
         $ecmtPermitFees = $this->getEcmtPermitFees();
         $ecmtApplicationFee = $ecmtPermitFees['fee'][$this::ECMT_APPLICATION_FEE_PRODUCT_REFENCE]['fixedValue'];
