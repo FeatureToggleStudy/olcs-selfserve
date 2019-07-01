@@ -2,8 +2,11 @@
 
 namespace Permits\Data\Mapper;
 
+use Common\RefData;
+use Common\Service\Helper\TranslationHelperService;
 use Common\Util\Escape;
 use Permits\View\Helper\EcmtSection;
+use Zend\Mvc\Controller\Plugin\Url;
 
 /**
  *
@@ -11,30 +14,8 @@ use Permits\View\Helper\EcmtSection;
  */
 class CheckAnswers
 {
-    public static function mapForDisplay(array $data)
+    public static function mapForDisplay(array $data, TranslationHelperService $translator, Url $url)
     {
-        $questions = [
-            'permits.check-answers.page.question.licence',
-            'permits.form.euro-emissions.label',
-            'permits.form.cabotage.label',
-            'permits.page.restricted-countries.question',
-            'permits.page.permits.required.question',
-            'permits.page.number-of-trips.question',
-            'permits.page.international.journey.question',
-            'permits.page.sectors.question'
-        ];
-
-        $routes = [
-            EcmtSection::ROUTE_LICENCE,
-            EcmtSection::ROUTE_ECMT_EURO_EMISSIONS,
-            EcmtSection::ROUTE_ECMT_CABOTAGE,
-            EcmtSection::ROUTE_ECMT_COUNTRIES,
-            EcmtSection::ROUTE_ECMT_NO_OF_PERMITS,
-            EcmtSection::ROUTE_ECMT_TRIPS,
-            EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY,
-            EcmtSection::ROUTE_ECMT_SECTORS
-        ];
-
         $restrictedCountries = 'No';
 
         if ($data['application']['hasRestrictedCountries']) {
@@ -47,30 +28,97 @@ class CheckAnswers
             $restrictedCountries = ['Yes', implode(', ', $countries)];
         }
 
-        $answersFormatted = [
-            [
-                Escape::html($data['application']['licence']['licNo']),
-                Escape::html($data['application']['licence']['trafficArea']['name']),
-            ],
-            $data['application']['emissions'] ? 'Yes' : 'No',
-            $data['application']['cabotage'] ? 'Yes' : 'No',
-            $restrictedCountries,
-            $data['application']['permitsRequired'],
-            $data['application']['trips'],
-            $data['application']['internationalJourneys']['description'],
-            $data['application']['sectors']['name']
-        ];
+        $year = date(
+            'Y',
+            strtotime(
+                $data['application']['irhpPermitApplications'][0]['irhpPermitWindow']['irhpPermitStock']['validTo']
+            )
+        );
 
-        foreach ($questions as $index => $question) {
-            $answers[] = [
-                'question' => $question,
-                'route' => $routes[$index],
-                'answer' => $answersFormatted[$index],
-                'questionType' => '',
-                'params' => [],
-                'options' => [],
-            ];
+        $permitsRequired[] = '<strong>' . Escape::html(
+            $translator->translateReplace(
+                'permits.check-your-answers.no-of-permits.year',
+                [$year]
+            )
+        ) . '</strong>';
+
+        $requiredEuro5 = (int)$data['application']['requiredEuro5'];
+
+        if ($requiredEuro5 > 0) {
+            $permitsRequired[] = Escape::html(
+                $translator->translateReplace(
+                    'permits.check-your-answers.no-of-permits.emissions.euro5',
+                    [(int)$data['application']['requiredEuro5']]
+                )
+            );
         }
+
+        $requiredEuro6 = (int)$data['application']['requiredEuro6'];
+
+        if ($requiredEuro6 > 0) {
+            $permitsRequired[] = Escape::html(
+                $translator->translateReplace(
+                    'permits.check-your-answers.no-of-permits.emissions.euro6',
+                    [(int)$data['application']['requiredEuro6']]
+                )
+            );
+        }
+
+        $answers = [
+            IrhpCheckAnswers::permitTypeAnswer($data['application']['permitType']['description']),
+            IrhpCheckAnswers::licenceAnswer($data['application']['licence']),
+            IrhpCheckAnswers::answer(
+                'permits.form.cabotage.label',
+                $data['application']['cabotage'],
+                EcmtSection::ROUTE_ECMT_CABOTAGE,
+                RefData::QUESTION_TYPE_BOOLEAN
+            ),
+            IrhpCheckAnswers::answer(
+                'permits.page.roadworthiness.question',
+                $data['application']['roadworthiness'],
+                EcmtSection::ROUTE_ECMT_ROADWORTHINESS,
+                RefData::QUESTION_TYPE_BOOLEAN
+            ),
+            IrhpCheckAnswers::answer(
+                'permits.page.restricted-countries.question',
+                $restrictedCountries,
+                EcmtSection::ROUTE_ECMT_COUNTRIES,
+                RefData::QUESTION_TYPE_STRING
+            ),
+            IrhpCheckAnswers::answer(
+                'permits.form.euro-emissions.label',
+                $data['application']['emissions'],
+                EcmtSection::ROUTE_ECMT_EURO_EMISSIONS,
+                RefData::QUESTION_TYPE_BOOLEAN
+            ),
+            IrhpCheckAnswers::answer(
+                'permits.page.permits.required.question',
+                $permitsRequired,
+                EcmtSection::ROUTE_ECMT_NO_OF_PERMITS,
+                RefData::QUESTION_TYPE_STRING,
+                [],
+                [],
+                false
+            ),
+            IrhpCheckAnswers::answer(
+                'permits.page.number-of-trips.question',
+                $data['application']['trips'],
+                EcmtSection::ROUTE_ECMT_TRIPS,
+                RefData::QUESTION_TYPE_INTEGER
+            ),
+            IrhpCheckAnswers::answer(
+                'permits.page.international.journey.question',
+                $data['application']['internationalJourneys']['description'],
+                EcmtSection::ROUTE_ECMT_INTERNATIONAL_JOURNEY,
+                RefData::QUESTION_TYPE_STRING
+            ),
+            IrhpCheckAnswers::answer(
+                'permits.page.sectors.question',
+                $data['application']['sectors']['name'],
+                EcmtSection::ROUTE_ECMT_SECTORS,
+                RefData::QUESTION_TYPE_STRING
+            ),
+        ];
 
         return [
             'canCheckAnswers' => $data['application']['canCheckAnswers'],

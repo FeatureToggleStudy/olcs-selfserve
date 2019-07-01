@@ -12,11 +12,11 @@ class CheckAnswersTest extends MockeryTestCase
     {
         $inputData = [
             'application' => [
-                'cabotage' => true,
+                'cabotage' => 1,
                 'checkedAnswers' => false,
                 'countrys' => [],
                 'declaration' => false,
-                'emissions' => true,
+                'emissions' => 1,
                 'hasRestrictedCountries' => false,
                 'internationalJourneys' => [
                     'description' => 'More than 90%',
@@ -40,87 +40,104 @@ class CheckAnswersTest extends MockeryTestCase
                 'canCheckAnswers' => true,
                 'hasCheckedAnswers' => false,
                 'isNotYetSubmitted' => true,
-            ],
-            'windows' => [
-                'windows' => [
+                'irhpPermitApplications' => [
                     0 => [
-                        'endDate' => '2019-12-01T00:00:00+0000',
-                        'id' => 1,
-                        'startDate' => '2018-10-01T00:00:00+0000',
-                    ],
-                ],
+                        'irhpPermitWindow' => [
+                            'irhpPermitStock' => [
+                                'validTo' => '2029-12-25'
+                            ]
+                        ]
+                    ]
+                ]
             ],
         ];
 
         $expected = [
             'canCheckAnswers' => true,
             'answers' => [
-                0 => [
+                [
+                    'question' => 'permits.page.fee.permit.type',
+                    'route' => null,
+                    'answer' => 'Annual ECMT',
+                    'questionType' => null,
+                    'params' => [],
+                    'options' => [],
+                    'escape' => true,
+                ],
+                [
                     'question' => 'permits.check-answers.page.question.licence',
                     'route' => 'permits/licence',
                     'answer' => [
                         0 => 'OG4563323',
                         1 => 'North East of England',
                     ],
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                1 => [
+                [
                     'question' => 'permits.form.euro-emissions.label',
                     'route' => 'permits/ecmt-emissions',
-                    'answer' => 'Yes',
-                    'questionType' => null,
+                    'answer' => 1,
+                    'questionType' => RefData::QUESTION_TYPE_BOOLEAN,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                2 => [
+                [
                     'question' => 'permits.form.cabotage.label',
                     'route' => 'permits/ecmt-cabotage',
-                    'answer' => 'Yes',
-                    'questionType' => null,
+                    'answer' => 1,
+                    'questionType' => RefData::QUESTION_TYPE_BOOLEAN,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                3 => [
+                [
                     'question' => 'permits.page.restricted-countries.question',
                     'route' => 'permits/ecmt-countries',
                     'answer' => 'No',
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                4 => [
+                [
                     'question' => 'permits.page.permits.required.question',
                     'route' => 'permits/ecmt-no-of-permits',
                     'answer' => 5,
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => false,
                 ],
-                5 => [
+                [
                     'question' => 'permits.page.number-of-trips.question',
                     'route' => 'permits/ecmt-trips',
                     'answer' => 43,
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_INTEGER,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                6 => [
+                [
                     'question' => 'permits.page.international.journey.question',
                     'route' => 'permits/ecmt-international-journey',
                     'answer' => 'More than 90%',
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                7 => [
+                [
                     'question' => 'permits.page.sectors.question',
                     'route' => 'permits/ecmt-sectors',
                     'answer' => 'Mail and parcels',
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
             ],
             'applicationRef' => 'OG4563323 / 4'
@@ -133,11 +150,11 @@ class CheckAnswersTest extends MockeryTestCase
     {
         $inputData = [
             'application' => [
-                'cabotage' => true,
+                'cabotage' => 1,
                 'checkedAnswers' => false,
                 'countrys' => [['id' => 'AT', 'countryDesc' => 'Austria']],
                 'declaration' => false,
-                'emissions' => true,
+                'emissions' => 1,
                 'hasRestrictedCountries' => true,
                 'internationalJourneys' => [
                     'description' => 'More than 90%',
@@ -161,87 +178,104 @@ class CheckAnswersTest extends MockeryTestCase
                 'canCheckAnswers' => true,
                 'hasCheckedAnswers' => false,
                 'isNotYetSubmitted' => true,
-            ],
-            'windows' => [
-                'windows' => [
+                'irhpPermitApplications' => [
                     0 => [
-                        'endDate' => '2019-12-01T00:00:00+0000',
-                        'id' => 1,
-                        'startDate' => '2018-10-01T00:00:00+0000',
-                    ],
-                ],
+                        'irhpPermitWindow' => [
+                            'irhpPermitStock' => [
+                                'validTo' => '2029-12-25'
+                            ]
+                        ]
+                    ]
+                ]
             ],
         ];
 
         $expected = [
             'canCheckAnswers' => true,
             'answers' => [
-                0 => [
+                [
+                    'question' => 'permits.page.fee.permit.type',
+                    'route' => null,
+                    'answer' => 'Annual ECMT',
+                    'questionType' => null,
+                    'params' => [],
+                    'options' => [],
+                    'escape' => true,
+                ],
+                [
                     'question' => 'permits.check-answers.page.question.licence',
                     'route' => 'permits/licence',
                     'answer' => [
                         0 => 'OG4563323',
                         1 => 'North East of England',
                     ],
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                1 => [
+                [
                     'question' => 'permits.form.euro-emissions.label',
                     'route' => 'permits/ecmt-emissions',
-                    'answer' => 'Yes',
-                    'questionType' => null,
+                    'answer' => 1,
+                    'questionType' => RefData::QUESTION_TYPE_BOOLEAN,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                2 => [
+                [
                     'question' => 'permits.form.cabotage.label',
                     'route' => 'permits/ecmt-cabotage',
-                    'answer' => 'Yes',
-                    'questionType' => null,
+                    'answer' => 1,
+                    'questionType' => RefData::QUESTION_TYPE_BOOLEAN,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                3 => [
+                [
                     'question' => 'permits.page.restricted-countries.question',
                     'route' => 'permits/ecmt-countries',
                     'answer' => ['Yes', 'Austria'],
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                4 => [
+                [
                     'question' => 'permits.page.permits.required.question',
                     'route' => 'permits/ecmt-no-of-permits',
                     'answer' => 5,
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => false,
                 ],
-                5 => [
+                [
                     'question' => 'permits.page.number-of-trips.question',
                     'route' => 'permits/ecmt-trips',
                     'answer' => 43,
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_INTEGER,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                6 => [
+                [
                     'question' => 'permits.page.international.journey.question',
                     'route' => 'permits/ecmt-international-journey',
                     'answer' => 'More than 90%',
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
-                7 => [
+                [
                     'question' => 'permits.page.sectors.question',
                     'route' => 'permits/ecmt-sectors',
                     'answer' => 'Mail and parcels',
-                    'questionType' => null,
+                    'questionType' => RefData::QUESTION_TYPE_STRING,
                     'params' => [],
                     'options' => [],
+                    'escape' => true,
                 ],
             ],
             'applicationRef' => 'OG4563323 / 4'

@@ -156,7 +156,7 @@ class IrhpCheckAnswers
      *
      * @return array
      */
-    private static function permitTypeAnswer(string $permitType): array
+    public static function permitTypeAnswer(string $permitType): array
     {
         return static::answer('permits.page.fee.permit.type', $permitType);
     }
@@ -168,7 +168,7 @@ class IrhpCheckAnswers
      *
      * @return array
      */
-    private static function licenceAnswer(array $licence): array
+    public static function licenceAnswer(array $licence): array
     {
         $answer = [
             $licence['licNo'],
@@ -202,16 +202,18 @@ class IrhpCheckAnswers
      * @param string|null $questionType the type of question
      * @param array       $params       route params
      * @param array       $options      route options
+     * @param bool        $escape       whether the value should be escaped by the answer formatter
      *
      * @return array
      */
-    private static function answer(
+    public static function answer(
         string $question,
         $answer,
         string $route = null,
         string $questionType = null,
         array $params = [],
-        array $options = []
+        array $options = [],
+        bool $escape = true
     ): array {
         return [
             'question' => $question,
@@ -220,6 +222,7 @@ class IrhpCheckAnswers
             'questionType' => $questionType,
             'params' => $params,
             'options' => $options,
+            'escape' => $escape,
         ];
     }
 }
