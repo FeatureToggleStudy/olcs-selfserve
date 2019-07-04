@@ -26,6 +26,7 @@ use Common\RefData;
 use Olcs\Controller\AbstractSelfserveController;
 use Olcs\Controller\Lva\Traits\ExternalControllerTrait;
 use Permits\Controller\Config\FeatureToggle\FeatureToggleConfig;
+use Permits\Data\Mapper\EcmtNoOfPermits as EcmtNoOfPermitsMapper;
 use Permits\View\Helper\EcmtSection;
 
 use Zend\Http\Header\Referer as HttpReferer;
@@ -408,33 +409,55 @@ class PermitsController extends AbstractSelfserveController implements ToggleAwa
         /**
          * @var \Common\View\Helper\Status $statusHelper
          */
-        $statusHelper = $this->getServiceLocator()->get('ViewHelperManager')->get('status');
+        $viewHelperManager = $this->getServiceLocator()->get('ViewHelperManager');
+        $statusHelper = $viewHelperManager->get('status');
+        $currencyHelper = $viewHelperManager->get('currencyFormatter');
+
+        $translationHelper = $this->getServiceLocator()->get('Helper\Translation');
+
+        $noOfPermitsLines = EcmtNoOfPermitsMapper::mapForDisplay(
+            $application,
+            $translationHelper,
+            $this->url()
+        );
+
+        $irhpPermitStock = $application['irhpPermitApplications'][0]['irhpPermitWindow']['irhpPermitStock'];
 
         $summaryData = [
-            0 => [
+            [
                 'key' => 'permits.page.ecmt.consideration.application.status',
-                'value' => $statusHelper->__invoke($application['status']),
+                'value' => $statusHelper($application['status']),
                 'disableHtmlEscape' => true
             ],
-            1 => [
+            [
                 'key' => 'permits.page.ecmt.consideration.permit.type',
                 'value' => $application['permitType']['description']
             ],
-            2 => [
+            [
+                'key' => 'permits.page.ecmt.consideration.permit.year',
+                'value' => date('Y', strtotime($irhpPermitStock['validTo']))
+            ],
+            [
                 'key' => 'permits.page.ecmt.consideration.reference.number',
                 'value' => $application['applicationRef']
             ],
-            3 => [
+            [
                 'key' => 'permits.page.ecmt.consideration.application.date',
                 'value' => date(\DATE_FORMAT, strtotime($application['dateReceived']))
             ],
-            4 => [
+            [
                 'key' => 'permits.page.ecmt.consideration.permits.required',
-                'value' => $application['permitsRequired']
+                'value' => implode('<br/>', $noOfPermitsLines),
+                'disableHtmlEscape' => true
             ],
-            5 => [
+            [
                 'key' => 'permits.page.ecmt.consideration.application.fee',
-                'value' => '£' . $ecmtApplicationFee * $application['permitsRequired']
+                'value' => $translationHelper->translateReplace(
+                    'permits.page.ecmt.consideration.non.refundable',
+                    [
+                        $currencyHelper($ecmtApplicationFee * $application['totalPermitsRequired'])
+                    ]
+                )
             ]
         ];
 
