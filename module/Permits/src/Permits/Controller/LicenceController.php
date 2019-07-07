@@ -6,6 +6,7 @@ use Common\RefData;
 use Dvsa\Olcs\Transfer\Command\IrhpApplication\Create;
 use Dvsa\Olcs\Transfer\Command\Permits\CreateEcmtPermitApplication;
 use Dvsa\Olcs\Transfer\Query\IrhpApplication\ActiveApplication;
+use Dvsa\Olcs\Transfer\Query\Permits\ActiveEcmtApplication;
 use Olcs\Controller\AbstractSelfserveController;
 use Permits\Controller\Config\DataSource\DataSourceConfig;
 use Permits\Controller\Config\ConditionalDisplay\ConditionalDisplayConfig;
@@ -106,6 +107,8 @@ class LicenceController extends AbstractSelfserveController implements ToggleAwa
      */
     public function addAction()
     {
+        $this->templateVarsConfig['add']['question'] = $this->data['question'];
+        $this->templateVarsConfig['add']['questionArgs'] = $this->data['questionArgs'];
         if (!empty($this->params()->fromRoute('year'))) {
             $this->templateVarsConfig['add']['backUri'] = IrhpApplicationSection::ROUTE_YEAR;
             $this->mergeTemplateVars();
@@ -141,7 +144,7 @@ class LicenceController extends AbstractSelfserveController implements ToggleAwa
             [
                 RefData::ECMT_REMOVAL_PERMIT_TYPE_ID,
                 RefData::IRHP_BILATERAL_PERMIT_TYPE_ID,
-                RefData::IRHP_MULTILATERAL_PERMIT_TYPE_ID
+                RefData::IRHP_MULTILATERAL_PERMIT_TYPE_ID,
             ]
         )) {
             $activeApplication = $this->handleResponse($this->handleQuery(ActiveApplication::create(
@@ -152,17 +155,31 @@ class LicenceController extends AbstractSelfserveController implements ToggleAwa
             )));
 
             if (isset($activeApplication['id'])) {
-                // We have an application already
-                if (isset($this->queryParams['active']) && ($activeApplication['licence']['id'] == $this->queryParams['active'])) {
-                    $config['step'] = IrhpApplicationSection::ROUTE_APPLICATION_OVERVIEW;
-                    $this->redirectParams = ['id' => $activeApplication['id']];
-                } else {
-                    $config['step'] = isset($config['command']) ? IrhpApplicationSection::ROUTE_ADD_LICENCE : IrhpApplicationSection::ROUTE_LICENCE;
-                    $this->redirectOptions = [
-                        'query' => ['active' => $activeApplication['licence']['id']]
-                    ];
-                }
+                $config = $this->handleActiveApplicationResponse(
+                    $config,
+                    $activeApplication,
+                    IrhpApplicationSection::ROUTE_APPLICATION_OVERVIEW,
+                    IrhpApplicationSection::ROUTE_ADD_LICENCE,
+                    IrhpApplicationSection::ROUTE_LICENCE);
+                return;
+            }
+        }
 
+        if ($irhpPermitTypeID == RefData::ECMT_PERMIT_TYPE_ID) {
+            $activeApplication = $this->handleResponse($this->handleQuery(ActiveEcmtApplication::create(
+                [
+                    'licence' => $params['licence'],
+                    'year' => $this->params()->fromRoute('year')
+                ]
+            )));
+
+            if (isset($activeApplication['id'])) {
+                $config = $this->handleActiveApplicationResponse(
+                    $config,
+                    $activeApplication,
+                    EcmtSection::ROUTE_APPLICATION_OVERVIEW,
+                    EcmtSection::ROUTE_ADD_LICENCE,
+                    EcmtSection::ROUTE_LICENCE);
                 return;
             }
         }
@@ -198,6 +215,21 @@ class LicenceController extends AbstractSelfserveController implements ToggleAwa
         }
     }
 
+    protected function handleActiveApplicationResponse($config, $activeApplication, $overviewRoute, $addRoute, $changeRoute)
+    {
+        if (isset($this->queryParams['active']) && ($activeApplication['licence']['id'] == $this->queryParams['active'])) {
+
+            $config['step'] = $overviewRoute;
+            $this->redirectParams = ['id' => $activeApplication['id']];
+        } else {
+            $config['step'] = isset($config['command']) ? $addRoute : $changeRoute;
+            $this->redirectOptions = [
+                'query' => ['active' => $activeApplication['licence']['id']]
+            ];
+
+        }
+        return $config;
+    }
     /**
      * @return void|\Zend\Http\Response
      */
