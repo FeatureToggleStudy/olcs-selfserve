@@ -16,38 +16,35 @@ class AcceptOrDeclinePermits
      * Maps data appropriately for the Definition List on the FeePartSuccessful page
      *
      * @param array $data an array of data retrieved from the backend
+     * @param TranslationHelperService $translator
+     * @param Url $url
+     *
      * @return array
      */
-    public static function mapForDisplay(array $data, TranslationHelperService $translator, Url $url): array
+    public static function mapForDisplay(array $data, TranslationHelperService $translator, Url $url)
     {
-        $currency = new CurrencyFormatter;
+        //ini_set('xdebug.var_display_max_depth', '10');
+        //var_dump($data);
+        //exit();
 
         $data = ApplicationFees::mapForDisplay($data, $translator, $url);
-        $permitsAwarded = $data['irhpPermitApplications'][0]['permitsAwarded'];
-        $stock = $data['irhpPermitApplications'][0]['irhpPermitWindow']['irhpPermitStock'];
-        $issueFee = [];
-        $summaryData = [];
+        $summaryData = self::getBaseSummaryData($data, $translator, $url);
 
-        if ($data['hasOutstandingFees'] === 0) {
-            $data['title'] = 'waived-paid-permits.page.fee-part-successful.title';
-            $dueDateKey = 'waived.paid.permits.page.ecmt.fee-part-successful.payment.due';
-        } else {
+        $data['title'] = 'waived-paid-permits.page.fee-part-successful.title';
+        $dueDateKey = 'waived.paid.permits.page.ecmt.fee-part-successful.payment.due';
+
+        if ($data['hasOutstandingFees']) {
             $data['title'] = 'permits.page.fee-part-successful.title';
             $dueDateKey = 'permits.page.ecmt.fee-part-successful.payment.due';
 
-            $issueFee = [
+            $summaryData[] = [
                 'key' => 'permits.page.ecmt.fee-part-successful.issuing.fee',
-                'value' => $translator->translateReplace(
-                    'permits.page.fee.per-permit',
-                    [
-                        $permitsAwarded,
-                        $currency($data['issueFee']),
-                        $url->fromRoute(EcmtSection::ROUTE_ECMT_UNPAID_PERMITS, [], [], true)
-                    ]
-                ),
-                'disableHtmlEscape' => true
+                'value' => $data['issueFee'],
+                'isCurrency' => true
             ];
-            $issueFeeTotal = [
+
+            $currency = new CurrencyFormatter();
+            $summaryData[] = [
                 'key' => 'permits.page.ecmt.fee-part-successful.issuing.fee.total',
                 'value' => $translator->translateReplace(
                     'permits.page.ecmt.fee-part-successful.fee.total.value',
@@ -58,54 +55,106 @@ class AcceptOrDeclinePermits
             ];
         }
 
-        $dueDate = [
+        $summaryData[] = [
             'key' => $dueDateKey,
             'value' => date(\DATE_FORMAT, strtotime($data['dueDate']))
-        ];
+        ]; 
 
-        $summaryData = [
-            0 => [
-                'key' => 'permits.page.ecmt.consideration.reference.number',
+        $data['summaryData'] = $summaryData;
+        $data['guidance'] = self::getGuidanceData($data, $translator);
+
+        return $data;
+    }
+
+    /**
+     * Get the base summary list data common to all outcomes
+     *
+     * @param array $data
+     * @param TranslationHelperService $translator
+     * @param Url $url
+     *
+     * @return array
+     */
+    private static function getBaseSummaryData(array $data, TranslationHelperService $translator, Url $url)
+    {
+        $firstIrhpPermitApplication = $data['irhpPermitApplications'][0];
+        $irhpPermitStock = $firstIrhpPermitApplication['irhpPermitWindow']['irhpPermitStock'];
+
+        return [
+            [
+                'key' => 'permits.page.ecmt.consideration.application.reference',
                 'value' => $data['applicationRef']
             ],
-            1 => [
+            [
                 'key' => 'permits.page.ecmt.consideration.permit.type',
                 'value' => $data['permitType']['description']
             ],
-            2 => [
-                'key' => 'permits.page.ecmt.fee-part-successful.permit.validity',
-                'value' => $translator->translateReplace(
-                    'permits.page.fee.permit.validity.dates',
-                    [
-                        date(\DATE_FORMAT, strtotime($stock['validFrom'])),
-                        date(\DATE_FORMAT, strtotime($stock['validTo']))
-                    ]
-                )
+            [
+                'key' => 'permits.page.ecmt.consideration.permit.year',
+                'value' => date('Y', strtotime($irhpPermitStock['validTo']))
+            ],
+            [
+                'key' => 'permits.page.ecmt.consideration.number.of.permits',
+                'value' => self::getNoOfPermitsValue($firstIrhpPermitApplication, $translator, $url),
+                'disableHtmlEscape' => true
             ]
         ];
+    }
 
-        if (isset($issueFee['key'])) {
-            array_push($summaryData, $issueFee);
-            array_push($summaryData, $issueFeeTotal);
+    /**
+     * Get the html representing the number of permits
+     *
+     * @param array $firstIrhpPermitApplication
+     * @param TranslationHelperService $translator
+     * @param Url $url
+     *
+     * @return array
+     */
+    private static function getNoOfPermitsValue(
+        array $firstIrhpPermitApplication,
+        TranslationHelperService $translator,
+        Url $url
+    ) {
+        $ecmtNoOfPermitsData = [
+            'requiredEuro5' => $firstIrhpPermitApplication['euro5PermitsAwarded'],
+            'requiredEuro6' => $firstIrhpPermitApplication['euro6PermitsAwarded']
+        ];
+
+        $permitsRequiredLines = EcmtNoOfPermits::mapForDisplay($ecmtNoOfPermitsData, $translator, $url);
+
+        $permitsRequiredLines[] = sprintf(
+            '<a href="%s">%s</a>',
+            $url->fromRoute(EcmtSection::ROUTE_ECMT_UNPAID_PERMITS, [], [], true),
+            $translator->translate('permits.page.ecmt.fee-part-successful.view.permit.restrictions')
+        ); 
+
+        return implode('<br>', $permitsRequiredLines);
+    }
+
+    /**
+     * Get the html representing the guidance area of the page
+     *
+     * @param array $data
+     * @param TranslationHelperService $translator
+     *
+     * @return array
+     */
+    private static function getGuidanceData(array $data, TranslationHelperService $translator)
+    {
+        $permitsAwarded = $data['irhpPermitApplications'][0]['permitsAwarded'];
+        $permitsRequired = $data['permitsRequired'];
+
+        $guidanceKey = 'markup-ecmt-fee-part-successful-hint';
+        if ($permitsAwarded == $permitsRequired) {
+            $guidanceKey = 'markup-ecmt-fee-successful-hint';
         }
 
-        array_push($summaryData, $dueDate);
-
-        $data['summaryData'] = $summaryData;
-
-        $markup = ($permitsAwarded === $data['permitsRequired']) ? 'markup-ecmt-fee-successful-hint' : 'markup-ecmt-fee-part-successful-hint';
-
-        $data['guidance'] = [
+        return [
             'value' => $translator->translateReplace(
-                $markup,
-                [
-                    $permitsAwarded,
-                    $data['permitsRequired']
-                ]
+                $guidanceKey,
+                [$permitsAwarded, $permitsRequired]
             ),
             'disableHtmlEscape' => true
         ];
-
-        return $data;
     }
 }
